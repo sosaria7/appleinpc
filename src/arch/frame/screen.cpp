@@ -1204,6 +1204,7 @@ void CScreen::ReInitialize()
 			break;
         }
     }
+	memset( m_pixelInfo, 0, sizeof(m_pixelInfo) );
 }
 
 unsigned int CScreen::ApplyRGBFormat(unsigned int rgb32, LPDDPIXELFORMAT lpDDpf)
@@ -1598,4 +1599,9 @@ void CScreen::Serialize(CArchive &ar)
 		ApplyColors();
 		RedrawAll();
 	}
+}
+
+void CScreen::ClearBuffer()
+{
+	memset( m_pixelInfo, 0, sizeof(m_pixelInfo) );
 }

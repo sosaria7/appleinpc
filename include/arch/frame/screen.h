@@ -259,6 +259,7 @@ public:
 	BYTE GetVideoData();
 
 	void writeMemory(WORD addr, BYTE data, BOOL aux);
+	void ClearBuffer();
 };
 
 /////////////////////////////////////////////////////////////////////////////

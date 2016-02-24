@@ -93,6 +93,8 @@ void CAppleClock::Run()
 	slept = FALSE;
 	drawed = FALSE;
 
+	m_pScreen->ClearBuffer();
+
 	m_dwLastCPUClock = measure1 = GetTickCount();
 
 	m_nAppleStatus = ACS_POWERON;
@@ -197,25 +199,25 @@ void CAppleClock::Run()
 			lastAppleClock = dwCurClock;
 		}
 	}
+	m_pScreen->ClearBuffer();
 }
 
 
 void CAppleClock::OnDebug() 
 {
-	if ( m_nAppleStatus == ACS_SUSPEND )
-		m_queSignal.AddMessage(ACS_RESUME);
-	else if ( m_nAppleStatus == ACS_POWEROFF )
-		m_queSignal.AddMessage(ACS_POWERON);
+	if ( m_nAppleStatus == ACS_POWEROFF )
+	{
+		Suspend(FALSE);
+		PowerOn();
+	}
 	//m_queSignal.AddMessage(ACS_DEBUG);
 	Suspend( TRUE );
-	g_DXSound.Suspend();
 	g_debug = TRUE;
 	{
 		CDlgDebug dlgDebug(&m_cpu, &m_cIOU);
 		dlgDebug.DoModal();
 	}
 	g_debug = FALSE;
-	g_DXSound.Resume();
 	Resume();
 }
 
