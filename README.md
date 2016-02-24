@@ -13,6 +13,7 @@ Features include:
   - Joystick with NumPad or PC Joystick
   - Various screen mode: Full screen, 2x mode, Scan line, Color/Mono/Green/Custom colors
   - NTSC color approximation
+  - Save and restore running status
 
 Source download:
   https://github.com/sosaria7/appleinpc
