@@ -9,10 +9,10 @@ Features include:
   - Mockingboard and/or PHASOR card support
   - Mouse Interface card support
   - Disk II card with disk image (DSI, DO, PO, NIB images supported)
-  - NTSC color approximation
+  - Mass storage "SD Disk][ HDD" (HDV, 2MG images supported)
   - Joystick with NumPad or PC Joystick
   - Various screen mode: Full screen, 2x mode, Scan line, Color/Mono/Green/Custom colors
-  - Mass storage "SD Disk][ HDD" (HDV, 2MG images supported)
+  - NTSC color approximation
 
 Source download:
   https://github.com/sosaria7/appleinpc
