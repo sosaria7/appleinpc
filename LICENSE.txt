@@ -1,0 +1,15 @@
+AIPC Project is open source licensed under GPL v3
+
+Folloing codes are also licensed under MAME License(2007)
+  - src/8913.cpp
+  
+The original source codes of 8913.cpp are follows:
+  - licenses/src/ay8910.c
+  - licenses/src/ay8910.h
+
+================================================================================
+GNU GENERAL PUBLIC LICENSE version 3
+  - licenses/GPLv3.txt
+
+MAME LICENSE (2007)
+  - licenses/MAME.txt
