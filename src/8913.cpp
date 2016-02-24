@@ -1,8 +1,8 @@
 
 /***************************************************************************
   Port of ay8910.c from mame
-  The original source is license/src/ay8910.c
-  MAME license file is license/MAME.txt
+  The original source is licenses/src/ay8910.c
+  MAME license file is licenses/MAME.txt
 ***************************************************************************/
 
 /***************************************************************************
