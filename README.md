@@ -18,4 +18,4 @@ Source download:
   https://github.com/sosaria7/appleinpc
 
 Last release:
-  [Apple in PC 0.1.3.4](https://github.com/sosaria7/appleinpc/releases/download/0.1.34.4/aipc_0.1.34.4.zip)
+  [Apple in PC 0.1.34.4](https://github.com/sosaria7/appleinpc/releases/download/0.1.34.4/aipc_0.1.34.4.zip)
