@@ -1,4 +1,4 @@
-AIPC Project is open source licensed under GPL v3
+AIPC is open source under GPL and free to use.
 
 Folloing codes are also licensed under MAME License(2007)
   - src/8913.cpp
