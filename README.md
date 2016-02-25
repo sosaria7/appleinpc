@@ -20,3 +20,6 @@ Source download:
 
 Latest release:
   [Apple in PC 0.1.34.4](https://github.com/sosaria7/appleinpc/releases/download/0.1.34.4a/aipc_0.1.34.4.zip)
+
+Screen shots:
+  https://github.com/sosaria7/appleinpc/wiki/Screen-Shot
