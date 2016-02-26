@@ -24,16 +24,16 @@ Class12=wcSliderPopup
 Class13=CAboutDlg
 
 ResourceCount=11
-Resource1=IDR_ACCELERATOR
+Resource1=IDD_CONFIGURE (English (U.S.))
 Resource2=IDD_DEBUG (English (U.S.))
-Resource3=IDR_CONFIG_SLOT
-Resource4=IDD_CONFIGURE_MOCKINGBOARD (English (U.S.))
-Resource5=IDD_CONFIGURE_DISK (English (U.S.))
-Resource6=IDD_CONFIGURE_SD_DISK (English (U.S.))
-Resource7=IDR_MAINFRAME
-Resource8=IDD_CONFIGURE (English (U.S.))
-Resource9=IDD_ABOUTBOX (English (U.S.))
-Resource10=IDD_CONFIGURE_COLOR (English (U.S.))
+Resource3=IDD_CONFIGURE_COLOR (English (U.S.))
+Resource4=IDR_ACCELERATOR
+Resource5=IDD_ABOUTBOX (English (U.S.))
+Resource6=IDD_CONFIGURE_MOCKINGBOARD (English (U.S.))
+Resource7=IDR_CONFIG_SLOT
+Resource8=IDD_CONFIGURE_DISK (English (U.S.))
+Resource9=IDR_MAINFRAME
+Resource10=IDD_CONFIGURE_SD_DISK (English (U.S.))
 Class14=CDlgConfigSDDisk
 Resource11=IDR_TOOLBAR (English (U.S.))
 

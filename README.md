@@ -9,7 +9,6 @@ Features include:
   - Mockingboard and/or PHASOR card support
   - Mouse Interface card support
   - Disk II card with disk image (DSI, DO, PO, NIB images supported)
-  - Mass storage "SD Disk][ HDD" (HDV, 2MG images supported)
   - Joystick with NumPad or PC Joystick
   - Various screen mode: Full screen, 2x mode, Scan line, Color/Mono/Green/Custom colors
   - NTSC color approximation
@@ -19,4 +18,4 @@ Source download:
   https://github.com/sosaria7/appleinpc
 
 Last release:
-  [Apple in PC 0.1.34.4](https://github.com/sosaria7/appleinpc/releases/download/0.1.34.4a/aipc_0.1.34.4.zip)
+  [Apple in PC 0.1.34.5](https://github.com/sosaria7/appleinpc/releases/download/0.1.34.5/aipc_0.1.34.5.zip)
