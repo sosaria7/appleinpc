@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
-// Used by C:\Project\night\appleinpc\aipc.rc
+// Microsoft Visual C++ generated include file.
+// Used by F:\night_project\appleinpc\appleinpc\aipc.rc
 //
 #define IDC_DEFAULT                     3
 #define IDD_ABOUTBOX                    100
@@ -196,7 +196,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        164
+#define _APS_NEXT_RESOURCE_VALUE        166
 #define _APS_NEXT_COMMAND_VALUE         32795
 #define _APS_NEXT_CONTROL_VALUE         1126
 #define _APS_NEXT_SYMED_VALUE           111

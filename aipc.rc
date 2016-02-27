@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "include/arch/resource.h"
 
@@ -13,13 +13,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Korean resources
+// Korean (Korea) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_KOR)
-#ifdef _WIN32
 LANGUAGE LANG_KOREAN, SUBLANG_DEFAULT
 #pragma code_page(949)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -27,18 +25,18 @@ LANGUAGE LANG_KOREAN, SUBLANG_DEFAULT
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "include/arch/resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#include ""afxres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
     "#define _AFX_NO_OLE_RESOURCES\r\n"
@@ -66,16 +64,19 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON    DISCARDABLE     "res\\aipc.ico"
-IDI_ICON1               ICON    DISCARDABLE     "res\\icon1.ico"
-IDI_ICON2               ICON    DISCARDABLE     "res\\icon2.ico"
+IDR_MAINFRAME           ICON                    "res\\aipc.ico"
+
+IDI_ICON1               ICON                    "res\\icon1.ico"
+
+IDI_ICON2               ICON                    "res\\icon2.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Menu
 //
 
-IDR_MAINFRAME MENU PRELOAD DISCARDABLE 
+IDR_MAINFRAME MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -107,7 +108,7 @@ BEGIN
     END
 END
 
-IDR_CONFIG_SLOT MENU DISCARDABLE 
+IDR_CONFIG_SLOT MENU
 BEGIN
     POPUP ""
     BEGIN
@@ -120,15 +121,14 @@ BEGIN
 END
 
 
-#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,1,34,4
- PRODUCTVERSION 0,1,34,4
+ FILEVERSION 0,1,34,5
+ PRODUCTVERSION 0,1,34,5
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -143,18 +143,13 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "Comments", "\0"
-            VALUE "CompanyName", "\0"
-            VALUE "FileDescription", "Apple in PC\0"
-            VALUE "FileVersion", "0, 1, 34, 4\0"
-            VALUE "InternalName", "aipc\0"
-            VALUE "LegalCopyright", "Copyright (C) 2002\0"
-            VALUE "LegalTrademarks", "\0"
-            VALUE "OriginalFilename", "aipc.exe\0"
-            VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "Apple in PC\0"
-            VALUE "ProductVersion", "0, 1, 34, 4\0"
-            VALUE "SpecialBuild", "\0"
+            VALUE "FileDescription", "Apple in PC"
+            VALUE "FileVersion", "0.1.34.5"
+            VALUE "InternalName", "aipc"
+            VALUE "LegalCopyright", "Copyright (C) 2002"
+            VALUE "OriginalFilename", "aipc.exe"
+            VALUE "ProductName", "Apple in PC"
+            VALUE "ProductVersion", "0.1.34.5"
         END
     END
     BLOCK "VarFileInfo"
@@ -163,81 +158,85 @@ BEGIN
     END
 END
 
-#endif    // !_MAC
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Bitmap
 //
 
-IDB_DISK                BITMAP  DISCARDABLE     "res\\bitmap1.bmp"
-IDB_DISK_OFF            BITMAP  DISCARDABLE     "RES\\diskOff.bmp"
-IDB_DISK_READ           BITMAP  DISCARDABLE     "RES\\diskRead.bmp"
-IDB_DISK_WRITE          BITMAP  DISCARDABLE     "RES\\diskWrite.bmp"
-IDB_DISK_OFF_F          BITMAP  DISCARDABLE     "res\\disk_off.bmp"
-IDB_DISK_READ_F         BITMAP  DISCARDABLE     "res\\disk_rea.bmp"
-IDB_DISK_WRITE_F        BITMAP  DISCARDABLE     "res\\disk_wri.bmp"
+IDB_DISK                BITMAP                  "res\\bitmap1.bmp"
+
+IDB_DISK_OFF            BITMAP                  "RES\\diskOff.bmp"
+
+IDB_DISK_READ           BITMAP                  "RES\\diskRead.bmp"
+
+IDB_DISK_WRITE          BITMAP                  "RES\\diskWrite.bmp"
+
+IDB_DISK_OFF_F          BITMAP                  "res\\disk_off.bmp"
+
+IDB_DISK_READ_F         BITMAP                  "res\\disk_rea.bmp"
+
+IDB_DISK_WRITE_F        BITMAP                  "res\\disk_wri.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Cursor
 //
 
-IDC_CURSOR1             CURSOR  DISCARDABLE     "res\\cursor1.cur"
-IDC_CURSOR2             CURSOR  DISCARDABLE     "res\\cursor2.cur"
+IDC_CURSOR1             CURSOR                  "res\\cursor1.cur"
+
+IDC_CURSOR2             CURSOR                  "res\\cursor2.cur"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Accelerator
 //
 
-IDR_ACCELERATOR ACCELERATORS DISCARDABLE 
+IDR_ACCELERATOR ACCELERATORS
 BEGIN
     VK_CANCEL,      ID_RESET,               VIRTKEY, CONTROL, NOINVERT
     VK_F10,         ID_CONFIGURE_SLOTS,     VIRTKEY, NOINVERT
     VK_F11,         ID_POWER,               VIRTKEY, CONTROL, NOINVERT
-    VK_F11,         ID_REBOOT,              VIRTKEY, SHIFT, CONTROL, 
-                                                    NOINVERT
+    VK_F11,         ID_REBOOT,              VIRTKEY, SHIFT, CONTROL, NOINVERT
     VK_F8,          ID_MONITOR,             VIRTKEY, NOINVERT
     VK_F8,          ID_FULL_SCREEN,         VIRTKEY, CONTROL, NOINVERT
     VK_F9,          ID_DISKETTE,            VIRTKEY, NOINVERT
     VK_F9,          ID_HARDDISK,            VIRTKEY, CONTROL, NOINVERT
 END
 
-#endif    // Korean resources
+#endif    // Korean (Korea) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Bitmap
 //
 
-IDR_TOOLBAR             BITMAP  DISCARDABLE     "res\\toolbar1.bmp"
+IDR_TOOLBAR             BITMAP                  "res\\toolbar1.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 191, 77
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_ABOUTBOX DIALOGEX 0, 0, 191, 77
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Apple in PC"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
-    LTEXT           "Apple in PC v0.1.34.4",IDC_STATIC,40,10,119,8,
-                    SS_NOPREFIX
+    LTEXT           "Apple in PC v0.1.34.5",IDC_STATIC,40,10,119,8,SS_NOPREFIX
     LTEXT           "Copyright (C) 2002-2016",IDC_STATIC,40,62,79,8
     DEFPUSHBUTTON   "&OK",IDOK,125,56,50,14,WS_GROUP
     LTEXT           "Keonwoo Kim",IDC_STATIC,65,22,86,8
@@ -245,20 +244,15 @@ BEGIN
     LTEXT           "sosaria@empal.com",IDC_STATIC,65,33,94,8
 END
 
-IDD_DEBUG DIALOG DISCARDABLE  0, 0, 235, 230
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_DEBUG DIALOG 0, 0, 235, 230
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Debug"
 FONT 10, "Courier"
 BEGIN
     DEFPUSHBUTTON   "&OK",IDOK,178,209,50,14
-    CONTROL         "List1",IDC_LIST_PROCESS,"SysListView32",LVS_REPORT | 
-                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | 
-                    LVS_NOSCROLL | LVS_NOCOLUMNHEADER | WS_BORDER | 
-                    WS_TABSTOP,7,26,141,104
+    CONTROL         "List1",IDC_LIST_PROCESS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOSCROLL | LVS_NOCOLUMNHEADER | WS_BORDER | WS_TABSTOP,7,26,141,104
     EDITTEXT        IDC_EIDT_DATA,7,148,221,55,ES_AUTOHSCROLL
-    CONTROL         "List2",IDC_LIST_REGISTERS,"SysListView32",LVS_REPORT | 
-                    LVS_SINGLESEL | LVS_EDITLABELS | LVS_NOSCROLL | 
-                    LVS_NOCOLUMNHEADER | WS_BORDER | WS_TABSTOP,154,26,74,65
+    CONTROL         "List2",IDC_LIST_REGISTERS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_EDITLABELS | LVS_NOSCROLL | LVS_NOCOLUMNHEADER | WS_BORDER | WS_TABSTOP,154,26,74,65
     GROUPBOX        "Flags",IDC_FLAGBOX,154,99,74,28
     CTEXT           "N",IDC_FLAG_N,158,110,8,8
     CTEXT           "V",IDC_FLAG_V,166,110,8,8
@@ -274,8 +268,8 @@ BEGIN
     LTEXT           "Registers",IDC_STATIC,154,14,37,8
 END
 
-IDD_CONFIGURE_DISK DIALOG DISCARDABLE  0, 0, 187, 98
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_CONFIGURE_DISK DIALOG 0, 0, 187, 98
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Configure Disk Drives"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -286,96 +280,63 @@ BEGIN
     LTEXT           "Disk Images :",IDC_STATIC1,7,5,51,8
     EDITTEXT        IDC_EDIT_FILENAME2,7,57,153,12,ES_AUTOHSCROLL
     PUSHBUTTON      "..",IDC_BTN_BROWSE2,165,56,12,12
-    CONTROL         "Disk 1",IDC_CHK_DISK1,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,17,37,10
-    CONTROL         "Disk 2",IDC_CHK_DISK2,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,45,37,10
-    CONTROL         "Enhanced",IDC_ENHANCED_DISK1,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,60,17,48,10
-    CONTROL         "Enhanced",IDC_ENHANCED_DISK2,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,60,45,48,10
+    CONTROL         "Disk 1",IDC_CHK_DISK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,17,37,10
+    CONTROL         "Disk 2",IDC_CHK_DISK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,45,37,10
+    CONTROL         "Enhanced",IDC_ENHANCED_DISK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,60,17,48,10
+    CONTROL         "Enhanced",IDC_ENHANCED_DISK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,60,45,48,10
 END
 
-IDD_CONFIGURE_MOCKINGBOARD DIALOG DISCARDABLE  0, 0, 151, 127
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_CONFIGURE_MOCKINGBOARD DIALOG 0, 0, 151, 127
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Configure MockingBoard"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,94,87,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,94,106,50,14
     LTEXT           "Balance:",IDC_STATIC,14,17,31,8
-    CONTROL         "Slider1",IDC_PHASOR_BALANCE,"msctls_trackbar32",
-                    TBS_AUTOTICKS | TBS_TOP | TBS_ENABLESELRANGE | 
-                    WS_TABSTOP,18,25,35,13
-    CONTROL         "Slider2",IDC_PHASOR_VOLUME,"msctls_trackbar32",
-                    TBS_AUTOTICKS | TBS_VERT | TBS_ENABLESELRANGE | 
-                    WS_TABSTOP,30,51,11,52
-    CONTROL         "Mute",IDC_PHASOR_MUTE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,18,103,31,12
-    CONTROL         "&Mocking Board",IDC_PHASOR_MOCKING,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP,72,30,63,10
-    CONTROL         "&Phasor Native",IDC_PHASOR_NATIVE,"Button",
-                    BS_AUTORADIOBUTTON,72,51,61,10
+    CONTROL         "Slider1",IDC_PHASOR_BALANCE,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | TBS_ENABLESELRANGE | WS_TABSTOP,18,25,35,13
+    CONTROL         "Slider2",IDC_PHASOR_VOLUME,"msctls_trackbar32",TBS_AUTOTICKS | TBS_VERT | TBS_ENABLESELRANGE | WS_TABSTOP,30,51,11,52
+    CONTROL         "Mute",IDC_PHASOR_MUTE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,103,31,12
+    CONTROL         "&Mocking Board",IDC_PHASOR_MOCKING,"Button",BS_AUTORADIOBUTTON | WS_GROUP,72,30,63,10
+    CONTROL         "&Phasor Native",IDC_PHASOR_NATIVE,"Button",BS_AUTORADIOBUTTON,72,51,61,10
     GROUPBOX        "Volume",IDC_STATIC,7,7,53,112
     LTEXT           "Volume:",IDC_STATIC,14,44,27,8
     GROUPBOX        "Emulate",IDC_STATIC,65,14,79,57
 END
 
-IDD_CONFIGURE DIALOG DISCARDABLE  0, 0, 271, 209
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_CONFIGURE DIALOGEX 0, 0, 271, 209
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Configure"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,193,187,34,15
     PUSHBUTTON      "Cancel",IDCANCEL,229,187,35,15
-    COMBOBOX        IDC_SLOT1,35,17,83,74,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_GROUP | WS_TABSTOP
+    COMBOBOX        IDC_SLOT1,35,17,83,74,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     PUSHBUTTON      "Setup",IDC_SLOT1_SETUP,121,16,27,13
-    COMBOBOX        IDC_SLOT2,35,33,83,74,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_GROUP | WS_TABSTOP
+    COMBOBOX        IDC_SLOT2,35,33,83,74,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     PUSHBUTTON      "Setup",IDC_SLOT2_SETUP,121,32,27,13
-    COMBOBOX        IDC_SLOT3,35,49,83,74,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_GROUP | WS_TABSTOP
+    COMBOBOX        IDC_SLOT3,35,49,83,74,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     PUSHBUTTON      "Setup",IDC_SLOT3_SETUP,121,48,27,13
-    COMBOBOX        IDC_SLOT4,35,65,83,74,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_GROUP | WS_TABSTOP
+    COMBOBOX        IDC_SLOT4,35,65,83,74,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     PUSHBUTTON      "Setup",IDC_SLOT4_SETUP,121,64,27,13
-    COMBOBOX        IDC_SLOT5,35,81,83,74,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_GROUP | WS_TABSTOP
+    COMBOBOX        IDC_SLOT5,35,81,83,74,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     PUSHBUTTON      "Setup",IDC_SLOT5_SETUP,121,80,27,13
-    COMBOBOX        IDC_SLOT6,35,97,83,74,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_GROUP | WS_TABSTOP
+    COMBOBOX        IDC_SLOT6,35,97,83,74,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     PUSHBUTTON      "Setup",IDC_SLOT6_SETUP,121,96,27,13
-    COMBOBOX        IDC_SLOT7,35,113,83,74,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_GROUP | WS_TABSTOP
+    COMBOBOX        IDC_SLOT7,35,113,83,74,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
     PUSHBUTTON      "Setup",IDC_SLOT7_SETUP,121,112,27,13
-    CONTROL         "Apple ][+",IDC_MACHINE_2PLUS,"Button",
-                    BS_AUTORADIOBUTTON | WS_DISABLED | WS_GROUP | WS_TABSTOP,
-                    14,145,43,11
-    CONTROL         "Apple //e",IDC_MACHINE_2E,"Button",BS_AUTORADIOBUTTON | 
-                    WS_TABSTOP,59,145,44,11
-    CONTROL         "Apple IIc",IDC_MACHINE_2C,"Button",BS_AUTORADIOBUTTON | 
-                    WS_DISABLED | WS_TABSTOP,107,145,42,11
-    CONTROL         "None",IDC_JOYSTICK_NONE,"Button",BS_AUTORADIOBUTTON | 
-                    WS_GROUP | WS_TABSTOP,14,175,33,11
-    CONTROL         "NumPad",IDC_JOYSTICK_NUMPAD,"Button",BS_AUTORADIOBUTTON | 
-                    WS_TABSTOP,49,175,44,11
-    CONTROL         "PC Joystick",IDC_JOYSTICK_PCJOYSTICK,"Button",
-                    BS_AUTORADIOBUTTON | WS_TABSTOP,95,175,55,11
+    CONTROL         "Apple ][+",IDC_MACHINE_2PLUS,"Button",BS_AUTORADIOBUTTON | WS_DISABLED | WS_GROUP | WS_TABSTOP,14,145,43,11
+    CONTROL         "Apple //e",IDC_MACHINE_2E,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,59,145,44,11
+    CONTROL         "Apple IIc",IDC_MACHINE_2C,"Button",BS_AUTORADIOBUTTON | WS_DISABLED | WS_TABSTOP,107,145,42,11
+    CONTROL         "None",IDC_JOYSTICK_NONE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,175,33,11
+    CONTROL         "NumPad",IDC_JOYSTICK_NUMPAD,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,49,175,44,11
+    CONTROL         "PC Joystick",IDC_JOYSTICK_PCJOYSTICK,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,95,175,55,11
     PUSHBUTTON      "Color Setting",IDC_COLOR_SETTING,214,7,50,14
-    CONTROL         "Slider1",IDC_MASTER_BALANCE,"msctls_trackbar32",
-                    TBS_AUTOTICKS | TBS_TOP | TBS_ENABLESELRANGE | 
-                    WS_TABSTOP,164,26,35,13
-    CONTROL         "Slider2",IDC_MASTER_VOLUME,"msctls_trackbar32",
-                    TBS_AUTOTICKS | TBS_VERT | TBS_ENABLESELRANGE | 
-                    WS_TABSTOP,178,48,11,52
-    CONTROL         "Mute",IDC_MASTER_MUTE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,169,101,31,12
-    CONTROL         "Slider2",IDC_SPEAKER_VOLUME,"msctls_trackbar32",
-                    TBS_AUTOTICKS | TBS_VERT | TBS_ENABLESELRANGE | 
-                    WS_TABSTOP,233,51,11,52
-    CONTROL         "Mute",IDC_SPEAKER_MUTE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,220,104,31,12
+    CONTROL         "Slider1",IDC_MASTER_BALANCE,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | TBS_ENABLESELRANGE | WS_TABSTOP,164,26,35,13
+    CONTROL         "Slider2",IDC_MASTER_VOLUME,"msctls_trackbar32",TBS_AUTOTICKS | TBS_VERT | TBS_ENABLESELRANGE | WS_TABSTOP,178,48,11,52
+    CONTROL         "Mute",IDC_MASTER_MUTE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,169,101,31,12
+    CONTROL         "Slider2",IDC_SPEAKER_VOLUME,"msctls_trackbar32",TBS_AUTOTICKS | TBS_VERT | TBS_ENABLESELRANGE | WS_TABSTOP,233,51,11,52
+    CONTROL         "Mute",IDC_SPEAKER_MUTE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,220,104,31,12
     EDITTEXT        IDC_KEYBOARD_DELAY,180,132,24,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_KEYBOARD_REPEAT,236,132,24,12,ES_AUTOHSCROLL
     PUSHBUTTON      "Default",IDC_DEFAULT,156,187,34,15,WS_DISABLED
@@ -399,63 +360,40 @@ BEGIN
     GROUPBOX        "Joystick",IDC_STATIC,7,166,147,36
     LTEXT           "Some settings can be changed",IDC_STATIC,158,159,102,8
     LTEXT           "only when the power is off.",IDC_STATIC,158,170,89,8
-    COMBOBOX        IDC_JOYDEAD,44,188,34,76,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
-    COMBOBOX        IDC_JOYSAT,119,188,34,75,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
+    COMBOBOX        IDC_JOYDEAD,44,188,34,76,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_JOYSAT,119,188,34,75,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Saturation",IDC_STATIC,84,194,34,8
     LTEXT           "Dead Zone",IDC_STATIC,7,194,36,8
 END
 
 IDD_CONFIGURE_COLOR DIALOGEX 0, 0, 235, 187
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Color Setting"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "&OK",IDOK,124,166,50,14
     PUSHBUTTON      "&Cancel",IDCANCEL,176,166,50,14
-    CONTROL         "Color",IDC_COLOR_MODE0,"Button",BS_AUTORADIOBUTTON | 
-                    WS_GROUP,163,73,33,10
-    CONTROL         "Custom Color",IDC_COLOR_MODE1,"Button",
-                    BS_AUTORADIOBUTTON,163,86,59,10
-    CONTROL         "Mono",IDC_COLOR_MODE2,"Button",BS_AUTORADIOBUTTON,163,
-                    98,33,10
-    CONTROL         "Green",IDC_COLOR_MODE3,"Button",BS_AUTORADIOBUTTON,163,
-                    111,35,10
-    CONTROL         "Preview",IDC_PREVIEW,"Button",BS_AUTOCHECKBOX | 
-                    WS_GROUP | WS_TABSTOP,163,147,42,10
-    CONTROL         "",IDC_COLOR0,"Button",BS_OWNERDRAW | WS_GROUP | 
-                    WS_TABSTOP,15,22,17,11,WS_EX_STATICEDGE
-    CONTROL         "",IDC_COLOR1,"Button",BS_OWNERDRAW | WS_TABSTOP,15,34,
-                    17,11,WS_EX_STATICEDGE
-    CONTROL         "",IDC_COLOR2,"Button",BS_OWNERDRAW | WS_TABSTOP,15,46,
-                    17,11,WS_EX_STATICEDGE
-    CONTROL         "",IDC_COLOR3,"Button",BS_OWNERDRAW | WS_TABSTOP,15,58,
-                    17,11,WS_EX_STATICEDGE
-    CONTROL         "",IDC_COLOR4,"Button",BS_OWNERDRAW | WS_TABSTOP,15,70,
-                    17,11,WS_EX_STATICEDGE
-    CONTROL         "",IDC_COLOR5,"Button",BS_OWNERDRAW | WS_TABSTOP,15,82,
-                    17,11,WS_EX_STATICEDGE
-    CONTROL         "",IDC_COLOR6,"Button",BS_OWNERDRAW | WS_TABSTOP,15,94,
-                    17,11,WS_EX_STATICEDGE
-    CONTROL         "",IDC_COLOR7,"Button",BS_OWNERDRAW | WS_TABSTOP,15,106,
-                    17,11,WS_EX_STATICEDGE
-    CONTROL         "",IDC_COLOR8,"Button",BS_OWNERDRAW | WS_TABSTOP,87,22,
-                    17,11,WS_EX_STATICEDGE
-    CONTROL         "",IDC_COLOR9,"Button",BS_OWNERDRAW | WS_TABSTOP,87,34,
-                    17,11,WS_EX_STATICEDGE
-    CONTROL         "",IDC_COLOR10,"Button",BS_OWNERDRAW | WS_TABSTOP,87,46,
-                    17,11,WS_EX_STATICEDGE
-    CONTROL         "",IDC_COLOR11,"Button",BS_OWNERDRAW | WS_TABSTOP,87,58,
-                    17,11,WS_EX_STATICEDGE
-    CONTROL         "",IDC_COLOR12,"Button",BS_OWNERDRAW | WS_TABSTOP,87,70,
-                    17,11,WS_EX_STATICEDGE
-    CONTROL         "",IDC_COLOR13,"Button",BS_OWNERDRAW | WS_TABSTOP,87,82,
-                    17,11,WS_EX_STATICEDGE
-    CONTROL         "",IDC_COLOR14,"Button",BS_OWNERDRAW | WS_TABSTOP,87,94,
-                    17,11,WS_EX_STATICEDGE
-    CONTROL         "",IDC_COLOR15,"Button",BS_OWNERDRAW | WS_TABSTOP,87,106,
-                    17,11,WS_EX_STATICEDGE
+    CONTROL         "Color",IDC_COLOR_MODE0,"Button",BS_AUTORADIOBUTTON | WS_GROUP,163,73,33,10
+    CONTROL         "Custom Color",IDC_COLOR_MODE1,"Button",BS_AUTORADIOBUTTON,163,86,59,10
+    CONTROL         "Mono",IDC_COLOR_MODE2,"Button",BS_AUTORADIOBUTTON,163,98,33,10
+    CONTROL         "Green",IDC_COLOR_MODE3,"Button",BS_AUTORADIOBUTTON,163,111,35,10
+    CONTROL         "Preview",IDC_PREVIEW,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,163,147,42,10
+    CONTROL         "",IDC_COLOR0,"Button",BS_OWNERDRAW | WS_GROUP | WS_TABSTOP,15,22,17,11,WS_EX_STATICEDGE
+    CONTROL         "",IDC_COLOR1,"Button",BS_OWNERDRAW | WS_TABSTOP,15,34,17,11,WS_EX_STATICEDGE
+    CONTROL         "",IDC_COLOR2,"Button",BS_OWNERDRAW | WS_TABSTOP,15,46,17,11,WS_EX_STATICEDGE
+    CONTROL         "",IDC_COLOR3,"Button",BS_OWNERDRAW | WS_TABSTOP,15,58,17,11,WS_EX_STATICEDGE
+    CONTROL         "",IDC_COLOR4,"Button",BS_OWNERDRAW | WS_TABSTOP,15,70,17,11,WS_EX_STATICEDGE
+    CONTROL         "",IDC_COLOR5,"Button",BS_OWNERDRAW | WS_TABSTOP,15,82,17,11,WS_EX_STATICEDGE
+    CONTROL         "",IDC_COLOR6,"Button",BS_OWNERDRAW | WS_TABSTOP,15,94,17,11,WS_EX_STATICEDGE
+    CONTROL         "",IDC_COLOR7,"Button",BS_OWNERDRAW | WS_TABSTOP,15,106,17,11,WS_EX_STATICEDGE
+    CONTROL         "",IDC_COLOR8,"Button",BS_OWNERDRAW | WS_TABSTOP,87,22,17,11,WS_EX_STATICEDGE
+    CONTROL         "",IDC_COLOR9,"Button",BS_OWNERDRAW | WS_TABSTOP,87,34,17,11,WS_EX_STATICEDGE
+    CONTROL         "",IDC_COLOR10,"Button",BS_OWNERDRAW | WS_TABSTOP,87,46,17,11,WS_EX_STATICEDGE
+    CONTROL         "",IDC_COLOR11,"Button",BS_OWNERDRAW | WS_TABSTOP,87,58,17,11,WS_EX_STATICEDGE
+    CONTROL         "",IDC_COLOR12,"Button",BS_OWNERDRAW | WS_TABSTOP,87,70,17,11,WS_EX_STATICEDGE
+    CONTROL         "",IDC_COLOR13,"Button",BS_OWNERDRAW | WS_TABSTOP,87,82,17,11,WS_EX_STATICEDGE
+    CONTROL         "",IDC_COLOR14,"Button",BS_OWNERDRAW | WS_TABSTOP,87,94,17,11,WS_EX_STATICEDGE
+    CONTROL         "",IDC_COLOR15,"Button",BS_OWNERDRAW | WS_TABSTOP,87,106,17,11,WS_EX_STATICEDGE
     EDITTEXT        IDC_VIDEO_H,32,140,23,12,ES_AUTOHSCROLL | WS_GROUP
     EDITTEXT        IDC_VIDEO_S,71,140,23,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_VIDEO_B,112,140,23,12,ES_AUTOHSCROLL
@@ -481,12 +419,11 @@ BEGIN
     LTEXT           "15.white",IDC_COLOR_NAME15,107,108,27,8
     GROUPBOX        "Color",IDC_STATIC,7,7,148,117
     GROUPBOX        "HSB",IDC_STATIC,7,129,148,32
-    CONTROL         "Scan line",IDC_SCANLINE,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,163,131,46,10
+    CONTROL         "Scan line",IDC_SCANLINE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,163,131,46,10
 END
 
-IDD_CONFIGURE_SD_DISK DIALOG DISCARDABLE  0, 0, 187, 98
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_CONFIGURE_SD_DISK DIALOG 0, 0, 187, 98
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Configure SD DISK][ HDD"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -497,10 +434,8 @@ BEGIN
     LTEXT           "Disk Images :",IDC_STATIC1,7,5,51,8
     EDITTEXT        IDC_EDIT_FILENAME2,7,57,153,12,ES_AUTOHSCROLL
     PUSHBUTTON      "..",IDC_BTN_BROWSE2,165,56,12,12
-    CONTROL         "Disk 1",IDC_CHK_DISK1,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,17,37,10
-    CONTROL         "Disk 2",IDC_CHK_DISK2,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,7,45,37,10
+    CONTROL         "Disk 1",IDC_CHK_DISK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,17,37,10
+    CONTROL         "Disk 2",IDC_CHK_DISK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,45,37,10
 END
 
 
@@ -510,7 +445,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
@@ -579,8 +514,6 @@ BEGIN
     IDC_SLOT1, 0x403, 18, 0
 0x6f4d, 0x6b63, 0x6e69, 0x2067, 0x2e42, 0x502f, 0x6168, 0x6f73, 0x0072, 
 
-    IDC_SLOT1, 0x403, 14, 0
-0x4453, 0x4420, 0x5349, 0x5d4b, 0x205b, 0x4448, 0x0044, 
     IDC_SLOT2, 0x403, 6, 0
 0x6d45, 0x7470, 0x0079, 
     IDC_SLOT2, 0x403, 16, 0
@@ -590,8 +523,6 @@ BEGIN
     IDC_SLOT2, 0x403, 18, 0
 0x6f4d, 0x6b63, 0x6e69, 0x2067, 0x2e42, 0x502f, 0x6168, 0x6f73, 0x0072, 
 
-    IDC_SLOT2, 0x403, 14, 0
-0x4453, 0x4420, 0x5349, 0x5d4b, 0x205b, 0x4448, 0x0044, 
     IDC_SLOT3, 0x403, 6, 0
 0x6d45, 0x7470, 0x0079, 
     IDC_SLOT3, 0x403, 16, 0
@@ -601,8 +532,6 @@ BEGIN
     IDC_SLOT3, 0x403, 18, 0
 0x6f4d, 0x6b63, 0x6e69, 0x2067, 0x2e42, 0x502f, 0x6168, 0x6f73, 0x0072, 
 
-    IDC_SLOT3, 0x403, 14, 0
-0x4453, 0x4420, 0x5349, 0x5d4b, 0x205b, 0x4448, 0x0044, 
     IDC_SLOT4, 0x403, 6, 0
 0x6d45, 0x7470, 0x0079, 
     IDC_SLOT4, 0x403, 16, 0
@@ -612,8 +541,6 @@ BEGIN
     IDC_SLOT4, 0x403, 18, 0
 0x6f4d, 0x6b63, 0x6e69, 0x2067, 0x2e42, 0x502f, 0x6168, 0x6f73, 0x0072, 
 
-    IDC_SLOT4, 0x403, 14, 0
-0x4453, 0x4420, 0x5349, 0x5d4b, 0x205b, 0x4448, 0x0044, 
     IDC_SLOT5, 0x403, 6, 0
 0x6d45, 0x7470, 0x0079, 
     IDC_SLOT5, 0x403, 16, 0
@@ -623,8 +550,6 @@ BEGIN
     IDC_SLOT5, 0x403, 18, 0
 0x6f4d, 0x6b63, 0x6e69, 0x2067, 0x2e42, 0x502f, 0x6168, 0x6f73, 0x0072, 
 
-    IDC_SLOT5, 0x403, 14, 0
-0x4453, 0x4420, 0x5349, 0x5d4b, 0x205b, 0x4448, 0x0044, 
     IDC_SLOT6, 0x403, 6, 0
 0x6d45, 0x7470, 0x0079, 
     IDC_SLOT6, 0x403, 16, 0
@@ -634,8 +559,6 @@ BEGIN
     IDC_SLOT6, 0x403, 18, 0
 0x6f4d, 0x6b63, 0x6e69, 0x2067, 0x2e42, 0x502f, 0x6168, 0x6f73, 0x0072, 
 
-    IDC_SLOT6, 0x403, 14, 0
-0x4453, 0x4420, 0x5349, 0x5d4b, 0x205b, 0x4448, 0x0044, 
     IDC_SLOT7, 0x403, 6, 0
 0x6d45, 0x7470, 0x0079, 
     IDC_SLOT7, 0x403, 16, 0
@@ -645,8 +568,6 @@ BEGIN
     IDC_SLOT7, 0x403, 18, 0
 0x6f4d, 0x6b63, 0x6e69, 0x2067, 0x2e42, 0x502f, 0x6168, 0x6f73, 0x0072, 
 
-    IDC_SLOT7, 0x403, 14, 0
-0x4453, 0x4420, 0x5349, 0x5d4b, 0x205b, 0x4448, 0x0044, 
     0
 END
 
@@ -656,7 +577,7 @@ END
 // Toolbar
 //
 
-IDR_TOOLBAR TOOLBAR DISCARDABLE  32, 20
+IDR_TOOLBAR TOOLBAR 32, 20
 BEGIN
     BUTTON      ID_POWERON
     BUTTON      ID_POWEROFF
@@ -671,21 +592,37 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_ABOUTBOX AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_CONFIGURE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // String Table
 //
 
-STRINGTABLE PRELOAD DISCARDABLE 
+STRINGTABLE
 BEGIN
     IDR_MAINFRAME           "Apple in PC"
 END
 
-STRINGTABLE PRELOAD DISCARDABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_APP_TITLE       "Apple in PC"
     AFX_IDS_IDLEMESSAGE     "Ready"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_INDICATOR_EXT        "EXT"
     ID_INDICATOR_CAPS       "CAP"
@@ -695,28 +632,28 @@ BEGIN
     ID_INDICATOR_REC        "REC"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     IDS_NO_ROMFILE          "There is no ROM file."
     IDS_INVALID_ROMFILE_LENGTH "The size of the ROM file is not valid."
     IDS_ROMFILE_READ_ERROR  "Error reading ROM file."
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_INDICATOR_CLOCK_SPEED "clock"
     ID_INDICATOR_FRAME_SPEED "frame"
     ID_INDICATOR_DISK       "disk"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_POWERON              "Power On\nPower On"
     ID_POWEROFF             "Power Off\nPower Off"
     ID_RESET                "Reset\nReset"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_FULL_SCREEN          "Full Screen\nFull Screen"
     ID_DISKETTE             "Diskette\nDiskette"
@@ -724,7 +661,7 @@ BEGIN
     ID_HARDDISK             "Hard Disk\nHard Disk"
 END
 
-#endif    // English (U.S.) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

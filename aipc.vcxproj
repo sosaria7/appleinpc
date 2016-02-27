@@ -143,6 +143,11 @@
     <Image Include="RES\diskOff.bmp" />
     <Image Include="RES\diskRead.bmp" />
     <Image Include="RES\diskWrite.bmp" />
+    <Image Include="res\disk_off.bmp" />
+    <Image Include="res\disk_rea.bmp" />
+    <Image Include="res\disk_wri.bmp" />
+    <Image Include="res\icon1.ico" />
+    <Image Include="res\icon2.ico" />
     <Image Include="res\Toolbar.bmp" />
     <Image Include="RES\toolbar1.bmp" />
   </ItemGroup>
@@ -267,4 +272,9 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties RESOURCE_FILE="aipc.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>

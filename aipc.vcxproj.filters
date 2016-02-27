@@ -66,6 +66,21 @@
     <Image Include="RES\toolbar1.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\icon1.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\icon2.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\disk_off.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\disk_rea.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\disk_wri.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="aipc.rc">
