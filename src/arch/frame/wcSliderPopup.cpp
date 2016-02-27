@@ -231,7 +231,7 @@ void wcSliderPopup::OnKillFocus ( CWnd* pNewWnd )
     ReleaseCapture ();
 }
 
-void wcSliderPopup::OnActivateApp(BOOL bActive, HTASK hTask) 
+void wcSliderPopup::OnActivateApp(BOOL bActive, DWORD hTask) 
 {
 	CWnd::OnActivateApp (bActive, hTask);
 

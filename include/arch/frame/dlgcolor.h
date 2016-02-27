@@ -27,6 +27,7 @@ protected:
 // Construction
 public:
 	CDlgColor(CWnd* pParent = NULL);   // standard constructor
+	virtual ~CDlgColor() {}
 
 // Dialog Data
 	//{{AFX_DATA(CDlgColor)

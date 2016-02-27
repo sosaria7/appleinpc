@@ -25,7 +25,10 @@ BYTE MemReturnRandomData(BYTE highbit)
 {
 	BYTE val;
 
-	val = g_pBoard->m_pScreen->GetVideoData();
+	CScreen *pCScreen;
+	pCScreen = g_pBoard->m_pScreen;
+	val = pCScreen->GetVideoData();
+
 	if ( highbit == 0 )
 		return val & ~0x80;
 	else if ( highbit == 1 )
@@ -56,15 +59,17 @@ CAppleIOU::~CAppleIOU()
 }
 
 BOOL CAppleIOU::ReadRomFile()
-{
-	CFile romFile = CFile();
-	if(!romFile.Open("apple2e.rom", CFile::modeRead)){
+{	
+	CFile romFile;
+	CFileException ex;
+
+	if(!romFile.Open("apple2e.rom", CFile::modeRead, &ex)){
 		AfxMessageBox(IDS_NO_ROMFILE);
 		return FALSE;
 	}
 
 	// load rom file  - apple //e
-	try{
+	
 		DWORD length = (DWORD)romFile.GetLength();
 		if(length != 0x4000)		// apple //e rom size
 		{
@@ -73,13 +78,7 @@ BOOL CAppleIOU::ReadRomFile()
 			return FALSE;
 		}
 		romFile.Read(m_pROM, length);
-	}
-	catch(CFileException e){
-		AfxMessageBox(IDS_ROMFILE_READ_ERROR);
-		romFile.Close();
-		return FALSE;
-	}
-
+	
 	romFile.Close();
 	return TRUE;
 }

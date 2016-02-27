@@ -4,6 +4,7 @@
 #include <math.h>
 #include "65c02.h"
 #include "appleclock.h"
+#include "aipcdefs.h"
 
 #define STEP	0x8000
 
@@ -159,9 +160,7 @@ void CDXSound::UpdateSoundBuffer()
 	DWORD	dwLength1, dwLength2;
 	DWORD	dwBytesToWrite;
 	DWORD	dwReadPos, dwWritePos, dwBufferedBytes, dwDxBuffered;
-	HRESULT	hr;
-
-	static cnt = 0;
+	HRESULT	hr;	
 
 	dwBytesToWrite = m_nSamplesInFrame * SND_CHANNEL * BITS_PER_SAMPLE / 8;
 

@@ -1,0 +1,393 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{dcdc1c72-0d56-4569-afb1-95cfbb226160}</UniqueIdentifier>
+      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+    <Filter Include="Header">
+      <UniqueIdentifier>{05814324-57fb-4c04-ae03-9a2b45dd1276}</UniqueIdentifier>
+      <Extensions>*.h</Extensions>
+    </Filter>
+    <Filter Include="Header\arch.h">
+      <UniqueIdentifier>{dfe3542d-fd5a-47d2-a562-7425269ad501}</UniqueIdentifier>
+      <Extensions>*.h</Extensions>
+    </Filter>
+    <Filter Include="Header\arch.h\directx.h">
+      <UniqueIdentifier>{033e0631-c0ac-45d8-958e-b183388abb25}</UniqueIdentifier>
+      <Extensions>*.h</Extensions>
+    </Filter>
+    <Filter Include="Header\arch.h\frame.h">
+      <UniqueIdentifier>{e00102d4-b564-4273-a885-2ef0b0edba3e}</UniqueIdentifier>
+      <Extensions>*.h</Extensions>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{94f76e62-a236-4599-aee3-685d1ed5a186}</UniqueIdentifier>
+      <Extensions>*.cpp</Extensions>
+    </Filter>
+    <Filter Include="Source\arch">
+      <UniqueIdentifier>{d2e1935e-ecf1-4fb4-ad84-b8c75df5dff7}</UniqueIdentifier>
+      <Extensions>*.cpp</Extensions>
+    </Filter>
+    <Filter Include="Source\arch\directx">
+      <UniqueIdentifier>{10610573-4288-4601-953e-9b5eaf6bf553}</UniqueIdentifier>
+      <Extensions>*.cpp</Extensions>
+    </Filter>
+    <Filter Include="Source\arch\frame">
+      <UniqueIdentifier>{ad6a43b4-14e2-441f-b52f-f667dd3ab4ee}</UniqueIdentifier>
+      <Extensions>*.cpp</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\aipc.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="RES\bitmap1.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="RES\bmp00001.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="RES\bmp00002.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="RES\diskOff.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="RES\diskRead.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="RES\diskWrite.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Toolbar.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="RES\toolbar1.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="aipc.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\arch\directx\ddutil.h">
+      <Filter>Header\arch.h\directx.h</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\directx\dibase.h">
+      <Filter>Header\arch.h\directx.h</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\directx\dijoystick.h">
+      <Filter>Header\arch.h\directx.h</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\directx\dikeyboard.h">
+      <Filter>Header\arch.h\directx.h</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\directx\dimouse.h">
+      <Filter>Header\arch.h\directx.h</Filter>
+    </ClInclude>
+    <ClInclude Include="include\diskimagepo.h">
+      <Filter>Header\arch.h\directx.h</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\directx\dxsound.h">
+      <Filter>Header\arch.h\directx.h</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\directx\dxutil.h">
+      <Filter>Header\arch.h\directx.h</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\frame\aipc.h">
+      <Filter>Header\arch.h\frame.h</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\frame\applestatusbar.h">
+      <Filter>Header\arch.h\frame.h</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\frame\dlgconfigdisk.h">
+      <Filter>Header\arch.h\frame.h</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\frame\dlgconfigmockingboard.h">
+      <Filter>Header\arch.h\frame.h</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\frame\dlgconfigure.h">
+      <Filter>Header\arch.h\frame.h</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\frame\dlgdebug.h">
+      <Filter>Header\arch.h\frame.h</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\frame\mainfrm.h">
+      <Filter>Header\arch.h\frame.h</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\frame\screen.h">
+      <Filter>Header\arch.h\frame.h</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\frame\stdafx.h">
+      <Filter>Header\arch.h\frame.h</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\CustomThread.h">
+      <Filter>Header\arch.h</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\resource.h">
+      <Filter>Header\arch.h</Filter>
+    </ClInclude>
+    <ClInclude Include="include\6522.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\65c02.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\6821.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\8913.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\aipcdefs.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\appleclock.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\applekeymap.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\card.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cpu.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\debug.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\diskdrive.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\diskimage.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\diskimagedos.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\diskimagenib.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\diskinterface.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\fontdata.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gcr_table.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\iou.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\joystick.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\keyboard.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\localclock.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\lockmgr.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\memory.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\messageque.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mousecard.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\optable.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\phasor.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\psg.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\scanline.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\slots.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\speaker.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\frame\wcSliderButton.h">
+      <Filter>Source\arch\frame</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\frame\wcSliderPopup.h">
+      <Filter>Source\arch\frame</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\arch\directx\ddutil.cpp">
+      <Filter>Source\arch\directx</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\directx\dibase.cpp">
+      <Filter>Source\arch\directx</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\directx\dijoystick.cpp">
+      <Filter>Source\arch\directx</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\directx\dikeyboard.cpp">
+      <Filter>Source\arch\directx</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\directx\dimouse.cpp">
+      <Filter>Source\arch\directx</Filter>
+    </ClCompile>
+    <ClCompile Include="src\diskimagepo.cpp">
+      <Filter>Source\arch\directx</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\directx\dxsound.cpp">
+      <Filter>Source\arch\directx</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\directx\dxutil.cpp">
+      <Filter>Source\arch\directx</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\frame\apple2.cpp">
+      <Filter>Source\arch\frame</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\frame\applestatusbar.cpp">
+      <Filter>Source\arch\frame</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\frame\dlgconfigdisk.cpp">
+      <Filter>Source\arch\frame</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\frame\dlgConfigmockingboard.cpp">
+      <Filter>Source\arch\frame</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\frame\dlgconfigure.cpp">
+      <Filter>Source\arch\frame</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\frame\dlgdebug.cpp">
+      <Filter>Source\arch\frame</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\frame\mainfrm.cpp">
+      <Filter>Source\arch\frame</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\frame\screen.cpp">
+      <Filter>Source\arch\frame</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\frame\stdafx.cpp">
+      <Filter>Source\arch\frame</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\frame\wcSliderButton.cpp">
+      <Filter>Source\arch\frame</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\frame\wcSliderPopup.cpp">
+      <Filter>Source\arch\frame</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\CustomThread.cpp">
+      <Filter>Source\arch</Filter>
+    </ClCompile>
+    <ClCompile Include="src\6522.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\65c02.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\6821.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\8913.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\appleclock.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\card.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cpu.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\diskdrive.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\diskimage.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\diskimagedos.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\diskimagenib.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\diskinterface.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\iou.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\joystick.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\keyboard.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\lockmgr.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\memory.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\messageque.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mousecard.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\phasor.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\psg.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\slots.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\speaker.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\frame\colorbutton.cpp">
+      <Filter>Source\arch\frame</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\frame\dlgcolor.cpp">
+      <Filter>Source\arch\frame</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sddiskii.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\frame\dlgconfigsddisk.cpp">
+      <Filter>Source\arch\frame</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="res\aipc.rc2">
+      <Filter>Resource Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="aipc.rgs">
+      <Filter>Resource Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="RES\cursor1.cur">
+      <Filter>Resource Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="RES\cursor2.cur">
+      <Filter>Resource Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

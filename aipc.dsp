@@ -74,13 +74,13 @@ LINK32=link.exe
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /win32
 # ADD BASE RSC /l 0x412 /d "_DEBUG" /d "_AFXDLL"
-# ADD RSC /l 0x412 /i "dx80\include" /d "_DEBUG"
+# ADD RSC /l 0x412 /d "_DEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 winmm.lib dx80\lib\dsound.lib dx80\lib\dxerr8.lib dx80\lib\ddraw.lib dx80\lib\dxguid.lib dx80\lib\dinput8.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept /libpath:"dx80\lib"
+# ADD LINK32 winmm.lib dx80\lib\dsound.lib dx80\lib\dxerr8.lib dx80\lib\ddraw.lib dx80\lib\dxguid.lib dx80\lib\dinput8.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 # SUBTRACT LINK32 /incremental:no
 
 !ENDIF 

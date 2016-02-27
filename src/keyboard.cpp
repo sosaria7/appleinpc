@@ -3,7 +3,6 @@
 //////////////////////////////////////////////////////////////////////
 
 
-#include <afxmt.h>
 
 #include "arch/frame/stdafx.h"
 
@@ -14,6 +13,8 @@
 #include "keyboard.h"
 #include "applekeymap.h"
 #include "appleclock.h"
+
+#include <afxmt.h>
 
 extern CDIKeyboard g_cDIKeyboard;
 extern CDIMouse g_cDIMouse;

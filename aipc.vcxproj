@@ -1,0 +1,270 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <SccProjectName />
+    <SccLocalPath />
+    <Keyword>MFCProj</Keyword>
+    <ProjectGuid>{8B73EEA9-AEEE-40F6-A6BA-2EBB5EC18120}</ProjectGuid>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Static</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Static</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>.\Release\</OutDir>
+    <IntDir>.\Release\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>.\Debug\</OutDir>
+    <IntDir>.\Debug\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <StringPooling>true</StringPooling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <Optimization>MaxSpeed</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>dx80\include;include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NO_WARN_MBCS_MFC_DEPRECATION;_WIN32_WINNT=0x05010000;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
+      <BrowseInformation>true</BrowseInformation>
+      <PrecompiledHeaderOutputFile>.\Release\aipc.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\Release\</ObjectFileName>
+      <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
+    </ClCompile>
+    <Midl>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TypeLibraryName>.\Release\aipc.tlb</TypeLibraryName>
+      <TargetEnvironment>Win32</TargetEnvironment>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0412</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Release\aipc.bsc</OutputFile>
+    </Bscmake>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OutputFile>.\Release\aipc.exe</OutputFile>
+      <AdditionalDependencies>winmm.lib;dx80\lib\dinput.lib;dx80\lib\dsound.lib;dx80\lib\dxerr8.lib;dx80\lib\ddraw.lib;dx80\lib\dxguid.lib;dx80\lib\dinput8.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <Optimization>Disabled</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <MinimalRebuild>true</MinimalRebuild>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <AdditionalIncludeDirectories>dx80\include;include;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NO_WARN_MBCS_MFC_DEPRECATION;_WIN32_WINNT=0x05010000;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
+      <BrowseInformation>true</BrowseInformation>
+      <PrecompiledHeaderOutputFile>.\Debug\aipc.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\Debug\</ObjectFileName>
+      <ProgramDataBaseFileName>.\Debug\</ProgramDataBaseFileName>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <ShowIncludes>false</ShowIncludes>
+    </ClCompile>
+    <Midl>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TypeLibraryName>.\Debug\aipc.tlb</TypeLibraryName>
+      <TargetEnvironment>Win32</TargetEnvironment>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0412</Culture>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Debug\aipc.bsc</OutputFile>
+    </Bscmake>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OutputFile>.\Debug\aipc.exe</OutputFile>
+      <AdditionalDependencies>winmm.lib;dx80\lib\dinput.lib;dx80\lib\dsound.lib;dx80\lib\dxerr8.lib;dx80\lib\ddraw.lib;dx80\lib\dxguid.lib;dx80\lib\dinput8.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <Image Include="res\aipc.ico" />
+    <Image Include="RES\bitmap1.bmp" />
+    <Image Include="RES\bmp00001.bmp" />
+    <Image Include="RES\bmp00002.bmp" />
+    <Image Include="RES\diskOff.bmp" />
+    <Image Include="RES\diskRead.bmp" />
+    <Image Include="RES\diskWrite.bmp" />
+    <Image Include="res\Toolbar.bmp" />
+    <Image Include="RES\toolbar1.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="aipc.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="aipc.rgs" />
+    <CustomBuild Include="res\aipc.rc2" />
+    <CustomBuild Include="RES\cursor1.cur" />
+    <CustomBuild Include="RES\cursor2.cur" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\6522.h" />
+    <ClInclude Include="include\65c02.h" />
+    <ClInclude Include="include\6821.h" />
+    <ClInclude Include="include\8913.h" />
+    <ClInclude Include="include\aipcdefs.h" />
+    <ClInclude Include="include\appleclock.h" />
+    <ClInclude Include="include\applekeymap.h" />
+    <ClInclude Include="include\arch\CustomThread.h" />
+    <ClInclude Include="include\arch\directx\ddutil.h" />
+    <ClInclude Include="include\arch\directx\dibase.h" />
+    <ClInclude Include="include\arch\directx\dijoystick.h" />
+    <ClInclude Include="include\arch\directx\dikeyboard.h" />
+    <ClInclude Include="include\arch\directx\dimouse.h" />
+    <ClInclude Include="include\arch\directx\dxsound.h" />
+    <ClInclude Include="include\arch\directx\dxutil.h" />
+    <ClInclude Include="include\arch\frame\aipc.h" />
+    <ClInclude Include="include\arch\frame\applestatusbar.h" />
+    <ClInclude Include="include\arch\frame\dlgconfigdisk.h" />
+    <ClInclude Include="include\arch\frame\dlgconfigmockingboard.h" />
+    <ClInclude Include="include\arch\frame\dlgconfigure.h" />
+    <ClInclude Include="include\arch\frame\dlgdebug.h" />
+    <ClInclude Include="include\arch\frame\mainfrm.h" />
+    <ClInclude Include="include\arch\frame\screen.h" />
+    <ClInclude Include="include\arch\frame\stdafx.h" />
+    <ClInclude Include="include\arch\frame\wcSliderButton.h" />
+    <ClInclude Include="include\arch\frame\wcSliderPopup.h" />
+    <ClInclude Include="include\arch\resource.h" />
+    <ClInclude Include="include\card.h" />
+    <ClInclude Include="include\cpu.h" />
+    <ClInclude Include="include\debug.h" />
+    <ClInclude Include="include\diskdrive.h" />
+    <ClInclude Include="include\diskimage.h" />
+    <ClInclude Include="include\diskimagedos.h" />
+    <ClInclude Include="include\diskimagenib.h" />
+    <ClInclude Include="include\diskimagepo.h" />
+    <ClInclude Include="include\diskinterface.h" />
+    <ClInclude Include="include\fontdata.h" />
+    <ClInclude Include="include\gcr_table.h" />
+    <ClInclude Include="include\iou.h" />
+    <ClInclude Include="include\joystick.h" />
+    <ClInclude Include="include\keyboard.h" />
+    <ClInclude Include="include\localclock.h" />
+    <ClInclude Include="include\lockmgr.h" />
+    <ClInclude Include="include\memory.h" />
+    <ClInclude Include="include\messageque.h" />
+    <ClInclude Include="include\mousecard.h" />
+    <ClInclude Include="include\optable.h" />
+    <ClInclude Include="include\phasor.h" />
+    <ClInclude Include="include\psg.h" />
+    <ClInclude Include="include\scanline.h" />
+    <ClInclude Include="include\slots.h" />
+    <ClInclude Include="include\speaker.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\6522.cpp" />
+    <ClCompile Include="src\65c02.cpp" />
+    <ClCompile Include="src\6821.cpp" />
+    <ClCompile Include="src\8913.cpp" />
+    <ClCompile Include="src\appleclock.cpp" />
+    <ClCompile Include="src\arch\CustomThread.cpp" />
+    <ClCompile Include="src\arch\directx\ddutil.cpp" />
+    <ClCompile Include="src\arch\directx\dibase.cpp" />
+    <ClCompile Include="src\arch\directx\dijoystick.cpp" />
+    <ClCompile Include="src\arch\directx\dikeyboard.cpp" />
+    <ClCompile Include="src\arch\directx\dimouse.cpp" />
+    <ClCompile Include="src\arch\directx\dxsound.cpp" />
+    <ClCompile Include="src\arch\directx\dxutil.cpp" />
+    <ClCompile Include="src\arch\frame\apple2.cpp" />
+    <ClCompile Include="src\arch\frame\applestatusbar.cpp" />
+    <ClCompile Include="src\arch\frame\colorbutton.cpp" />
+    <ClCompile Include="src\arch\frame\dlgcolor.cpp" />
+    <ClCompile Include="src\arch\frame\dlgconfigdisk.cpp" />
+    <ClCompile Include="src\arch\frame\dlgConfigmockingboard.cpp" />
+    <ClCompile Include="src\arch\frame\dlgconfigsddisk.cpp" />
+    <ClCompile Include="src\arch\frame\dlgconfigure.cpp">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="src\arch\frame\dlgdebug.cpp" />
+    <ClCompile Include="src\arch\frame\mainfrm.cpp" />
+    <ClCompile Include="src\arch\frame\screen.cpp" />
+    <ClCompile Include="src\arch\frame\stdafx.cpp" />
+    <ClCompile Include="src\arch\frame\wcSliderButton.cpp" />
+    <ClCompile Include="src\arch\frame\wcSliderPopup.cpp" />
+    <ClCompile Include="src\card.cpp" />
+    <ClCompile Include="src\cpu.cpp" />
+    <ClCompile Include="src\diskdrive.cpp" />
+    <ClCompile Include="src\diskimage.cpp" />
+    <ClCompile Include="src\diskimagedos.cpp" />
+    <ClCompile Include="src\diskimagenib.cpp" />
+    <ClCompile Include="src\diskimagepo.cpp" />
+    <ClCompile Include="src\diskinterface.cpp" />
+    <ClCompile Include="src\iou.cpp" />
+    <ClCompile Include="src\joystick.cpp" />
+    <ClCompile Include="src\keyboard.cpp" />
+    <ClCompile Include="src\lockmgr.cpp" />
+    <ClCompile Include="src\memory.cpp" />
+    <ClCompile Include="src\messageque.cpp" />
+    <ClCompile Include="src\mousecard.cpp" />
+    <ClCompile Include="src\phasor.cpp" />
+    <ClCompile Include="src\psg.cpp" />
+    <ClCompile Include="src\sddiskii.cpp" />
+    <ClCompile Include="src\slots.cpp" />
+    <ClCompile Include="src\speaker.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
