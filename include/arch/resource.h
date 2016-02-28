@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by F:\night_project\appleinpc\appleinpc\aipc.rc
+// Used by C:\Project\night\appleinpc\aipc.rc
 //
 #define IDC_DEFAULT                     3
 #define IDD_ABOUTBOX                    100
