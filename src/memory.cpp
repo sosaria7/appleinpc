@@ -403,9 +403,12 @@ BYTE CAppleIOU::ReadMem8(int nAddr)
 				return g_pBoard->m_cSlots.ReadRom( nAddr );
 			}
 		}
-		else if (nAddr >= 0xCFF0)
+		else
 		{
-			return MemReturnRandomData( 2 );
+			if ((m_iMemMode & MS_INTCXROM) == 0)
+			{
+				return MemReturnRandomData(2);
+			}
 		}
 	}
 	else if ( nAddr < 0x200 )	// Zero Page
