@@ -16,14 +16,12 @@ CDXSound::CDXSound()
 	int i;
 	double out;
 	out = MAX_AMPLITUDE;
-	// reduce amplitude by 0.6 db
-	// max-19.2 db ~ max db
+	// reduce amplitude by 1.5 db
 	for (i = 31;i > 0;i--)
 	{
 		g_tblVolume[i] = (WORD)(out + 0.5);	/* round to nearest */
 
-		//out /= 1.122018454;	/* = 10 ^ (.5/10) = 0.5dB */
-		out /= 1.148153621;	/* = 10 ^ (.6/10) = 0.6dB */
+		out /= 1.188502227;	/* = 10 ^ (1.5/20) = 1.5dB */
 	}
 	g_tblVolume[0] = 0;
 

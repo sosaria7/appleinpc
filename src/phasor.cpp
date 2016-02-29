@@ -156,12 +156,15 @@ void CPhasor::Write(WORD addr, BYTE data)
 {
 	DWORD clock;
 
-	if ( !( m_byMode & 02 ) )		// Native Phasor Mode
-		m_byMode = addr & 0x01;
-
 	clock = CLOCK;
-	if ( addr & 0x04 )
-		clock = CLOCK * 2;
+
+	if (!(m_byMode & 02))		// Native Phasor Mode
+	{
+		m_byMode = addr & 0x01;
+		if (addr & 0x04)
+			clock = CLOCK * 2;
+	}
+
 	m_8913[0].SetClockSpeed(clock);
 	m_8913[1].SetClockSpeed(clock);
 	m_8913[2].SetClockSpeed(clock);
@@ -172,12 +175,15 @@ BYTE CPhasor::Read(WORD addr)
 {
 	DWORD clock;
 
-	if ( !( m_byMode & 02 ) )		// Native Phasor Mode
-		m_byMode = addr & 0x01;
-
 	clock = CLOCK;
-	if ( addr & 0x04 )
-		clock = CLOCK * 2;
+
+	if (!(m_byMode & 02))		// Native Phasor Mode
+	{
+		m_byMode = addr & 0x01;
+		if (addr & 0x04)
+			clock = CLOCK * 2;
+	}
+
 	m_8913[0].SetClockSpeed(clock);
 	m_8913[1].SetClockSpeed(clock);
 	m_8913[2].SetClockSpeed(clock);

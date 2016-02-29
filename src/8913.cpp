@@ -21,6 +21,7 @@
 #include "arch/frame/aipc.h"
 #include "8913.h"
 #include "65c02.h"
+#include "appleclock.h"
 
 #include <dsound.h>
 
@@ -48,6 +49,10 @@ C8913::C8913()
 	for( i = 0; i < 3; i++ )
 		m_lpwBuf[i] = new WORD[SAMPLES_PER_SEC];
 	m_iVol = 31;
+
+	m_iLastUpdatePos = 0;
+	m_dwLastAppleClock = g_pBoard->GetClock();
+
 }
 
 C8913::~C8913()
@@ -72,145 +77,151 @@ void C8913::SetMode(BYTE mode)
 
 void C8913::SetData(BYTE data)
 {
-	int iOldPeriod;
-	BYTE prev;
 	m_byData = data;
-	switch( m_byMode )
+	switch (m_byMode)
 	{
 	case 0:		// INACTIVE
 	case 1:		// READ FROM PSG
 		break;
 	case 2:		// WRITE TO PSG
-		prev = m_abyRegs[m_byAddr];
-		m_abyRegs[m_byAddr] = m_byData;
-		switch( m_byAddr )
-		{
-		case AY_A_TONE_FINE:
-		case AY_A_TONE_COARSE:
-			m_abyRegs[AY_A_TONE_COARSE] &= 0x0F;
-			iOldPeriod = m_iPeriodA;
-			m_iPeriodA = ( ( m_abyRegs[AY_A_TONE_COARSE] << 8 ) | m_abyRegs[AY_A_TONE_FINE] ) * m_iUpdateStep;
-			if ( m_iPeriodA == 0 )
-				m_iPeriodA = m_iUpdateStep;
-			m_iCountA += m_iPeriodA - iOldPeriod;
-			if ( m_iCountA <= 0 )
-				m_iCountA = 1;
-
-			break;
-		case AY_B_TONE_FINE:
-		case AY_B_TONE_COARSE:
-			m_abyRegs[AY_B_TONE_COARSE] &= 0x0F;
-			iOldPeriod = m_iPeriodB;
-			m_iPeriodB = ( ( m_abyRegs[AY_B_TONE_COARSE] << 8 ) | m_abyRegs[AY_B_TONE_FINE] ) * m_iUpdateStep;
-			if ( m_iPeriodB == 0 )
-				m_iPeriodB = m_iUpdateStep;
-			m_iCountB += m_iPeriodB - iOldPeriod;
-			if ( m_iCountB <= 0 )
-				m_iCountB = 1;
-			break;
-		case AY_C_TONE_FINE:
-		case AY_C_TONE_COARSE:
-			m_abyRegs[AY_C_TONE_COARSE] &= 0x0F;
-			iOldPeriod = m_iPeriodC;
-			m_iPeriodC = ( ( m_abyRegs[AY_C_TONE_COARSE] << 8 ) | m_abyRegs[AY_C_TONE_FINE] ) * m_iUpdateStep;
-			if ( m_iPeriodC == 0 )
-				m_iPeriodC = m_iUpdateStep;
-			m_iCountC += m_iPeriodC - iOldPeriod;
-			if ( m_iCountC <= 0 )
-				m_iCountC = 1;
-			break;
-		case AY_NOISE:
-			m_abyRegs[AY_NOISE] &= 0x1f;
-			iOldPeriod = m_iPeriodN;
-			m_iPeriodN = m_abyRegs[AY_NOISE] * m_iUpdateStep;
-			if ( m_iPeriodN == 0)
-				m_iPeriodN = 0x20 * m_iUpdateStep;
-//				m_iPeriodN = m_iUpdateStep;
-			m_iCountN += m_iPeriodN - iOldPeriod;
-			if ( m_iCountN <= 0)
-				m_iCountN = 1;
-			break;
-		case AY_ENABLE:
-			break;
-		case AY_A_AMPLITUDE:
-			m_abyRegs[AY_A_AMPLITUDE] &= 0x1F;
-			m_byEnvelopeA = m_abyRegs[AY_A_AMPLITUDE] & 0x10;
-			m_wVolA = m_byEnvelopeA ? m_wVolE : g_tblVolume[m_abyRegs[AY_A_AMPLITUDE] ? m_abyRegs[AY_A_AMPLITUDE]*2+1 : 0];
-			break;
-		case AY_B_AMPLITUDE:
-			m_abyRegs[AY_B_AMPLITUDE] &= 0x1F;
-			m_byEnvelopeB = m_abyRegs[AY_B_AMPLITUDE] & 0x10;
-			m_wVolB = m_byEnvelopeB ? m_wVolE : g_tblVolume[m_abyRegs[AY_B_AMPLITUDE] ? m_abyRegs[AY_B_AMPLITUDE]*2+1 : 0];
-			break;
-		case AY_C_AMPLITUDE:
-			m_abyRegs[AY_C_AMPLITUDE] &= 0x1F;
-			m_byEnvelopeC = m_abyRegs[AY_C_AMPLITUDE] & 0x10;
-			m_wVolC = m_byEnvelopeC ? m_wVolE : g_tblVolume[m_abyRegs[AY_C_AMPLITUDE] ? m_abyRegs[AY_C_AMPLITUDE]*2+1 : 0];
-			break;
-		case AY_ENVELOPE_FINE:
-		case AY_ENVELOPE_COARSE:
-			iOldPeriod = m_iPeriodE;
-			m_iPeriodE = ( ( m_abyRegs[AY_ENVELOPE_FINE] + 256 * m_abyRegs[AY_ENVELOPE_COARSE] ) ) * m_iUpdateStep;
-			if ( m_iPeriodE == 0 ) m_iPeriodE = m_iUpdateStep / 2;
-			m_iCountE += m_iPeriodE - iOldPeriod;
-			if ( m_iCountE <= 0 ) m_iCountE = 1;
-			break;
-
-		case AY_ENVELOPE_SHAPE:
-			/* envelope shapes:
-			C AtAlH
-			0 0 x x  \___
-
-			0 1	x x  /___
-
-			1 0 0 0  \\\\
-
-			1 0 0 1  \___
-
-			1 0 1 0  \/\/
-				      ___
-			1 0 1 1  \
-
-			1 1 0 0  ////
-				      ___
-			1 1 0 1  /
-
-			1 1 1 0  /\/\
-
-			1 1 1 1  /___
-
-			The envelope counter on the AY-3-8910 has 16 steps. On the YM2149 it
-			has twice the steps, happening twice as fast. Since the end result is
-			just a smoother curve, we always use the YM2149 behaviour.
-			*/
-			m_abyRegs[AY_ENVELOPE_SHAPE] &= 0x0f;
-			m_byAttack = ( m_abyRegs[AY_ENVELOPE_SHAPE] & 0x04 ) ? 0x1f : 0x00;
-			if ( ( m_abyRegs[AY_ENVELOPE_SHAPE] & 0x08 ) == 0 )
-			{
-				/* if Continue = 0, map the shape to the equivalent one which has Continue = 1 */
-				m_byHold = 1;
-				m_byAlternate = m_byAttack;
-			}
-			else
-			{
-				m_byHold = m_abyRegs[AY_ENVELOPE_SHAPE] & 0x01;
-				m_byAlternate = m_abyRegs[AY_ENVELOPE_SHAPE] & 0x02;
-			}
-			m_iCountE = m_iPeriodE;
-			m_chCountEnv = 0x1f;
-			m_bHolding = FALSE;
-			m_wVolE = g_tblVolume[m_chCountEnv ^ m_byAttack];
-			if ( m_byEnvelopeA ) m_wVolA = m_wVolE;
-			if ( m_byEnvelopeB ) m_wVolB = m_wVolE;
-			if ( m_byEnvelopeC ) m_wVolC = m_wVolE;
-			break;
-		}
+		WriteReg(m_byAddr, data);
 		break;
 	case 3:		// LATCH ADDRESS
 		m_byAddr = m_byData & 0x0F;
 		break;
 	}
+}
+void C8913::WriteReg(BYTE reg, BYTE data)
+{
+	int iOldPeriod;
+	if (reg == AY_ENVELOPE_SHAPE || m_abyRegs[reg] != data)
+	{
+		/* update the output buffer before changing the register */
+		this->UpdateStream();
+	}
+	m_abyRegs[reg] = m_byData;
+	switch (reg)
+	{
+	case AY_A_TONE_FINE:
+	case AY_A_TONE_COARSE:
+		m_abyRegs[AY_A_TONE_COARSE] &= 0x0F;
+		iOldPeriod = m_iPeriodA;
+		m_iPeriodA = ((m_abyRegs[AY_A_TONE_COARSE] << 8) | m_abyRegs[AY_A_TONE_FINE]) * m_iUpdateStep;
+		if (m_iPeriodA == 0)
+			m_iPeriodA = m_iUpdateStep;
+		m_iCountA += m_iPeriodA - iOldPeriod;
+		if (m_iCountA <= 0)
+			m_iCountA = 1;
 
+		break;
+	case AY_B_TONE_FINE:
+	case AY_B_TONE_COARSE:
+		m_abyRegs[AY_B_TONE_COARSE] &= 0x0F;
+		iOldPeriod = m_iPeriodB;
+		m_iPeriodB = ((m_abyRegs[AY_B_TONE_COARSE] << 8) | m_abyRegs[AY_B_TONE_FINE]) * m_iUpdateStep;
+		if (m_iPeriodB == 0)
+			m_iPeriodB = m_iUpdateStep;
+		m_iCountB += m_iPeriodB - iOldPeriod;
+		if (m_iCountB <= 0)
+			m_iCountB = 1;
+		break;
+	case AY_C_TONE_FINE:
+	case AY_C_TONE_COARSE:
+		m_abyRegs[AY_C_TONE_COARSE] &= 0x0F;
+		iOldPeriod = m_iPeriodC;
+		m_iPeriodC = ((m_abyRegs[AY_C_TONE_COARSE] << 8) | m_abyRegs[AY_C_TONE_FINE]) * m_iUpdateStep;
+		if (m_iPeriodC == 0)
+			m_iPeriodC = m_iUpdateStep;
+		m_iCountC += m_iPeriodC - iOldPeriod;
+		if (m_iCountC <= 0)
+			m_iCountC = 1;
+		break;
+	case AY_NOISE:
+		m_abyRegs[AY_NOISE] &= 0x1f;
+		iOldPeriod = m_iPeriodN;
+		m_iPeriodN = m_abyRegs[AY_NOISE] * m_iUpdateStep;
+		if (m_iPeriodN == 0)
+			m_iPeriodN = 0x20 * m_iUpdateStep;
+		//				m_iPeriodN = m_iUpdateStep;
+		m_iCountN += m_iPeriodN - iOldPeriod;
+		if (m_iCountN <= 0)
+			m_iCountN = 1;
+		break;
+	case AY_ENABLE:
+		break;
+	case AY_A_AMPLITUDE:
+		m_abyRegs[AY_A_AMPLITUDE] &= 0x1F;
+		m_byEnvelopeA = m_abyRegs[AY_A_AMPLITUDE] & 0x10;
+		m_wVolA = m_byEnvelopeA ? m_wVolE : m_awVolume[m_abyRegs[AY_A_AMPLITUDE] ? m_abyRegs[AY_A_AMPLITUDE] * 2 + 1 : 0];
+		break;
+	case AY_B_AMPLITUDE:
+		m_abyRegs[AY_B_AMPLITUDE] &= 0x1F;
+		m_byEnvelopeB = m_abyRegs[AY_B_AMPLITUDE] & 0x10;
+		m_wVolB = m_byEnvelopeB ? m_wVolE : m_awVolume[m_abyRegs[AY_B_AMPLITUDE] ? m_abyRegs[AY_B_AMPLITUDE] * 2 + 1 : 0];
+		break;
+	case AY_C_AMPLITUDE:
+		m_abyRegs[AY_C_AMPLITUDE] &= 0x1F;
+		m_byEnvelopeC = m_abyRegs[AY_C_AMPLITUDE] & 0x10;
+		m_wVolC = m_byEnvelopeC ? m_wVolE : m_awVolume[m_abyRegs[AY_C_AMPLITUDE] ? m_abyRegs[AY_C_AMPLITUDE] * 2 + 1 : 0];
+		break;
+	case AY_ENVELOPE_FINE:
+	case AY_ENVELOPE_COARSE:
+		iOldPeriod = m_iPeriodE;
+		m_iPeriodE = ((m_abyRegs[AY_ENVELOPE_FINE] + 256 * m_abyRegs[AY_ENVELOPE_COARSE])) * m_iUpdateStep;
+		if (m_iPeriodE == 0) m_iPeriodE = m_iUpdateStep / 2;
+		m_iCountE += m_iPeriodE - iOldPeriod;
+		if (m_iCountE <= 0) m_iCountE = 1;
+		break;
+
+	case AY_ENVELOPE_SHAPE:
+		/* envelope shapes:
+		C AtAlH
+		0 0 x x  \___
+
+		0 1	x x  /___
+
+		1 0 0 0  \\\\
+
+		1 0 0 1  \___
+
+		1 0 1 0  \/\/
+		___
+		1 0 1 1  \
+
+		1 1 0 0  ////
+		___
+		1 1 0 1  /
+
+		1 1 1 0  /\/\
+
+		1 1 1 1  /___
+
+		The envelope counter on the AY-3-8910 has 16 steps. On the YM2149 it
+		has twice the steps, happening twice as fast. Since the end result is
+		just a smoother curve, we always use the YM2149 behaviour.
+		*/
+		m_abyRegs[AY_ENVELOPE_SHAPE] &= 0x0f;
+		m_byAttack = (m_abyRegs[AY_ENVELOPE_SHAPE] & 0x04) ? 0x1f : 0x00;
+		if ((m_abyRegs[AY_ENVELOPE_SHAPE] & 0x08) == 0)
+		{
+			/* if Continue = 0, map the shape to the equivalent one which has Continue = 1 */
+			m_byHold = 1;
+			m_byAlternate = m_byAttack;
+		}
+		else
+		{
+			m_byHold = m_abyRegs[AY_ENVELOPE_SHAPE] & 0x01;
+			m_byAlternate = m_abyRegs[AY_ENVELOPE_SHAPE] & 0x02;
+		}
+		m_iCountE = m_iPeriodE;
+		m_chCountEnv = 0x1f;
+		m_bHolding = FALSE;
+		m_wVolE = m_awVolume[m_chCountEnv ^ m_byAttack];
+		if (m_byEnvelopeA) m_wVolA = m_wVolE;
+		if (m_byEnvelopeB) m_wVolB = m_wVolE;
+		if (m_byEnvelopeC) m_wVolC = m_wVolE;
+		break;
+	}
 }
 
 BYTE C8913::ReadData()
@@ -226,7 +237,7 @@ BYTE C8913::ReadData()
 void C8913::Reset()
 {
 	int i;
-	for( i = 0; i < 16; i++ )
+	for (i = 0; i < 16; i++)
 		m_abyRegs[i] = 0;
 	m_abyRegs[AY_ENABLE] = 0x38;
 
@@ -238,8 +249,8 @@ void C8913::Reset()
 	m_iPeriodA = m_iUpdateStep;
 	m_iPeriodB = m_iUpdateStep;
 	m_iPeriodC = m_iUpdateStep;
-	m_iPeriodN = m_iUpdateStep;
-	m_iPeriodE = m_iUpdateStep;
+	m_iPeriodN = m_iUpdateStep * 20;
+	m_iPeriodE = m_iUpdateStep / 2;
 	m_iCountA = 1;
 	m_iCountB = 1;
 	m_iCountC = 1;
@@ -258,7 +269,7 @@ void C8913::Clock(WORD clock)
 
 }
 
-void C8913::Update(int length)
+void C8913::UpdateBuffer(int length)
 {
 	long retval = 0;
 	int len = length;
@@ -266,10 +277,17 @@ void C8913::Update(int length)
 	int outn;
 	WORD *bufa, *bufb, *bufc;
 
-	bufa = m_lpwBuf[0];
-	bufb = m_lpwBuf[1];
-	bufc = m_lpwBuf[2];
+	if (length <= m_iLastUpdatePos)
+	{
+		return;
+	}
+
+	bufa = m_lpwBuf[0] + m_iLastUpdatePos;
+	bufb = m_lpwBuf[1] + m_iLastUpdatePos;
+	bufc = m_lpwBuf[2] + m_iLastUpdatePos;
 	
+	length -= m_iLastUpdatePos;
+
 	/* The 8910 has three outputs, each output is the mix of one of the three */
 	/* tone generators and of the (single) noise generator. The two are mixed */
 	/* BEFORE going into the DAC. The formula to mix each channel is: */
@@ -530,7 +548,7 @@ void C8913::Update(int length)
 					}
 				}
 
-				m_wVolE = g_tblVolume[m_chCountEnv ^ m_byAttack];
+				m_wVolE = m_awVolume[m_chCountEnv ^ m_byAttack];
 				/* reload volume */
 				if ( m_byEnvelopeA ) m_wVolA = m_wVolE;
 				if ( m_byEnvelopeB ) m_wVolB = m_wVolE;
@@ -546,6 +564,35 @@ void C8913::Update(int length)
 }
 
 
+void C8913::UpdateStream()
+{
+	unsigned int currentStep = (g_pBoard->GetClock() - m_dwLastAppleClock) * m_iUpdateStep / 8;
+	unsigned int currentPos = currentStep / STEP;
+
+	if (currentPos > SAMPLES_PER_SEC )
+	{
+		currentPos = SAMPLES_PER_SEC;
+	}
+
+	this->UpdateBuffer(currentPos);
+
+	m_iLastUpdatePos = currentPos + 1;
+}
+
+void C8913::Update(int length)
+{
+	int currentPos = length;
+
+	if (currentPos > SAMPLES_PER_SEC)
+	{
+		currentPos = SAMPLES_PER_SEC;
+	}
+
+	this->UpdateBuffer(currentPos);
+
+	m_iLastUpdatePos = 0;
+	m_dwLastAppleClock = g_pBoard->GetClock();
+}
 
 void C8913::ChangeSampleRate()
 {
@@ -577,6 +624,9 @@ void C8913::ChangeSampleRate()
 	m_iCountC = 1;
 	m_iCountN = 1;
 	m_iCountE = 1;
+
+	m_iLastUpdatePos = 0;
+	m_dwLastAppleClock = g_pBoard->GetClock();
 }
 
 void C8913::SetClockSpeed(DWORD clock)

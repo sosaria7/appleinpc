@@ -43,8 +43,12 @@ public:
 	void SetData(BYTE data);
 	void SetMode(BYTE mode);
 	void Serialize( CArchive &ar );
+	void WriteReg(BYTE reg, BYTE data);
 
 protected:
+	void UpdateBuffer(int length);
+	void UpdateStream();
+
 	DWORD m_dwClock;
 	BOOL m_bHolding;
 	BYTE m_byMode;
@@ -87,6 +91,9 @@ protected:
 	BYTE	m_byHold;
 	BYTE	m_byAlternate;
 	BYTE	m_byAttack;
+
+	int		m_iLastUpdatePos;
+	DWORD m_dwLastAppleClock;
 
 private:
 	int buffpos;

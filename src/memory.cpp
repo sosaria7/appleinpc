@@ -405,7 +405,7 @@ BYTE CAppleIOU::ReadMem8(int nAddr)
 		}
 		else
 		{
-			if ((m_iMemMode & MS_INTCXROM) == 0)
+			if ((m_iMemMode & MS_INTCXROM) == 0 && (m_iMemMode & MS_READSAME) == 0)
 			{
 				return MemReturnRandomData(2);
 			}
