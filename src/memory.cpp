@@ -396,18 +396,30 @@ BYTE CAppleIOU::ReadMem8(int nAddr)
 			return MemReturnRandomData( 2 );
 		}
 		// slot firmware
-		else if(nAddr<0xC800){
-			if ( ( ( nAddr&0xFF00 ) == 0xC300 && ( m_iMemMode & MS_SLOTC3ROM ) )
-				|| ( ( nAddr&0xFF00 ) != 0xC300 && !( m_iMemMode & MS_INTCXROM ) ) )
+		else if(nAddr<0xC800)
+		{
+			if ( (nAddr & 0xFF00) == 0xC300 )
+			{
+				if ((m_iMemMode & MS_SLOTC3ROM) != 0)
+				{
+					return g_pBoard->m_cSlots.ReadRom(nAddr);
+				}
+				m_iMemMode |= MS_INTCXROM2;
+			}
+			else if ( ( m_iMemMode & MS_INTCXROM ) == 0 )
 			{
 				return g_pBoard->m_cSlots.ReadRom( nAddr );
 			}
 		}
 		else
 		{
-			if ((m_iMemMode & MS_INTCXROM) == 0 && (m_iMemMode & MS_READSAME) == 0)
+			if ( ( m_iMemMode & MS_INTCXROM ) == 0 && ( m_iMemMode & MS_INTCXROM2 ) == 0 )
 			{
 				return MemReturnRandomData(2);
+			}
+			if (nAddr == 0xCFFF)
+			{
+				m_iMemMode &= ~MS_INTCXROM2;
 			}
 		}
 	}
@@ -503,11 +515,26 @@ void CAppleIOU::WriteMem8(int nAddr, BYTE byData)
 				break;
 			}
 		}
-		else if(nAddr<0xC800){
-//			if ( ( ( nAddr&0xFF00 ) == 0xC300 && ( m_iMemMode & MS_SLOTC3ROM ) )
-//				|| ( ( nAddr&0xFF00 ) != 0xC300 && !( m_iMemMode & MS_INTCXROM ) ) )
+		else if(nAddr<0xC800)
+		{
+			if ((nAddr & 0xFF00) == 0xC300)
 			{
-				g_pBoard->m_cSlots.WriteRom( nAddr, byData );
+				if ((m_iMemMode & MS_SLOTC3ROM) != 0)
+				{
+					g_pBoard->m_cSlots.WriteRom(nAddr, byData);
+				}
+				m_iMemMode |= MS_INTCXROM2;
+			}
+			else if ((m_iMemMode & MS_INTCXROM) == 0)
+			{
+				g_pBoard->m_cSlots.WriteRom(nAddr, byData);
+			}
+		}
+		else
+		{
+			if (nAddr == 0xCFFF)
+			{
+				m_iMemMode &= ~MS_INTCXROM2;
 			}
 		}
 		return;

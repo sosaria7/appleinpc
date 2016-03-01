@@ -97,6 +97,7 @@
 #define MS_SLOTC3ROM	( 1 << 10 )
 #define MS_80STORE		( 1 << 7 )
 #define MS_HISCR		( 1 << 8 )
+#define MS_INTCXROM2	( 1 << 11 )
 
 #include "arch/frame/screen.h"
 #include "keyboard.h"	// Added by ClassView

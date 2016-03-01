@@ -93,6 +93,7 @@ protected:
 	BYTE	m_byAttack;
 
 	int		m_iLastUpdatePos;
+	int		m_iStartUpdatePos;
 	DWORD m_dwLastAppleClock;
 
 private:

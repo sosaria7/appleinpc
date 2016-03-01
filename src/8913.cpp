@@ -51,6 +51,7 @@ C8913::C8913()
 	m_iVol = 31;
 
 	m_iLastUpdatePos = 0;
+	m_iStartUpdatePos = 0;
 	m_dwLastAppleClock = g_pBoard->GetClock();
 
 }
@@ -87,13 +88,18 @@ void C8913::SetData(BYTE data)
 		WriteReg(m_byAddr, data);
 		break;
 	case 3:		// LATCH ADDRESS
-		m_byAddr = m_byData & 0x0F;
+		m_byAddr = m_byData;
 		break;
 	}
 }
 void C8913::WriteReg(BYTE reg, BYTE data)
 {
 	int iOldPeriod;
+
+	if (reg >= 0x10)
+	{
+		return;
+	}
 	if (reg == AY_ENVELOPE_SHAPE || m_abyRegs[reg] != data)
 	{
 		/* update the output buffer before changing the register */
@@ -112,7 +118,6 @@ void C8913::WriteReg(BYTE reg, BYTE data)
 		m_iCountA += m_iPeriodA - iOldPeriod;
 		if (m_iCountA <= 0)
 			m_iCountA = 1;
-
 		break;
 	case AY_B_TONE_FINE:
 	case AY_B_TONE_COARSE:
@@ -226,7 +231,7 @@ void C8913::WriteReg(BYTE reg, BYTE data)
 
 BYTE C8913::ReadData()
 {
-	if ( m_byMode == 1 )	// read from PSG
+	if ( m_byMode == 1 && m_byAddr < 0x10 )	// read from PSG
 		return( m_abyRegs[m_byAddr] );
 	else
 		return 0;
@@ -277,8 +282,20 @@ void C8913::UpdateBuffer(int length)
 	int outn;
 	WORD *bufa, *bufb, *bufc;
 
+	if (m_iStartUpdatePos > 0)
+	{
+		// move data to start of the buffer
+		memmove_s(m_lpwBuf[0], SAMPLES_PER_SEC*sizeof(WORD), m_lpwBuf[0] + m_iStartUpdatePos, m_iLastUpdatePos - m_iStartUpdatePos);
+		memmove_s(m_lpwBuf[1], SAMPLES_PER_SEC*sizeof(WORD), m_lpwBuf[1] + m_iStartUpdatePos, m_iLastUpdatePos - m_iStartUpdatePos);
+		memmove_s(m_lpwBuf[2], SAMPLES_PER_SEC*sizeof(WORD), m_lpwBuf[2] + m_iStartUpdatePos, m_iLastUpdatePos - m_iStartUpdatePos);
+		m_iLastUpdatePos -= m_iStartUpdatePos;
+		m_iStartUpdatePos = 0;
+		m_dwLastAppleClock = g_pBoard->GetClock();
+	}
+
 	if (length <= m_iLastUpdatePos)
 	{
+		// already enough data in buffer
 		return;
 	}
 
@@ -287,6 +304,7 @@ void C8913::UpdateBuffer(int length)
 	bufc = m_lpwBuf[2] + m_iLastUpdatePos;
 	
 	length -= m_iLastUpdatePos;
+	m_iLastUpdatePos += length;
 
 	/* The 8910 has three outputs, each output is the mix of one of the three */
 	/* tone generators and of the (single) noise generator. The two are mixed */
@@ -576,7 +594,6 @@ void C8913::UpdateStream()
 
 	this->UpdateBuffer(currentPos);
 
-	m_iLastUpdatePos = currentPos + 1;
 }
 
 void C8913::Update(int length)
@@ -590,7 +607,7 @@ void C8913::Update(int length)
 
 	this->UpdateBuffer(currentPos);
 
-	m_iLastUpdatePos = 0;
+	m_iStartUpdatePos = currentPos;
 	m_dwLastAppleClock = g_pBoard->GetClock();
 }
 
@@ -626,6 +643,7 @@ void C8913::ChangeSampleRate()
 	m_iCountE = 1;
 
 	m_iLastUpdatePos = 0;
+	m_iStartUpdatePos = 0;
 	m_dwLastAppleClock = g_pBoard->GetClock();
 }
 
