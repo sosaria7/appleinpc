@@ -192,6 +192,7 @@ protected:
 
 	BYTE m_nVideoMode;
 	BOOL m_nMsgVisiable;
+	BOOL m_bTextMode;
 
 	TCHAR* m_szMessage;
 	HFONT m_hFont;

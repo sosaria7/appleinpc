@@ -86,6 +86,7 @@ CScreen::CScreen()
 							OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
 							ANTIALIASED_QUALITY, FF_DONTCARE, "Arial Narrow" );
 	m_bPreview = FALSE;
+	m_bTextMode = TRUE;
 	SetDefaultColors();
 }
 
@@ -165,6 +166,10 @@ void CScreen::Draw( int nLine, int nColumn )
 	if( m_iScrMode&SS_TEXT || !(m_iScrMode&SS_HIRES) || (m_iScrMode&SS_MIXED && nLine > 159) )
 	{
 		nLine = nLine & ~0x07;
+	}
+	if ( (m_iScrMode & SS_TEXT) == 0 )
+	{
+		m_bTextMode = FALSE;
 	}
 
 	if(m_iScrMode&SS_TEXT || (m_iScrMode&SS_MIXED && nLine>159))
@@ -456,7 +461,7 @@ void CScreen::Render()
 	switch( m_nVideoMode )
 	{
 	case SM_COLOR:
-		if ( !(m_iScrMode & SS_TEXT ) )
+		if (m_bTextMode == FALSE )
 		{
 			color = 0;
 			appleColor = m_auColorByHSB;
@@ -470,7 +475,7 @@ void CScreen::Render()
 		}
 		break;
 	case SM_COLOR2:
-		if ( !(m_iScrMode & SS_TEXT ) )
+		if (m_bTextMode == FALSE )
 		{
 			color = 0;
 			appleColor = m_auColor;
@@ -504,6 +509,7 @@ void CScreen::Render()
 			colorScanLine = 1;
 		}
 	}
+	m_bTextMode = TRUE;
 
 	for( y = 0; y < 192; y++ )
 	{
