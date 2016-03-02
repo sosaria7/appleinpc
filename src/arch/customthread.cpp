@@ -50,7 +50,7 @@ CCustomThread::CCustomThread(TCHAR* pszThreadGuid):
 		_tcscpy(m_szThreadGuid, TEXT(""));
 	sprintf( m_szThreadGuid, "%s_%ld", m_szThreadGuid, ::GetTickCount() );
 	
-	m_hEvents[THREAD_EVENT_SHUTDOWN] = ::CreateEvent(NULL, FALSE, FALSE, m_szThreadGuid);
+	m_hEvents[THREAD_EVENT_SHUTDOWN] = ::CreateEvent(NULL, TRUE, FALSE, m_szThreadGuid);
 
 	sprintf( szBuff, "%s_resume", m_szThreadGuid );
 	m_hEvents[THREAD_EVENT_RESUME] = ::CreateEvent(NULL, TRUE, TRUE, szBuff);
@@ -169,6 +169,7 @@ unsigned __stdcall CCustomThread::ThreadFunc(void* pvParam)
 		try
 		{
 			pMe->SetIsActive( TRUE );
+			::ResetEvent(pMe->m_hEvents[THREAD_EVENT_SHUTDOWN]);
 			// Execute the user supplied method
 			pMe->Run();
 		}

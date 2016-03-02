@@ -13,6 +13,8 @@
 
 #include <ddraw.h>
 #include "arch/directx/ddutil.h"
+#include "arch/customthread.h"
+
 #include "lockmgr.h"
 
 #define CLR80VID	0xC00C
@@ -119,7 +121,7 @@ typedef struct
     int q;
 } sYIQ;
 
-class CScreen : public CWnd
+class CScreen : public CWnd, public CCustomThread
 {
 public:
 	DECLARE_SERIAL(CScreen);
@@ -160,6 +162,9 @@ public:
 	void SetDefaultColors();
 	void Draw( int nLine, int nColumn );
 	void Clock( DWORD clock );
+	void PowerOn();
+	void PowerOff();
+
 	BOOL IsVBL();
 
 protected:
@@ -260,6 +265,8 @@ public:
 
 	void writeMemory(WORD addr, BYTE data, BOOL aux);
 	void ClearBuffer();
+	void Render();
+	void Run();
 };
 
 /////////////////////////////////////////////////////////////////////////////

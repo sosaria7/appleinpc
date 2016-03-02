@@ -264,11 +264,13 @@ void CAppleClock::PowerOn()
 {
 	SetPriority( THREAD_PRIORITY_HIGHEST );
 	SetActive(TRUE);
+	m_pScreen->PowerOn();
 }
 
 void CAppleClock::PowerOff()
 {
 	SetActive(FALSE);
+	m_pScreen->PowerOff();
 }
 
 void CAppleClock::Suspend(BOOL bWait)

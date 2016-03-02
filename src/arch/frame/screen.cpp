@@ -48,6 +48,7 @@ END_MESSAGE_MAP()
 IMPLEMENT_SERIAL( CScreen, CObject, 1 );
 
 CScreen::CScreen()
+	: CCustomThread("AppleVideoThread")
 {
 	m_bPowerOn = FALSE;
 	m_iBlinkCount = 0;
@@ -94,6 +95,16 @@ CScreen::~CScreen()
 	SAFE_RELEASE(m_pSurfaceDisk);
 	SAFE_RELEASE(m_pSurfaceMsg);
 	SAFE_RELEASE(m_pSurfaceMain);
+}
+
+void CScreen::PowerOn()
+{
+	this->SetActive(TRUE);
+}
+
+void CScreen::PowerOff()
+{
+	this->SetActive(FALSE);
 }
 
 BYTE CScreen::GetVideoData()
@@ -232,7 +243,6 @@ void CScreen::Draw( int nLine, int nColumn )
 	if ( nColumn == 0 )
 	{
 		// clear line
-		memset( m_pixelInfo[y], 0, WIN_WIDTH );
 		m_pixelCarry = 0;
 	}
 	if ( b80COL == FALSE )
@@ -270,6 +280,10 @@ void CScreen::Draw( int nLine, int nColumn )
 		x = nColumn * 14 + 10;
 	}
 
+	if (nColumn == 0)
+	{
+		memset( m_pixelInfo[y], 0, x );
+	}
 	for( index = 0; index < 14; index++ )
 	{
 		if ( ( data & 1 ) != 0 )
@@ -288,6 +302,10 @@ void CScreen::Draw( int nLine, int nColumn )
 			color = 1;
 		}
 	}
+	if (nColumn == 39)
+	{
+		memset(m_pixelInfo[y] + x, 0, WIN_WIDTH - x);
+	}
 }
 
 
@@ -304,13 +322,16 @@ void CScreen::Clock( DWORD clock )
 			m_nLine++;
 		}
 		m_dwClock++;
+		if (m_dwClock == SCREEN_CLOCK - VBL_CLOCK)
+		{
+			Redraw();
+		}
 		if ( m_dwClock >= SCREEN_CLOCK )
 		{
 			m_dwClock -= SCREEN_CLOCK;
 			m_nLine = 0;
 			m_nColumn = 0;
 			m_iBlinkCount++;
-			Redraw();
 		}
 	}
 }
@@ -322,9 +343,30 @@ BOOL CScreen::IsVBL()
 
 void CScreen::Redraw()
 {
-	if( !m_bPowerOn )
-		return;
-	
+	this->WakeUp();
+	Sleep(1);
+}
+
+void CScreen::Run()
+{
+	Suspend(FALSE);
+	m_bPowerOn = TRUE;
+
+	while (TRUE)
+	{
+		SuspendHere();
+		if (ShutdownHere())
+			break;
+		Render();
+		m_iFrameCount++;
+		Sleep(10);
+	}
+	m_bPowerOn = FALSE;
+	Render();
+}
+
+void CScreen::Render()
+{
 	DDSURFACEDESC2 ddsd;
     RECT rect={0, 0, WIN_WIDTH, WIN_HEIGHT};
 
@@ -563,9 +605,6 @@ _DrawNextLine:
 			Present();
 		::Sleep(0);
 	}
-
-	m_iFrameCount++;
-
 
 /*	
 	if(result!=DD_OK){
@@ -996,7 +1035,6 @@ void CScreen::setLookUp(BYTE *pMemory)
 		for(j=0; j<40; j++)
 			m_abPosTable[i*40+j] = (BYTE)(i<<6);
 	}
-	m_bPowerOn = TRUE;
 }
 
 int CScreen::GetMonitorType()
