@@ -40,6 +40,7 @@ CDXSound::CDXSound()
 	m_nVol = 29;
 	m_nPan = 0;
 	m_bMute = FALSE;
+	m_nCheckStep = 0;
 }
 
 CDXSound::~CDXSound()
@@ -157,47 +158,9 @@ void CDXSound::UpdateSoundBuffer()
 	LPVOID	lpWrite1, lpWrite2;
 	DWORD	dwLength1, dwLength2;
 	DWORD	dwBytesToWrite;
-	DWORD	dwReadPos, dwWritePos, dwBufferedBytes, dwDxBuffered;
 	HRESULT	hr;	
 
 	dwBytesToWrite = m_nSamplesInFrame * SND_CHANNEL * BITS_PER_SAMPLE / 8;
-
-	m_lpSndBuffer->GetCurrentPosition( &dwReadPos, &dwWritePos );
-	dwDxBuffered = dwWritePos - dwReadPos;
-	if ( dwReadPos > dwWritePos )
-		dwDxBuffered += SND_BUFFER_SIZE;
-	dwBufferedBytes = m_dwBufferIn - dwReadPos;
-	if ( dwReadPos > m_dwBufferIn )
-		dwBufferedBytes += SND_BUFFER_SIZE;
-
-	if ( dwBufferedBytes > ( m_nSampleRate / 2 ) || dwBufferedBytes < dwDxBuffered )
-	{
-		m_iRateHigh = 0;
-		m_iRateLow = 0;
-		m_dwBufferIn = dwReadPos + ( ( m_nSampleRate / 4 ) & ~0x0F ) ;	// 3 / 12
-	}
-	else if ( dwBufferedBytes > m_nSampleRate / 3 )	// 4 / 12
-	{
-		m_iRateLow = 0;
-		m_iRateHigh += m_nSampleRate / 2400;
-	}
-	else if ( dwBufferedBytes < m_nSampleRate / 6 ) // 2 / 12
-	{
-		m_iRateHigh = 0;
-		m_iRateLow += m_nSampleRate / 2400;
-	}
-	else
-	{
-		m_iRateHigh = 0;
-		m_iRateLow = 0;
-	}
-
-	m_nSamplesInFrame = ( m_nSampleRate / 60 ) - m_iRateHigh + m_iRateLow;
-	if ( m_nSamplesInFrame < 10 )
-		m_nSamplesInFrame = 10;
-	else if ( (unsigned)m_nSamplesInFrame > m_nSampleRate / 4 )		// buffer size
-		m_nSamplesInFrame = m_nSampleRate / 4;
-
 
 	hr = m_lpSndBuffer->Lock( m_dwBufferIn, dwBytesToWrite, &lpWrite1, &dwLength1, &lpWrite2, &dwLength2, 0 );
 	if ( hr == DSERR_BUFFERLOST )
@@ -220,6 +183,8 @@ void CDXSound::UpdateSoundBuffer()
 	m_lpSndBuffer->Unlock( lpWrite1, dwLength1, lpWrite2, dwLength2 );
 }
 
+#define CHECK_STEP	8
+
 void CDXSound::Clock()
 {
 	int i, j;
@@ -227,14 +192,61 @@ void CDXSound::Clock()
 	DWORD interval;
 	long valueL, valueR;
 	int nVolR, nVolL;
+	DWORD dwDxBuffered, dwBufferedBytes;
+	DWORD dwReadPos, dwWritePos;
 
 	if ( m_lpDS == NULL || m_lpSndBuffer == NULL )
 		return;
 
 	interval = g_pBoard->GetClock() - m_dwLastClock;
 
-	if ( interval < (DWORD)( CLOCK / 60 ) )
+	if (interval < (DWORD)(CLOCK / 60 / CHECK_STEP ))
 		return;
+	m_dwLastClock += ((DWORD)(interval / (CLOCK / 60 / CHECK_STEP))) * (CLOCK / 60 / CHECK_STEP);
+
+	m_lpSndBuffer->GetCurrentPosition(&dwReadPos, &dwWritePos);
+	dwDxBuffered = dwWritePos - dwReadPos;
+	if (dwReadPos > dwWritePos)
+		dwDxBuffered += SND_BUFFER_SIZE;
+	dwBufferedBytes = m_dwBufferIn - dwReadPos;
+	if (dwReadPos > m_dwBufferIn)
+		dwBufferedBytes += SND_BUFFER_SIZE;
+
+	m_nCheckStep++;
+	if (m_nCheckStep < CHECK_STEP && dwBufferedBytes >= m_nSampleRate / 4 )		// 3 / 12
+	{
+		// enough buffer
+		return;
+	}
+	m_nCheckStep = 0;
+	if (dwBufferedBytes >= (m_nSampleRate / 2) || dwBufferedBytes < dwDxBuffered)
+	{
+		m_iRateHigh = 0;
+		m_iRateLow = 0;
+		m_dwBufferIn = dwReadPos + ((m_nSampleRate / 4) & ~0x0F);	// 3 / 12
+	}
+	else if (dwBufferedBytes >= m_nSampleRate / 3)	// 4 / 12
+	{
+		m_iRateLow = 0;
+		m_iRateHigh += m_nSampleRate / 2400;
+	}
+	else if (dwBufferedBytes < m_nSampleRate / 6) // 2 / 12
+	{
+		m_iRateHigh = 0;
+		m_iRateLow += m_nSampleRate / 2400;
+	}
+	else		// 2/12 ~ 4/12
+	{
+		m_iRateHigh = 0;
+		m_iRateLow = 0;
+	}
+
+	m_nSamplesInFrame = (m_nSampleRate / 60) - m_iRateHigh + m_iRateLow;
+	if (m_nSamplesInFrame < 10)
+		m_nSamplesInFrame = 10;
+	else if ((unsigned)m_nSamplesInFrame > m_nSampleRate / 4)		// buffer size
+		m_nSamplesInFrame = m_nSampleRate / 4;
+
 
 	if ( m_nPan < 0 )
 	{
@@ -301,8 +313,6 @@ void CDXSound::Clock()
 #endif
 	}
 	UpdateSoundBuffer();
-
-	m_dwLastClock += ( (DWORD)( interval / ( CLOCK / 60 ) ) ) * ( CLOCK / 60 );
 }
 
 void CDXSound::Toggle()

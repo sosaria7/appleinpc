@@ -67,6 +67,8 @@ protected:
 	stPSG* m_stPSG;
 	int m_nVol;
 	int m_nPan;
+	int m_nCheckStep;
+
 };
 
 

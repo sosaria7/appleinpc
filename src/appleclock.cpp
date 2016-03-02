@@ -178,9 +178,9 @@ void CAppleClock::Run()
 		DWORD temp = ( dwCurClock / ( CLOCK / 1000 ) ) - ( lastAppleClock / ( CLOCK / 1000 ) );
 
 		if ( (int)( temp - cpu_interval ) > 0 
-			|| cpu_interval > 300 )
+			|| cpu_interval > 500 )
 		{
-			if ( cpu_interval > 300 )
+			if ( cpu_interval > 500)
 			{
 				Sleep(1);
 				m_dwLastCPUClock = sec;
