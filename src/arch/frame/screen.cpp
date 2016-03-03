@@ -171,6 +171,10 @@ void CScreen::Draw( int nLine, int nColumn )
 	{
 		m_bTextMode = FALSE;
 	}
+	else if (nLine == 0 && nColumn == 0)
+	{
+		m_bTextMode = TRUE;
+	}
 
 	if(m_iScrMode&SS_TEXT || (m_iScrMode&SS_MIXED && nLine>159))
 	{
@@ -364,7 +368,7 @@ void CScreen::Run()
 			break;
 		Render();
 		m_iFrameCount++;
-		Sleep(10);
+		Sleep(5);
 	}
 	m_bPowerOn = FALSE;
 	Render();
@@ -509,7 +513,6 @@ void CScreen::Render()
 			colorScanLine = 1;
 		}
 	}
-	m_bTextMode = TRUE;
 
 	for( y = 0; y < 192; y++ )
 	{
@@ -1429,9 +1432,7 @@ CSurface* CScreen::GetDiskSurface()
 
 void CScreen::UpdateDiskSurface()
 {
-	//CLockMgr<CCSWrapper> guard( m_Lock, TRUE );
-	//m_pDisplay->Blt( FULL_WIDTH - 50, FULL_HEIGHT - 40, m_pSurfaceDisk, NULL );
-	Present();
+	//Present();
 }
 
 void CScreen::SetMessage(TCHAR *szText)
