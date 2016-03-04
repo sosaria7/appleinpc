@@ -36,7 +36,6 @@ static char THIS_FILE[] = __FILE__;
 BOOL g_debug = FALSE;
 
 CAppleClock *g_pBoard = NULL;
-DWORD g_localClock = 0;
 
 // 0.5 sec
 #define BOOST_CLOCK_INTERVAL	( CLOCK / 2 )
@@ -46,21 +45,14 @@ DWORD g_localClock = 0;
 /////////////////////////////////////////////////////////////////////////////
 // CAppleClock
 
-CALLBACK_HANDLER( Clock )
-{
-	((CAppleClock*)objTo)->ClockInc( (DWORD)lParam );
-}
-
 CAppleClock::CAppleClock()
 : CCustomThread( "AppleThread" )
 {
 	m_nAppleStatus = ACS_POWEROFF;
 	m_dClockSpeed = 0;
-	m_bRedraw = FALSE;
 	m_pScreen = NULL;
-	SetScanFreq( 60 );
 	m_cpu.init_6502();
-	m_cpu.SetClockListener( this, Clock );
+	m_dwClock = 0;
 }
 
 CAppleClock::~CAppleClock()
@@ -83,25 +75,32 @@ CAppleClock::~CAppleClock()
 void CAppleClock::Run() 
 {
 	// TODO: Add your specialized code here and/or call the base class
-	DWORD sec, measure1, measure2 = 0, dwLastClock = 0;
-	DWORD cpu_interval, apple_interval;
-	DWORD lastAppleClock=0;
+	DWORD measure1, measure2 = 0;
+	DWORD host_interval, apple_interval;
+	DWORD lastAppleClock=m_dwClock;
 	DWORD dwClockInc;
+	DWORD dwCurTickCount, dwLastTickCount;
+
 	int sig;
 	BOOL slept;
 	BOOL drawed;
+	int i;
+
 	slept = FALSE;
 	drawed = FALSE;
 
 	m_pScreen->ClearBuffer();
 
-	m_dwLastCPUClock = measure1 = GetTickCount();
+	dwLastTickCount = measure1 = GetTickCount();
 
 	m_nAppleStatus = ACS_POWERON;
 
 	while( TRUE ){
 		while( TRUE ){
-			SuspendHere();
+			if (SuspendHere())
+			{
+				dwLastTickCount = measure1 = GetTickCount();
+			}
 			if ( ShutdownHere() )
 				return;
 			if ( !( sig=m_queSignal.GetMesg() ) )
@@ -130,21 +129,24 @@ void CAppleClock::Run()
 			}
 		}
 
+		for (i = 0; i < 100; i++)
+		{
+			dwClockInc = m_cpu.Process();
+			m_dwClock += dwClockInc;
+			m_pScreen->Clock(dwClockInc);
+			m_cSlots.Clock(dwClockInc);
+			g_DXSound.Clock();
+			if (m_queSignal.Size() > 0)
+			{
+				continue;
+			}
+		}
 
-#ifdef _DEBUG
-		g_localClock += 100;
-		m_cpu.Clock(100);
-#else
-		g_localClock += 1000;
-		m_cpu.Clock(1000);
-#endif
 		DWORD dwCurClock;
-		dwCurClock = GetClock();
-		dwClockInc = dwCurClock - dwLastClock;
-		dwLastClock = dwCurClock;
+		dwCurClock = this->m_dwClock;
 
 		// measure clock speed
-		sec = GetTickCount();
+		dwCurTickCount = GetTickCount();
 
 		if ( m_nBoost > 0 )
 		{
@@ -157,44 +159,39 @@ void CAppleClock::Run()
 			}
 		}
 
-//		sec = timeGetTime();
-		cpu_interval = sec - measure1;
-		if ( cpu_interval > 3000 )
+		host_interval = dwCurTickCount - measure1;
+		if ( host_interval > 1000 )
 		{
-			apple_interval = GetCpuClock()-measure2;
-			m_dClockSpeed = (double)( apple_interval ) / ( cpu_interval << 10 );
-			measure1 = sec;
-			measure2 = GetCpuClock();
+			m_dClockSpeed = (double)(dwCurClock - measure2) / host_interval / ( CLOCK / 1000 );
+			measure1 = dwCurTickCount;		// host tick count
+			measure2 = dwCurClock;
 		}
 
-		// adjust apple's clock 1Mhz
-		// if m_cpu.g_localClock is 1, real time is 0.001ms(1Mhz)
-		// in slow machine, may not be 1Mhz, but sleep in 1 seconds.
-		if ( sec > m_dwLastCPUClock )
-			cpu_interval = sec - m_dwLastCPUClock;
+		if (dwCurTickCount > dwLastTickCount)
+			host_interval = dwCurTickCount - dwLastTickCount;
 		else
-			cpu_interval = 0;
-		//apple_interval = dwCurClock-lastAppleClock;
-		DWORD temp = ( dwCurClock / ( CLOCK / 1000 ) ) - ( lastAppleClock / ( CLOCK / 1000 ) );
+			host_interval = 0;
 
-		if ( (int)( temp - cpu_interval ) > 0 
-			|| cpu_interval > 500 )
+		apple_interval = ( dwCurClock / ( CLOCK / 1000 ) ) - ( lastAppleClock / ( CLOCK / 1000 ) );
+
+		if ( (int)(apple_interval - host_interval ) > 0
+			|| host_interval > 500 )
 		{
-			if ( cpu_interval > 500)
+			if ( host_interval > 500)
 			{
 				Sleep(1);
-				m_dwLastCPUClock = sec;
+				dwLastTickCount = dwCurTickCount;
 				slept = TRUE;
 			}
 			else
 			{
-				while( (int)( temp - cpu_interval ) > 0 )
+				while( (int)(apple_interval - host_interval ) > 0 )
 				{
 					Sleep(1);
-					cpu_interval = GetTickCount() - m_dwLastCPUClock;
+					host_interval = GetTickCount() - dwLastTickCount;
 					slept = TRUE;
 				}
-				m_dwLastCPUClock += temp;
+				dwLastTickCount += apple_interval;
 			}
 			lastAppleClock = dwCurClock;
 		}
@@ -283,7 +280,6 @@ void CAppleClock::Suspend(BOOL bWait)
 
 void CAppleClock::Resume()
 {
-	m_dwLastCPUClock = GetTickCount();
 	CCustomThread::Resume();
 	g_DXSound.Resume();
 }
@@ -310,28 +306,9 @@ BOOL CAppleClock::Initialize()
 	return TRUE;
 }
 
-void CAppleClock::SetScanFreq(int freq)
-{
-	if ( freq > 60 )
-		freq = 60;
-	else if ( freq < 15 )
-		freq = 15;
-	m_dwScanCount = m_dwScanFreq = SEED * CLOCK / freq;
-}
-
-int CAppleClock::GetScanFreq()
-{
-	return ( SEED * CLOCK / m_dwScanFreq );
-}
-
 DWORD CAppleClock::GetClock()
 {
-	return( m_cpu.GetClock() );
-}
-
-DWORD CAppleClock::GetCpuClock()
-{
-	return( m_cpu.GetCpuClock() );
+	return this->m_dwClock;
 }
 
 // do not call in apple thread. it will cause dead lock.
@@ -346,8 +323,6 @@ BOOL CAppleClock::OnBeforeActivate()
 	m_cSlots.PowerOn();
 	m_queSignal.ClearQueue();
 	g_DXSound.Resume();
-	m_dwScanCount = 0;
-	g_localClock = 0;
 	return TRUE;
 }
 
@@ -377,25 +352,6 @@ void CAppleClock::SpeedStable()
 	m_nBoost = 0;
 }
 
-void CAppleClock::ClockInc(DWORD dwClockInc)
-{
-	DWORD dwClockIncSEED;
-
-	m_pScreen->Clock( dwClockInc );
-	m_cSlots.Clock( dwClockInc );
-
-	g_DXSound.Clock();
-
-	// video refresh
-	dwClockIncSEED = dwClockInc * SEED;
-	if ( m_dwScanCount < dwClockIncSEED )
-	{
-		m_dwScanCount += m_dwScanFreq;
-		m_bRedraw = TRUE;
-	}
-	m_dwScanCount -= dwClockIncSEED;
-}
-
 void CAppleClock::Serialize( CArchive &ar )
 {
 	CObject::Serialize( ar );
@@ -407,7 +363,7 @@ void CAppleClock::Serialize( CArchive &ar )
 	}
 	if ( ar.IsStoring() )
 	{
-		ar << g_localClock;
+		ar << m_dwClock;
 		ar << m_nAppleStatus;
 		m_cpu.Serialize(ar);
 		m_cIOU.Serialize(ar);
@@ -418,7 +374,7 @@ void CAppleClock::Serialize( CArchive &ar )
 	}
 	else
 	{
-		ar >> g_localClock;
+		ar >> m_dwClock;
 		ar >> m_nAppleStatus;
 		m_cpu.Serialize(ar);
 		m_cIOU.Serialize(ar);

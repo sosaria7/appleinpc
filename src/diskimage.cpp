@@ -53,10 +53,10 @@ int CDiskImage::Mount(const char *szFileName)
 		m_szImagePath[0] = 0;
 		return E_SUCCESS;
 	}
-	hFile = open( szFileName, O_RDWR | O_BINARY );
+	hFile = _open( szFileName, O_RDWR | O_BINARY );
 	if ( hFile == -1 )
 	{
-		hFile = open( szFileName, O_RDONLY | O_BINARY );
+		hFile = _open( szFileName, O_RDONLY | O_BINARY );
 		if ( hFile == -1 )
 			return E_OPEN_FAIL;
 		strncpy( m_szImagePath, szFileName, PATH_MAX );
@@ -79,7 +79,7 @@ void CDiskImage::Umount()
 	{
 		if ( m_nStatus & DIS_BUFFER_DIRTY )
 			SaveBuffer();
-		close( m_hFile );
+		_close( m_hFile );
 		m_hFile = -1;
 	}
 }

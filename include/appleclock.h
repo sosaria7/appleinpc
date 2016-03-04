@@ -51,9 +51,7 @@ public:
 	BOOL OnBeforeActivate();
 	void Exit();
 	DWORD GetClock();
-	DWORD GetCpuClock();
 	int GetScanFreq();
-	void SetScanFreq(int freq);
 	BOOL Initialize();
 	void Resume();
 	void Suspend(BOOL bWait=TRUE);
@@ -70,7 +68,6 @@ public:
 
 	void SpeedUp();
 	void SpeedStable();
-	void ClockInc(DWORD dwClockInc);
 
 	void OnDebug();
 
@@ -81,10 +78,7 @@ public:
 
 // Implementation
 protected:
-	BOOL m_bRedraw;
-	DWORD m_dwScanCount;
-	DWORD m_dwScanFreq;
-	DWORD m_dwLastCPUClock;
+	DWORD m_dwClock;
 	int m_nBoost;
 	int m_nAppleStatus;
 };

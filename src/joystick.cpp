@@ -151,7 +151,7 @@ BYTE CJoystick::GetStatus(BYTE num)
 	retval = retval * (10 + retval/86);
 	//retval = retval * 11;
 	
-	DWORD interval = g_pBoard->GetCpuClock() - m_dwLastClock;
+	DWORD interval = g_pBoard->GetClock() - m_dwLastClock;
 
 	if ( interval > retval )
 	{
@@ -164,7 +164,7 @@ BYTE CJoystick::GetStatus(BYTE num)
 
 void CJoystick::Strobe()
 {
-	m_dwLastClock = g_pBoard->GetCpuClock();
+	m_dwLastClock = g_pBoard->GetClock();
 	m_bStrobe = TRUE;
 }
 

@@ -276,7 +276,7 @@ int CHDDImage::Mount( const char* pszFileName )
 
 	int hFile;
 	Umount();
-	hFile = open( pszFileName, O_RDWR | O_BINARY );
+	hFile = _open( pszFileName, O_RDWR | O_BINARY );
 	if ( hFile == -1 )
 	{
 		return E_OPEN_FAIL;
@@ -292,7 +292,7 @@ void CHDDImage::Umount()
 
 	if ( m_hFile != -1 )
 	{
-		close( m_hFile );
+		_close( m_hFile );
 		m_hFile = -1;
 	}
 	m_strImagePath = "";

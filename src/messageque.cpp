@@ -45,3 +45,8 @@ void CMessageQue::ClearQueue()
 {
 	m_byteHead = m_byteTail;
 }
+
+int CMessageQue::Size()
+{
+	return (int)(BYTE)(m_byteTail - m_byteHead);
+}

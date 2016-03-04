@@ -124,7 +124,7 @@ int CDiskDrive::Mount( const char* pszImageName )
 	int hFile, nErrNo;
 	CDiskImage* pNewImage;
 
-	hFile = open( pszImageName, O_RDONLY | O_BINARY );
+	hFile = _open( pszImageName, O_RDONLY | O_BINARY );
 	if ( hFile == -1 )
 		return E_OPEN_FAIL;
 
@@ -167,10 +167,10 @@ int CDiskDrive::Mount( const char* pszImageName )
 	}
 	else
 	{
-		close( hFile );
+		_close( hFile );
 		return E_UNKNOWN_FORMAT;		// unknown image type
 	}
-	close( hFile );
+	_close( hFile );
 
 	nErrNo = pNewImage->Mount( pszImageName );
 	if ( nErrNo == E_SUCCESS )
@@ -246,7 +246,7 @@ BYTE CDiskDrive::ReadNibble()
 			return m_pDiskImage->Read( m_iPosition ) & 0x7F;
 	}
 
-	dwClock = g_pBoard->GetCpuClock();
+	dwClock = g_pBoard->GetClock();
 #if 1
 	if ( m_bEnhanced )
 	{
@@ -351,7 +351,7 @@ BYTE CDiskDrive::WriteNibble(BYTE data)
 			|| !( m_wDiskStatus & DDS_MOTORON ) )
 		return( data & 0x7F );
 
-	DWORD dwClock = g_pBoard->GetCpuClock();
+	DWORD dwClock = g_pBoard->GetClock();
 	DWORD interval =  dwClock - m_dwLastAppleClock;
 
 	int iOffset = interval % READ_CLOCK;
