@@ -73,9 +73,13 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_DISKETTE, OnUpdateDiskette)
 	ON_UPDATE_COMMAND_UI(ID_HARDDISK, OnUpdateHarddisk)
 	ON_UPDATE_COMMAND_UI(ID_SCANLINE, OnUpdateScanline)
+	ON_UPDATE_COMMAND_UI(ID_SUSPEND, OnUpdateSuspend)
+	ON_UPDATE_COMMAND_UI(ID_RESUME, OnUpdateResume)
 	ON_COMMAND(ID_SCANLINE, OnScanline)
 	ON_WM_SETFOCUS()
 	//}}AFX_MSG_MAP
+	ON_COMMAND(ID_SUSPEND, &CMainFrame::OnSuspend)
+	ON_COMMAND(ID_RESUME, &CMainFrame::OnResume)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -367,6 +371,10 @@ void CMainFrame::OnMonitor()
 void CMainFrame::OnChangeSize()
 {
 	m_bDoubleSize = !m_bDoubleSize;
+	RECT rc;
+	::GetWindowRect(m_hWnd, &rc);
+	m_stWindowPos.x = rc.left;
+	m_stWindowPos.y = rc.top;
 	ResizeWindow();
 }
 
@@ -388,6 +396,7 @@ void CMainFrame::OnPowerOn()
 {
 	// TODO: Add your command handler code here
 	g_pBoard->PowerOn();
+	g_pBoard->Resume();
 }
 
 void CMainFrame::OnUpdatePowerOn(CCmdUI* pCmdUI) 
@@ -610,8 +619,7 @@ void CMainFrame::ResizeWindow()
 		CPoint ptOffset(rcClientNow.left - rcClientStart.left,
 			rcClientNow.top - rcClientStart.top);
 		
-		// pScreen 이 수정한 창 크기는 다른 child 창을 포함하지 않고 계산한 것이다.
-		// 그러므로 child 창들의 크기를 더해준다. : status bar, tool bar
+		// add size of child windows : status bar, tool bar
 		CRect rcChild;
 		CWnd* pwndChild = GetWindow(GW_CHILD);
 		while (pwndChild)
@@ -736,3 +744,56 @@ void CMainFrame::OnScanline()
 		
 }
 
+void CMainFrame::OnSuspend()
+{
+	// TODO: Add your command handler code here
+	g_pBoard->Suspend(FALSE);
+}
+
+
+void CMainFrame::OnResume()
+{
+	// TODO: Add your command handler code here
+	g_pBoard->Resume();
+}
+
+void CMainFrame::OnUpdateSuspend(CCmdUI* pCmdUI)
+{
+	// TODO: Add your command update UI handler code here
+	if (g_pBoard->GetIsActive() && !g_pBoard->GetIsSuspended())
+		pCmdUI->Enable(TRUE);
+	else
+		pCmdUI->Enable(FALSE);
+
+	const int nSuspendIndex = m_wndToolBar.CommandToIndex(ID_SUSPEND);
+	const int nResumeIndex = m_wndToolBar.CommandToIndex(ID_RESUME);
+	if (nSuspendIndex == -1 || nResumeIndex == -1)
+	{
+		return;
+	}
+	if (g_pBoard->GetIsSuspended())
+	{
+		m_wndToolBar.GetToolBarCtrl().HideButton(ID_SUSPEND, TRUE);
+	}
+	else
+	{
+		m_wndToolBar.GetToolBarCtrl().HideButton(ID_SUSPEND, FALSE);
+	}
+}
+
+void CMainFrame::OnUpdateResume(CCmdUI* pCmdUI)
+{
+	// TODO: Add your command update UI handler code here
+	if (g_pBoard->GetIsActive() && g_pBoard->GetIsSuspended())
+		pCmdUI->Enable(TRUE);
+	else
+		pCmdUI->Enable(FALSE);
+	if (g_pBoard->GetIsSuspended())
+	{
+		m_wndToolBar.GetToolBarCtrl().HideButton(ID_RESUME, FALSE);
+	}
+	else
+	{
+		m_wndToolBar.GetToolBarCtrl().HideButton(ID_RESUME, TRUE);
+	}
+}

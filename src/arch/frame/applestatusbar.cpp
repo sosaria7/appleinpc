@@ -30,7 +30,6 @@ static UINT indicators[] =
 	ID_INDICATOR_DISK,
 	ID_INDICATOR_CLOCK_SPEED,
 	ID_INDICATOR_FRAME_SPEED,
-	ID_INDICATOR_CAPS,
 };
 
 CAppleStatusBar::CAppleStatusBar()
@@ -78,10 +77,11 @@ BOOL CAppleStatusBar::Create(CWnd *pParentWnd, DWORD dwStyle)
 	if ( !CStatusBar::Create(pParentWnd, dwStyle , AFX_IDW_STATUS_BAR)
 		||	!SetIndicators(indicators, sizeof(indicators)/sizeof(UINT)) )
 		return FALSE;
+
+	SetPaneInfo( 0, GetItemID( 0 ), GetPaneStyle( 0 ), 350 );
 	SetPaneInfo( 1, GetItemID( 1 ), GetPaneStyle( 1 ) | SBT_OWNERDRAW, 70 );
 	SetPaneInfo( 2, GetItemID( 2 ), GetPaneStyle( 2 ), 60 );
 	SetPaneInfo( 3, GetItemID( 3 ), GetPaneStyle( 3 ), 60 );
-	SetPaneInfo( 4, GetItemID( 4 ), GetPaneStyle( 4 ), 30 );
 	GetItemRect( 1, &m_rectDisk );
 	return TRUE;
 }

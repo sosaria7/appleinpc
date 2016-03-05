@@ -89,10 +89,15 @@ protected:
 	afx_msg void OnUpdateDiskette(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateHarddisk(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateScanline(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateSuspend(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateResume(CCmdUI* pCmdUI);
 	afx_msg void OnScanline();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnSuspend();
+	afx_msg void OnResume();
 };
 
 /////////////////////////////////////////////////////////////////////////////
