@@ -81,6 +81,7 @@ CScreen::CScreen()
 //	m_bInitializing = FALSE;
 	m_iScrMode = SS_TEXT;
 	m_szMessage = "";
+	m_bMouseCapture = FALSE;
 
 	m_hFont = ::CreateFont( 15, 0, 0, 0, 0, 0, 0, 0, ANSI_CHARSET,
 							OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
@@ -653,6 +654,10 @@ BOOL CScreen::InitDirectX()
 			return hr;
 		}
 		m_pDisplay->Clear();
+		if (m_bMouseCapture == FALSE)
+		{
+			g_cDIMouse.SetActive(FALSE, FALSE);
+		}
 	}
 	else
 	{
@@ -1396,9 +1401,16 @@ void CScreen::Reset()
 void CScreen::OnLButtonUp(UINT nFlags, CPoint point) 
 {
 	// TODO: Add your message handler code here and/or call default
-	g_cDIMouse.SetActive(TRUE, FALSE);
 	g_cDIKeyboard.SetActive(TRUE, FALSE);
-	SetMessage("press \"LEFT CTRL+ALT\" key to show the cursor");
+	if (m_bMouseCapture == TRUE)
+	{
+		g_cDIMouse.SetActive(TRUE, FALSE);
+		SetMessage("press \"LEFT CTRL+ALT\" key to release mouse and keyboard");
+	}
+	else
+	{
+		SetMessage("press \"LEFT CTRL+ALT\" key to release keyboard");
+	}
 	CWnd::OnLButtonUp(nFlags, point);
 }
 
@@ -1649,4 +1661,9 @@ void CScreen::Serialize(CArchive &ar)
 void CScreen::ClearBuffer()
 {
 	memset( m_pixelInfo, 0, sizeof(m_pixelInfo) );
+}
+
+void CScreen::SetMouseCapture(BOOL bCapture)
+{
+	m_bMouseCapture = bCapture;
 }

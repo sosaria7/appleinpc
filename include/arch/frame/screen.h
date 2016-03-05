@@ -164,6 +164,7 @@ public:
 	void Clock( DWORD clock );
 	void PowerOn();
 	void PowerOff();
+	void SetMouseCapture(BOOL bCapture);
 
 	BOOL IsVBL();
 
@@ -193,6 +194,7 @@ protected:
 	BYTE m_nVideoMode;
 	BOOL m_nMsgVisiable;
 	BOOL m_bTextMode;
+	BOOL m_bMouseCapture;
 
 	TCHAR* m_szMessage;
 	HFONT m_hFont;

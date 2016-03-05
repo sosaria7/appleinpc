@@ -74,6 +74,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_HARDDISK, OnUpdateHarddisk)
 	ON_UPDATE_COMMAND_UI(ID_SCANLINE, OnUpdateScanline)
 	ON_COMMAND(ID_SCANLINE, OnScanline)
+	ON_WM_SETFOCUS()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -86,6 +87,7 @@ CMainFrame::CMainFrame()
 	m_winRect.SetRectEmpty();
 	m_bDoubleSize = FALSE;
 	m_bFullScreen = FALSE;
+	m_bKeyboardCapture = FALSE;
 	g_pBoard = new CAppleClock();
 }
 
@@ -481,8 +483,12 @@ LRESULT CMainFrame::OnReqAcquire(WPARAM wParam, LPARAM lParam)
 		{
 			cDIBase->Acquire( FALSE );
 		}
-		g_cDIMouse.SetActive( FALSE, FALSE );	// don't wait for mouse exit. mouse will wait for unacquiring it self.
-		g_cDIKeyboard.SetActive( FALSE, FALSE );	// same
+		g_cDIMouse.SetActive(FALSE, FALSE);	// don't wait for mouse exit. mouse will wait for unacquiring it self.
+		if (lParam == NULL)
+		{
+			g_cDIKeyboard.SetActive(FALSE, FALSE);
+		}
+
 		if ( m_bFullScreen == TRUE )
 		{
 			m_bFullScreen = FALSE;
@@ -664,9 +670,25 @@ static CString GetStatusFilePath()
 void CMainFrame::OnKillFocus(CWnd* pNewWnd) 
 {
 	CFrameWnd::OnKillFocus(pNewWnd);
-	
+
+	m_bKeyboardCapture = g_cDIKeyboard.GetIsActive();
+	TRACE("keyboard capture=%d\n", m_bKeyboardCapture);
 	// TODO: Add your message handler code here
 	::PostMessage( m_hWnd, UM_REQACQUIRE, FALSE, (LPARAM)NULL );
+}
+
+void CMainFrame::OnSetFocus(CWnd* pOldWnd)
+{
+	__super::OnSetFocus(pOldWnd);
+
+	if (m_bKeyboardCapture == TRUE)
+	{
+		g_cDIKeyboard.SetActive(TRUE, FALSE);
+	}
+	else
+	{
+		g_cDIKeyboard.Restore();
+	}
 }
 
 void CMainFrame::OnUpdateDiskette(CCmdUI* pCmdUI) 
@@ -713,3 +735,4 @@ void CMainFrame::OnScanline()
 	}
 		
 }
+

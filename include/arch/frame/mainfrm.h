@@ -47,6 +47,7 @@ public:
 	POINT m_stWindowPos;
 	BOOL  m_bDoubleSize;
 	BOOL  m_bFullScreen;
+	BOOL  m_bKeyboardCapture;
 	virtual ~CMainFrame();
 #ifdef _DEBUG
 	virtual void AssertValid() const;
@@ -89,6 +90,7 @@ protected:
 	afx_msg void OnUpdateHarddisk(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateScanline(CCmdUI* pCmdUI);
 	afx_msg void OnScanline();
+	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

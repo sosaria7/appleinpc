@@ -298,6 +298,8 @@ void CDlgConfigure::OnOK()
 		}
 	}
 	g_pBoard->m_cSlots.Initialize();
+	g_pBoard->m_pScreen->SetMouseCapture(g_pBoard->m_cSlots.HasMouseInterface());
+
 	// keyboard
 	g_cDIKeyboard.SetDelayTime( m_sbKeyRepeat.GetPos(), m_sbKeyDelay.GetPos() );
 

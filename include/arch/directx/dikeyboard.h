@@ -25,11 +25,12 @@ public:
 	bool IsKeyPressed(unsigned char keyname);	// Has a specific DI_KEY been pressed.
 	virtual bool PollDevice(void);				// Update the device data.
 	bool InitKeyboard(void);
+	void Restore();
 
 public:
 	void GetDelayTime(int* pnRepeat, int* pnDelay);
 	void SetDelayTime(int nRepeat, int nDelay);
-	BOOL m_bStarted;
+	BOOL m_bLostKey;
 	char m_buffer[256]; 
 	char m_oldbuf[256];
 

@@ -29,6 +29,7 @@ CSlots::CSlots()
 	}
 	m_nDiskSlotNum = -1;
 	m_nHardDiskSlotNum = -1;
+	m_nMouseSlotNum = -1;
 }
 
 CSlots::~CSlots()
@@ -52,6 +53,7 @@ BOOL CSlots::Initialize()
 	nDiskInterface = 0;
 	m_nDiskSlotNum = -1;
 	m_nHardDiskSlotNum = -1;
+	m_nMouseSlotNum = -1;
 
 	for ( i = MAX_SLOTS-1; i >= 0; i-- )
 	{
@@ -77,6 +79,12 @@ BOOL CSlots::Initialize()
 				}
 				break;
 			case CARD_MOUSE_INTERFACE:
+				if (m_nMouseSlotNum == -1)
+				{
+					m_nMouseSlotNum = i;
+				}
+				break;
+
 			case CARD_PHASOR:
 				break;
 			}
@@ -111,6 +119,10 @@ BOOL CSlots::HasHardDiskInterface()
 	return ( m_nHardDiskSlotNum >= 0 );
 }
 
+BOOL CSlots::HasMouseInterface()
+{
+	return (m_nMouseSlotNum >= 0);
+}
 
 void CSlots::PowerOn()
 {

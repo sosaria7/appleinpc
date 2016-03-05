@@ -261,6 +261,7 @@ void CAppleClock::PowerOn()
 {
 	SetPriority( THREAD_PRIORITY_HIGHEST );
 	SetActive(TRUE);
+	m_pScreen->SetMouseCapture(m_cSlots.HasMouseInterface());
 	m_pScreen->PowerOn();
 }
 

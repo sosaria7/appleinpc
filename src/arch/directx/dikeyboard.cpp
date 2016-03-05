@@ -24,7 +24,7 @@ CDIKeyboard::CDIKeyboard() :
 	ZeroMemory(m_oldbuf,sizeof(m_oldbuf));
 	m_hKeyboardEvent = NULL;
 	m_last = 0;
-	m_bStarted = FALSE;
+	m_bLostKey = FALSE;
 	m_uRepeat = 33;
 	m_uDelay = 490;
 }
@@ -166,6 +166,8 @@ void CDIKeyboard::Run()
 	DWORD dwObject;
 	HANDLE hEvents[] = { GetShutdownEvent(), m_hKeyboardEvent };
 	int wait = 0;
+	m_bLostKey = FALSE;
+
 	while( TRUE )
 	{
 		dwObject = ::WaitForMultipleObjects( 2, hEvents, FALSE, /*33*/ m_uRepeat );
@@ -173,8 +175,11 @@ void CDIKeyboard::Run()
 			break;
 		else if ( dwObject == WAIT_OBJECT_0 + 1 )
 		{
-			if ( !PollDevice() )
+			if (!PollDevice())
+			{
+				m_bLostKey = TRUE;
 				break;
+			}
 			if ( KEYDOWN( m_buffer, DIK_LCONTROL ) && KEYDOWN( m_buffer, DIK_LMENU ) )
 				break;
 			wait = /*15*/ m_uDelay / m_uRepeat;
@@ -190,6 +195,15 @@ void CDIKeyboard::Run()
 		}
 		else
 			break;
+	}
+}
+
+void CDIKeyboard::Restore()
+{
+	if (m_bLostKey == TRUE)
+	{
+		m_bLostKey = FALSE;
+		this->SetActive(TRUE);
 	}
 }
 
