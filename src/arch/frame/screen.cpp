@@ -88,6 +88,7 @@ CScreen::CScreen()
 							ANTIALIASED_QUALITY, FF_DONTCARE, "Arial Narrow" );
 	m_bPreview = FALSE;
 	m_bTextMode = TRUE;
+	m_bTextModeCheck = TRUE;
 	SetDefaultColors();
 }
 
@@ -164,18 +165,23 @@ void CScreen::Draw( int nLine, int nColumn )
 	if ( m_iScrMode & SS_80STORE )		// display page 2 only if 80STORE is off
 		mode &= ~SS_PAGE2;
 	
-	y = nLine;
-	if( m_iScrMode&SS_TEXT || !(m_iScrMode&SS_HIRES) || (m_iScrMode&SS_MIXED && nLine > 159) )
-	{
-		nLine = nLine & ~0x07;
-	}
-	if ( (m_iScrMode & SS_TEXT) == 0 )
-	{
-		m_bTextMode = FALSE;
-	}
 	if (nLine == 0 && nColumn == 0)
 	{
-		m_bTextMode = ((m_iScrMode & SS_TEXT) != 0);
+		m_bTextModeCheck = ((m_iScrMode & SS_TEXT) != 0);
+	}
+	else if ((m_iScrMode & SS_TEXT) == 0)
+	{
+		m_bTextModeCheck = FALSE;
+	}
+	if (nLine == 191 && nColumn == 39)
+	{
+		m_bTextMode = m_bTextModeCheck;
+	}
+
+	y = nLine;
+	if (m_iScrMode&SS_TEXT || !(m_iScrMode&SS_HIRES) || (m_iScrMode&SS_MIXED && nLine > 159))
+	{
+		nLine = nLine & ~0x07;
 	}
 
 	if(m_iScrMode&SS_TEXT || (m_iScrMode&SS_MIXED && nLine>159))
