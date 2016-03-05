@@ -201,6 +201,7 @@ protected:
 //functions
 protected:
 	BOOL InitDirectX();
+	void CaptureInput(BOOL bMouseCapture);
 
 // Overrides
 	// ClassWizard generated virtual function overrides

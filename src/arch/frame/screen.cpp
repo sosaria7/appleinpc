@@ -102,6 +102,7 @@ CScreen::~CScreen()
 void CScreen::PowerOn()
 {
 	this->SetActive(TRUE);
+	CaptureInput(FALSE);
 }
 
 void CScreen::PowerOff()
@@ -1398,11 +1399,10 @@ void CScreen::Reset()
 	RedrawAll();
 }
 
-void CScreen::OnLButtonUp(UINT nFlags, CPoint point) 
+void CScreen::CaptureInput(BOOL bMouseCapture)
 {
-	// TODO: Add your message handler code here and/or call default
 	g_cDIKeyboard.SetActive(TRUE, FALSE);
-	if (m_bMouseCapture == TRUE)
+	if (bMouseCapture == TRUE)
 	{
 		g_cDIMouse.SetActive(TRUE, FALSE);
 		SetMessage("press \"LEFT CTRL+ALT\" key to release mouse and keyboard");
@@ -1411,6 +1411,13 @@ void CScreen::OnLButtonUp(UINT nFlags, CPoint point)
 	{
 		SetMessage("press \"LEFT CTRL+ALT\" key to release keyboard");
 	}
+}
+
+void CScreen::OnLButtonUp(UINT nFlags, CPoint point) 
+{
+	// TODO: Add your message handler code here and/or call default
+	CaptureInput(m_bMouseCapture);
+
 	CWnd::OnLButtonUp(nFlags, point);
 }
 
