@@ -173,9 +173,9 @@ void CScreen::Draw( int nLine, int nColumn )
 	{
 		m_bTextMode = FALSE;
 	}
-	else if (nLine == 0 && nColumn == 0)
+	if (nLine == 0 && nColumn == 0)
 	{
-		m_bTextMode = TRUE;
+		m_bTextMode = ((m_iScrMode & SS_TEXT) != 0);
 	}
 
 	if(m_iScrMode&SS_TEXT || (m_iScrMode&SS_MIXED && nLine>159))
