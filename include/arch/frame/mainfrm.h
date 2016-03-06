@@ -48,6 +48,8 @@ public:
 	BOOL  m_bDoubleSize;
 	BOOL  m_bFullScreen;
 	BOOL  m_bKeyboardCapture;
+	HCURSOR m_hCursor;
+	POINT m_stCursorPos;
 	virtual ~CMainFrame();
 #ifdef _DEBUG
 	virtual void AssertValid() const;
@@ -98,6 +100,7 @@ protected:
 public:
 	afx_msg void OnSuspend();
 	afx_msg void OnResume();
+	afx_msg void OnRawInput(UINT nInputcode, HRAWINPUT hRawInput);
 };
 
 /////////////////////////////////////////////////////////////////////////////

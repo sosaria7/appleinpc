@@ -6,6 +6,7 @@
 #include "arch/directx/dikeyboard.h"
 #include "arch/directx/dimouse.h"
 #include "aipcdefs.h"
+#include <dinput.h>
 
 extern CDIMouse g_cDIMouse;
 extern BYTE akm_normal[];
@@ -27,12 +28,12 @@ CDIKeyboard::CDIKeyboard() :
 	m_bLostKey = FALSE;
 	m_uRepeat = 33;
 	m_uDelay = 490;
+	m_hwnd = NULL;
 }
 
 CDIKeyboard::~CDIKeyboard()
 {
-	// Shutdown and UnAcquire!
-	CDIBase::Shutdown();
+	this->SetActive(FALSE,TRUE);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -53,75 +54,8 @@ bool CDIKeyboard::InitKeyboard()
 		return false;
 	}
 
-	// Keyboard Should Always Be An Attached Device!
-	// Therefore safe to assume
-#if DIRECTINPUT_VERSION > 0x0700
-	hr=m_lpDI->CreateDevice(GUID_SysKeyboard,(IDirectInputDevice8A**)&m_lpDIDevice,NULL);
-#else
-	hr=m_lpDI->CreateDeviceEx(GUID_SysKeyboard,IID_IDirectInputDevice7,(void**)&m_lpDIDevice,NULL);
-#endif
-	if FAILED(hr) 
-	{ 
-		CDIBase::Shutdown(); 
-		return false; 
-	}
-
-	// Now Set The Data Format - Keyboard!
-	hr = m_lpDIDevice->SetDataFormat(&c_dfDIKeyboard); 
-	if FAILED(hr)
-	{ 
-		CDIBase::Shutdown(); 
-		return false; 
-	}
-
-	// Set the cooperative level 
-	hr = m_lpDIDevice->SetCooperativeLevel(m_hwnd, 
-					   DISCL_FOREGROUND | DISCL_EXCLUSIVE); //DISCL_NONEXCLUSIVE
-	if FAILED(hr)
-	{ 
-		CDIBase::Shutdown(); 
-		return false; 
-	}
-
 	m_Initialised=true;
 	return true;	// Successfully Created DI Devices!
-}
-
-//////////////////////////////////////////////////////////////////////
-//
-//  Poll the device and update the m_buffer data!
-//
-//////////////////////////////////////////////////////////////////////
-bool CDIKeyboard::PollDevice(void)
-{
-	// Has this object been initialised?
-	if ( !m_Initialised || !m_lpDIDevice ) 
-	{
-		TRACE("Device has not Created in CDIkeyboard::PollDevice()\n");
-		return false;
-	}
-
-	// Now Get the Keyboard State to the Keyboard Buffer!
-    hr = m_lpDIDevice->GetDeviceState( sizeof(m_buffer), (LPVOID)m_buffer );
-    if FAILED(hr)
-    {
-		TRACE("Failed To Obtain Keyboard Data in CDIKeyboard::PollDevice()\nTrying To Restore\n");
-		TRACE(GetDIError(hr));
-
-		if( hr==DIERR_INPUTLOST || hr==DIERR_NOTACQUIRED )
-		{
-			if( !Acquire(true) )
-			{
-				TRACE("CDIKeyboard::PollDevice Quitting, Could Not Acquire The Device\n");
-				return false;
-			}
-			hr = m_lpDIDevice->GetDeviceState( sizeof(m_buffer), (LPVOID)m_buffer );
-		}
-		if FAILED(hr)
-			return false;
-    }
-	// Success, We've Acquired the device!
-	return true;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -148,7 +82,7 @@ bool CDIKeyboard::IsKeyPressed(unsigned char keyname)
 //////////////////////////////////////////////////////////////////////
 void CDIKeyboard::SetHWND(HWND hwnd)
 {
-	CDIBase::SetHWND(hwnd);
+	m_hwnd = hwnd;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -159,6 +93,26 @@ void CDIKeyboard::SetHWND(HWND hwnd)
 void CDIKeyboard::SetHWND(CWnd* cwnd)
 {
 	SetHWND(cwnd->m_hWnd);
+}
+
+void CDIKeyboard::KeyDown(USHORT key)
+{
+	if (key >= 0x100 || (m_buffer[key] & 0x80) != 0)
+	{
+		return;
+	}
+	m_buffer[key] |= 0x80;
+	::SetEvent(m_hKeyboardEvent);
+}
+
+void CDIKeyboard::KeyUp(USHORT key)
+{
+	if (key >= 0x100 || (m_buffer[key] & 0x80) == 0)
+	{
+		return;
+	}
+	m_buffer[key] &= ~0x80;
+	::SetEvent(m_hKeyboardEvent);
 }
 
 void CDIKeyboard::Run()
@@ -175,11 +129,8 @@ void CDIKeyboard::Run()
 			break;
 		else if ( dwObject == WAIT_OBJECT_0 + 1 )
 		{
-			if (!PollDevice())
-			{
-				m_bLostKey = TRUE;
-				break;
-			}
+			TRACE("Key Event\n");
+
 			if ( KEYDOWN( m_buffer, DIK_LCONTROL ) && KEYDOWN( m_buffer, DIK_LMENU ) )
 				break;
 			wait = /*15*/ m_uDelay / m_uRepeat;
@@ -209,30 +160,43 @@ void CDIKeyboard::Restore()
 
 BOOL CDIKeyboard::OnBeforeActivate()
 {
-	HRESULT hr;
 	m_hKeyboardEvent = ::CreateEvent( NULL, FALSE, FALSE, "KeyboardEvent" );
-	hr = m_lpDIDevice->SetEventNotification( m_hKeyboardEvent );
-	if FAILED(hr)
-	{
-		TRACE( "Error SetEventNotification in IDirectInputDevice\n" );
-		TRACE( GetDIError(hr) );
+
+	RAWINPUTDEVICE Rid[1];
+
+	Rid[0].usUsagePage = 0x01;
+	Rid[0].usUsage = 0x06;
+	Rid[0].dwFlags = RIDEV_NOLEGACY;   // adds HID keyboard and also ignores legacy keyboard messages
+	Rid[0].hwndTarget = m_hwnd;
+
+	if (RegisterRawInputDevices(Rid, 1, sizeof(Rid[0])) == FALSE) {
+		//registration failed. Call GetLastError for the cause of the error
+		TRACE("CDIKeyboard::OnBeforeActivate() RegisterRawInputDevices() : %08x\n", GetLastError());
 		return FALSE;
 	}
-	::PostMessage( m_hwnd, UM_REQACQUIRE, TRUE, (LPARAM)this );
+
+	::PostMessage(m_hwnd, UM_REQACQUIRE, TRUE, (LPARAM)this);
+
 	return TRUE;
 }
 
 void CDIKeyboard::OnAfterDeactivate()
 {
-	HRESULT hr;
 	::PostMessage( m_hwnd, UM_REQACQUIRE, FALSE, (LPARAM)this );
-	::Sleep(0);
-	hr = m_lpDIDevice->SetEventNotification( NULL );
-	while ( hr == DIERR_ACQUIRED )	// not Unacquired yet
-	{
-		::Sleep(0);
-		hr = m_lpDIDevice->SetEventNotification( NULL );
+
+	RAWINPUTDEVICE Rid[1];
+
+	Rid[0].usUsagePage = 0x01;
+	Rid[0].usUsage = 0x06;
+	Rid[0].dwFlags = RIDEV_REMOVE;   // remove HID keyboard
+	Rid[0].hwndTarget = 0;
+
+
+	if (RegisterRawInputDevices(Rid, 1, sizeof(Rid[0])) == FALSE) {
+		//registration failed. Call GetLastError for the cause of the error
+		TRACE("CDIKeyboard::OnBeforeActivate() RegisterRawInputDevices() : %08x\n", GetLastError());
 	}
+
 	CloseHandle( m_hKeyboardEvent );
 	ZeroMemory( m_buffer, sizeof(m_buffer) );
 	ZeroMemory( m_oldbuf, sizeof(m_oldbuf) );

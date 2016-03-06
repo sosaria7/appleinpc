@@ -18,6 +18,8 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
+#define MOVE_STEP		3
+
 // Sets mouse mode
 #define MOUSE_SET		0x00
 // Reads mouse position
@@ -436,8 +438,8 @@ void CMouseCard::OnCommand()
 	case MOUSE_READ:				// Read
 		m_nDataLen = 6;
 		m_byState &= 0x20;
-		m_nX = g_cDIMouse.GetX();
-		m_nY = g_cDIMouse.GetY();
+		m_nX = g_cDIMouse.GetX() / MOVE_STEP;
+		m_nY = g_cDIMouse.GetY() / MOVE_STEP;
 		if ( m_bBtn0 )	m_byState |= 0x40;			// Previous Button 0
 		if ( m_bBtn1 )	m_byState |= 0x01;			// Previous Button 1
 		m_bBtn0 = g_cDIMouse.IsButton0();
@@ -471,7 +473,7 @@ void CMouseCard::OnCommand()
 		break;
 	case MOUSE_HOME:
 		m_nDataLen = 1;
-		g_cDIMouse.SetPosition( 0, 0, 0 );
+		g_cDIMouse.SetPosition( 0, 0 );
 		break;
 	case MOUSE_TIME:		// 0x90
 		switch( m_byBuff[0] & 0x0C )
@@ -506,21 +508,21 @@ void CMouseCard::OnWrite()
 		nMin = ( m_byBuff[3] << 8 ) | m_byBuff[1];
 		nMax = ( m_byBuff[4] << 8 ) | m_byBuff[2];
 		if ( m_byBuff[0] & 1 )	// Clamp Y
-			g_cDIMouse.ClampY( nMin, nMax );
+			g_cDIMouse.ClampY( nMin * MOVE_STEP, nMax * MOVE_STEP);
 		else					// Clamp X
-			g_cDIMouse.ClampX( nMin, nMax );
+			g_cDIMouse.ClampX( nMin * MOVE_STEP, nMax * MOVE_STEP);
 		break;
 	case MOUSE_POS:
 		m_nX = ( m_byBuff[2] << 8 ) | m_byBuff[1];
 		m_nY = ( m_byBuff[4] << 8 ) | m_byBuff[3];
-		g_cDIMouse.SetPosition( m_nX, m_nY, 0 );
+		g_cDIMouse.SetPosition( m_nX * MOVE_STEP, m_nY * MOVE_STEP );
 		break;
 	case MOUSE_INIT:
 		m_nX = 0;
 		m_nY = 0;
-		g_cDIMouse.ClampX( 0, 1023 );
-		g_cDIMouse.ClampY( 0, 1023 );
-		g_cDIMouse.SetPosition( 0, 0, 0 );
+		g_cDIMouse.ClampX( 0, 1023 * MOVE_STEP);
+		g_cDIMouse.ClampY( 0, 1023 * MOVE_STEP);
+		g_cDIMouse.SetPosition( 0, 0 );
 		break;
 	}
 }
@@ -534,8 +536,8 @@ void CMouseCard::OnMouseEvent()
 	if ( !( m_byMode & 1 ) )		// Mouse Off
 		return;
 
-	nX = g_cDIMouse.GetX();
-	nY = g_cDIMouse.GetY();
+	nX = g_cDIMouse.GetX() / MOVE_STEP;
+	nY = g_cDIMouse.GetY() / MOVE_STEP;
 	bBtn0 = g_cDIMouse.IsButton0();
 	bBtn1 = g_cDIMouse.IsButton1();
 	if ( m_nX != nX || m_nY != nY )
@@ -574,15 +576,15 @@ void CMouseCard::Reset()
 	m_nY = 0;
 	m_bBtn0 = 0;
 	m_bBtn1 = 0;
-	g_cDIMouse.ClampX( 0, 1023 );
-	g_cDIMouse.ClampY( 0, 1023 );
-	g_cDIMouse.SetPosition( 0, 0, 0 );
+	g_cDIMouse.ClampX( 0, 1023 * MOVE_STEP);
+	g_cDIMouse.ClampY( 0, 1023 * MOVE_STEP);
+	g_cDIMouse.SetPosition( 0, 0 );
 }
 
 void CMouseCard::Serialize( CArchive &ar )
 {
 	CCard::Serialize( ar );
-
+	int nA, nB;
 	if ( ar.IsStoring() )
 	{
 		m_c6821.Serialize( ar );
@@ -598,6 +600,13 @@ void CMouseCard::Serialize( CArchive &ar )
 		ar << m_bBtn1;
 		
 		ar << m_bVBL;
+		ar << m_byMode;
+		ar << (int)g_cDIMouse.GetMinX();
+		ar << (int)g_cDIMouse.GetMaxX();
+		ar << (int)g_cDIMouse.GetMinY();
+		ar << (int)g_cDIMouse.GetMaxY();
+		ar << (int)g_cDIMouse.GetX();
+		ar << (int)g_cDIMouse.GetY();
 		ar.Write( m_byBuff, sizeof(m_byBuff) );
 	}
 	else
@@ -615,6 +624,19 @@ void CMouseCard::Serialize( CArchive &ar )
 		ar >> m_bBtn1;
 		
 		ar >> m_bVBL;
+		if (g_nSerializeVer >= 6)
+		{
+			ar >> m_byMode;
+			ar >> nA;
+			ar >> nB;
+			g_cDIMouse.ClampX(nA, nB);
+			ar >> nA;
+			ar >> nB;
+			g_cDIMouse.ClampY(nA, nB);
+			ar >> nA;
+			ar >> nB;
+			g_cDIMouse.SetPosition(nA, nB);
+		}
 		ar.Read( m_byBuff, sizeof(m_byBuff) );
 	}
 }

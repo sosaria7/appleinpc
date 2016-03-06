@@ -16,8 +16,6 @@ class CKeyboard
 {
 public:
 	static void EnableNumKey(BOOL enable);
-	BOOL GetKeyStatus( BYTE key );
-	void OnKeyUp(UINT nChar, UINT nFlags);
 	BYTE AppleKeyRead(BYTE addr);
 	void AppleKeyWrite(BYTE addr, BYTE data);
 	void OnKeyDown(WPARAM wParam, LPARAM lParam);
@@ -25,7 +23,6 @@ public:
 	virtual ~CKeyboard();
 protected:
 	BOOL m_bCaps;
-	BOOL m_bKeyStatus[256];
 	BYTE m_keyStrobe;
 	BYTE m_lastKey;
 	BYTE m_last;

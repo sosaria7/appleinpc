@@ -331,11 +331,8 @@ bool CDIJoystick::InitJoystick()
 	// for debugging so we don't keep losing the device when switching to 
 	// a debug window. 
 
-    //cl1 = DISCL_FOREGROUND;
-	cl1 = DISCL_BACKGROUND;
-#ifdef _DEBUG
-    cl1 = DISCL_BACKGROUND;
-#endif
+    cl1 = DISCL_FOREGROUND;
+	//cl1 = DISCL_BACKGROUND;
 
 	// now set the co-operation level.
 	hr=m_lpDIDevice->SetCooperativeLevel( m_hwnd, cl | cl1 );

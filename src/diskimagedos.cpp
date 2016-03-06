@@ -63,8 +63,8 @@ BOOL CDiskImageDos::ReadBuffer()
 	long lLen;
 	if ( m_hFile == -1 )
 		return FALSE;
-	lseek( m_hFile, m_nTrack << 12, SEEK_SET );
-	lLen = read( m_hFile, m_abyDosBuffer, DOS_TRACK_BYTES );
+	_lseek( m_hFile, m_nTrack << 12, SEEK_SET );
+	lLen = _read( m_hFile, m_abyDosBuffer, DOS_TRACK_BYTES );
 	Nibblize();
 	m_nStatus |= DIS_BUFFER_VALID;
 	m_nStatus &= ~DIS_BUFFER_DIRTY;
@@ -77,8 +77,8 @@ void CDiskImageDos::SaveBuffer()
 	if ( m_hFile == -1 )
 		return;
 	Denibblize();
-	lseek( m_hFile, m_nTrack << 12, SEEK_SET );
-	lLen = write( m_hFile, m_abyDosBuffer, DOS_TRACK_BYTES );
+	_lseek( m_hFile, m_nTrack << 12, SEEK_SET );
+	lLen = _write( m_hFile, m_abyDosBuffer, DOS_TRACK_BYTES );
 	m_nStatus &= ~DIS_BUFFER_DIRTY;
 }
 
@@ -307,8 +307,8 @@ BOOL CDiskImageDos::CheckImage(int hFile, const BYTE* order)
 	err = FALSE;
 	for ( i = 1; i < 16 &&  !err; i++ )
 	{
-		lseek( hFile, 0x11002 + ( order[i] << 8 ), SEEK_SET );
-		if ( read( hFile, &ch, 1 ) != 1 )
+		_lseek( hFile, 0x11002 + ( order[i] << 8 ), SEEK_SET );
+		if (_read(hFile, &ch, 1 ) != 1 )
 			err = TRUE;
 		if ( !err && ch != i - 1 )
 			err = TRUE;
@@ -319,8 +319,8 @@ BOOL CDiskImageDos::CheckImage(int hFile, const BYTE* order)
 	err = 0;
 	for ( i = 2; i < 6 && !err; i++ )
 	{
-		lseek( hFile, 0x100 + ( order[i] << 9 ), SEEK_SET );
-		if ( read( hFile, val, 4 ) != 4 )
+		_lseek( hFile, 0x100 + ( order[i] << 9 ), SEEK_SET );
+		if (_read(hFile, val, 4 ) != 4 )
 		{
 			err = TRUE;
 			break;

@@ -33,10 +33,7 @@ CCriticalSection g_keyboardLock;
 
 CKeyboard::CKeyboard()
 {
-	int i;
 	m_lastKey=0;
-	for( i = 0; i < 256; i++ )
-		m_bKeyStatus[i] = FALSE;
 	m_bCaps = FALSE;
 }
 
@@ -88,8 +85,8 @@ void CKeyboard::OnKeyDown(WPARAM wParam, LPARAM lParam)
 			{
 				if ( g_pBoard->m_cSlots.HasHardDiskInterface() )
 				{
-					g_cDIKeyboard.SetActive( FALSE, FALSE );	// don't wait for thread done
-					g_cDIMouse.SetActive( FALSE, FALSE );		// don't wait
+					//g_cDIKeyboard.SetActive( FALSE, FALSE );	// don't wait for thread done
+					//g_cDIMouse.SetActive( FALSE, FALSE );		// don't wait
 					::PostMessage( g_pBoard->m_lpwndMainFrame->m_hWnd, WM_COMMAND, ID_HARDDISK, 0 );
 				}
 			}
@@ -97,16 +94,16 @@ void CKeyboard::OnKeyDown(WPARAM wParam, LPARAM lParam)
 			{
 				if ( g_pBoard->m_cSlots.HasDiskInterface() )
 				{
-					g_cDIKeyboard.SetActive( FALSE, FALSE );	// don't wait for thread done
-					g_cDIMouse.SetActive( FALSE, FALSE );		// don't wait
+					//g_cDIKeyboard.SetActive( FALSE, FALSE );	// don't wait for thread done
+					//g_cDIMouse.SetActive( FALSE, FALSE );		// don't wait
 					::PostMessage( g_pBoard->m_lpwndMainFrame->m_hWnd, WM_COMMAND, ID_DISKETTE, 0 );
 				}
 			}
 			return;
 
 		case DIK_F10:
-			g_cDIKeyboard.SetActive( FALSE, FALSE );	// don't wait for thread done
-			g_cDIMouse.SetActive( FALSE, FALSE );		// don't wait
+			//g_cDIKeyboard.SetActive( FALSE, FALSE );	// don't wait for thread done
+			//g_cDIMouse.SetActive( FALSE, FALSE );		// don't wait
 			::PostMessage( g_pBoard->m_lpwndMainFrame->m_hWnd, WM_COMMAND, ID_CONFIGURE_SLOTS, 0 );
 			return;
 			
@@ -156,14 +153,6 @@ void CKeyboard::OnKeyDown(WPARAM wParam, LPARAM lParam)
 	}
 }
 
-void CKeyboard::OnKeyUp(UINT nChar, UINT nFlags)
-{
-	m_keyStrobe &= ~0x80;
-
-	if ( nChar < 256 )
-		m_bKeyStatus[nChar] = FALSE;
-}
-
 void CKeyboard::AppleKeyWrite(BYTE addr, BYTE data)
 {
 //	if ( addr == 0x10 )		// keyStrobe
@@ -186,11 +175,6 @@ BYTE CKeyboard::AppleKeyRead(BYTE addr)
 	return m_lastKey;
 }
 
-
-BOOL CKeyboard::GetKeyStatus(BYTE key)
-{
-	return m_bKeyStatus[key];
-}
 
 void CKeyboard::EnableNumKey(BOOL enable)
 {
