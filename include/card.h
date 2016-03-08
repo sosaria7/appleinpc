@@ -33,7 +33,7 @@ public:
 	virtual void Clock(int clock){ };
 	virtual void Reset(){ };
 	virtual void PowerOn(){ };
-	virtual void PowerOff(){ };
+	virtual void PowerOff() { Reset(); };
 	virtual CString& GetDeviceName() { return m_strDeviceName; };
 	virtual int GetDeviceNum() { return m_iDeviceNum; };
 	virtual void SetDipSwitch(int nMode)
