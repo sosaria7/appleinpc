@@ -205,7 +205,10 @@ void CAppleClock::Run()
 			host_interval = 0;
 
 		apple_interval = ( dwCurClock / dwCPMS ) - ( lastAppleClock / dwCPMS );
-
+		if (dwCurClock < lastAppleClock)
+		{
+			apple_interval += (DWORD)( 0x100000000 / dwCPMS );
+		}
 		if ( (int)(apple_interval - host_interval ) > 0
 			|| host_interval > 500 )
 		{
