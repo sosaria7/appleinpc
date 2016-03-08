@@ -85,6 +85,8 @@ void CDlgConfigure::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_SLOT7_SETUP, m_btnSetupCard[6]);
 	DDX_SliderButtonCtrl(pDX, IDC_KEYBOARD_DELAY, m_sbKeyDelay, 0);
 	DDX_SliderButtonCtrl(pDX, IDC_KEYBOARD_REPEAT, m_sbKeyRepeat, 0);
+	DDX_Control(pDX, IDC_MACHINE_NTSC, m_btnMachineNTSC);
+	DDX_Control(pDX, IDC_MACHINE_PAL, m_btnMachinePAL);
 }
 
 
@@ -201,6 +203,14 @@ BOOL CDlgConfigure::OnInitDialog()
 	}
 	// not implemented yet
 	CheckRadioButton( IDC_MACHINE_2PLUS, IDC_MACHINE_2C, IDC_MACHINE_2E );
+
+	// NTSC / PAL
+	m_btnMachineNTSC.EnableWindow(!bIsPowerOn);
+	m_btnMachinePAL.EnableWindow(!bIsPowerOn);
+	if (g_pBoard->m_bPALMode == TRUE)
+		m_btnMachinePAL.SetCheck(BST_CHECKED);
+	else
+		m_btnMachineNTSC.SetCheck(BST_CHECKED);
 
 	// keyboard
 	g_cDIKeyboard.GetDelayTime( &nKeyRepeat, &nKeyDelay );
@@ -331,6 +341,11 @@ void CDlgConfigure::OnOK()
 	else
 		g_pBoard->m_cSpeaker.SetVolume( 5 - nVol );	// nVol is -26 to 0
 	g_pBoard->m_cSpeaker.m_bMute = m_bSpeakerMute;
+
+	if (m_btnMachinePAL.GetCheck() == BST_CHECKED)
+		g_pBoard->m_bPALMode = TRUE;
+	else
+		g_pBoard->m_bPALMode = FALSE;
 
 	CDialog::OnOK();
 }

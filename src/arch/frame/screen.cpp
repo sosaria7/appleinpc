@@ -53,8 +53,8 @@ CScreen::CScreen()
 	m_bPowerOn = FALSE;
 	m_iBlinkCount = 0;
 	m_nVideoMode = SM_COLOR;
-	m_iFrameCount = 0;
 	m_bScanline = FALSE;
+	m_dFrameRate = 0;
 
 	int i, j;
 	
@@ -339,13 +339,13 @@ void CScreen::Clock( DWORD clock )
 			m_nLine++;
 		}
 		m_dwClock++;
-		if (m_dwClock == SCREEN_CLOCK - VBL_CLOCK)
+		if (m_dwClock == g_dwFrameClock - g_dwVBLClock)
 		{
 			Redraw();
 		}
-		if ( m_dwClock >= SCREEN_CLOCK )
+		if ( m_dwClock >= g_dwFrameClock)
 		{
-			m_dwClock -= SCREEN_CLOCK;
+			m_dwClock -= g_dwFrameClock;
 			m_nLine = 0;
 			m_nColumn = 0;
 			m_iBlinkCount++;
@@ -355,7 +355,7 @@ void CScreen::Clock( DWORD clock )
 
 BOOL CScreen::IsVBL()
 {
-	return ( m_dwClock >= SCREEN_CLOCK - VBL_CLOCK );
+	return ( m_dwClock >= g_dwFrameClock - g_dwVBLClock);
 }
 
 void CScreen::Redraw()
@@ -366,6 +366,20 @@ void CScreen::Redraw()
 
 void CScreen::Run()
 {
+	DWORD dwHostClock;
+	int i;
+	int nCurFrameIndex = 0;
+	bool bIsFirstCycle = TRUE;
+	DWORD dwInterval;
+	DWORD dwFrameCount = 0;
+
+	m_dFrameRate = 0;
+
+	dwHostClock = GetTickCount();
+	for (i = 0; i < FRAME_CHECK_COUNT; i++)
+	{
+		m_adwFrameCheck[i] = dwHostClock;
+	}
 	Suspend(FALSE);
 	m_bPowerOn = TRUE;
 
@@ -375,7 +389,31 @@ void CScreen::Run()
 		if (ShutdownHere())
 			break;
 		Render();
-		m_iFrameCount++;
+		dwFrameCount++;
+		if (dwFrameCount == FRAME_CHECK_POINT)
+		{
+			dwFrameCount = 0;
+			dwHostClock = GetTickCount();
+			dwInterval = dwHostClock - m_adwFrameCheck[nCurFrameIndex];
+			m_adwFrameCheck[nCurFrameIndex] = dwHostClock;
+			nCurFrameIndex = (nCurFrameIndex + 1) % FRAME_CHECK_COUNT;
+
+			if (dwInterval != 0)
+			{
+				if (bIsFirstCycle == TRUE)
+				{
+					m_dFrameRate = (double)(FRAME_CHECK_POINT * nCurFrameIndex * 1000) / dwInterval;
+					if (nCurFrameIndex == FRAME_CHECK_COUNT-1)
+					{
+						bIsFirstCycle = FALSE;
+					}
+				}
+				else
+				{
+					m_dFrameRate = (double)(FRAME_CHECK_POINT * FRAME_CHECK_COUNT * 1000) / dwInterval;
+				}
+			}
+		}
 		Sleep(5);
 	}
 	m_bPowerOn = FALSE;
@@ -838,7 +876,7 @@ int CScreen::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 	CMainFrame* pParent = g_pBoard->m_lpwndMainFrame;
 	InitDirectX();	
-	SetTimer(1, 3000, NULL);
+	SetTimer(1, 1000, NULL);
 	// TODO: Add your specialized creation code here
 	return 0;
 }
@@ -847,16 +885,10 @@ void CScreen::OnTimer(UINT nIDEvent)
 {
 	// TODO: Add your message handler code here and/or call default
 	// measure clock speed
-	DWORD sec = GetTickCount();
-	DWORD cpu_interval = sec - m_nTime;
-	if ( cpu_interval > 3000 )
 	{
-		double frame = (double)( m_iFrameCount * 1000 ) / ( cpu_interval );
-		m_iFrameCount = 0;
-		m_nTime = sec;
 		CMainFrame* pParent = g_pBoard->m_lpwndMainFrame;
-		pParent->m_wndStatusBar.SetFrame( frame );
-		pParent->m_wndStatusBar.SetSpeed( g_pBoard->m_dClockSpeed );
+		pParent->m_wndStatusBar.SetFrame(m_dFrameRate);
+		pParent->m_wndStatusBar.SetSpeed(g_pBoard->m_dClockSpeed);
 		switch( m_nMsgVisiable )
 		{
 		case 0:
@@ -1482,7 +1514,7 @@ void CScreen::SetMessage(TCHAR *szText)
 //	    if ( !m_bInitializing )
 	    Present();
 	}
-	m_nMsgVisiable = 2;
+	m_nMsgVisiable = 5;
 }
 
 void CScreen::ToggleMessage()

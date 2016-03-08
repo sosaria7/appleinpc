@@ -121,6 +121,9 @@ typedef struct
     int q;
 } sYIQ;
 
+#define FRAME_CHECK_COUNT	10
+#define FRAME_CHECK_POINT	30
+
 class CScreen : public CWnd, public CCustomThread
 {
 public:
@@ -145,6 +148,8 @@ public:
 	DWORD m_dwClock;
 	int m_nLine;
 	int m_nColumn;
+	DWORD m_adwFrameCheck[FRAME_CHECK_COUNT];
+	double m_dFrameRate;
 
 	void Serialize(CArchive &ar);
 
@@ -215,7 +220,6 @@ protected:
 
 	int m_iColorDepth;
 	DWORD m_nTime;
-	unsigned int m_iFrameCount;
 	BOOL m_bPowerOn;
 	BOOL m_bScanline;
 

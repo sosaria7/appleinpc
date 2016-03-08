@@ -37,6 +37,36 @@ BOOL g_debug = FALSE;
 
 CAppleClock *g_pBoard = NULL;
 
+
+
+#define LINE_CLOCK			65
+#define DRAW_CLOCK			(LINE_CLOCK*192)
+
+// 1MHz
+//#define CLOCK	1024000
+//#define CLOCK	8192000
+//#define CLOCK	1024000
+// http://mirrors.apple2.org.za/ground.icaen.uiowa.edu/MiscInfo/Empson/cpucycles
+// http://mirrors.apple2.org.za/ground.icaen.uiowa.edu/MiscInfo/Empson/videocycles
+// 14.31818*65/(65*14+2) = 1.020484
+#define CLOCK				1020484
+// 65c * 262line = 17030
+#define SCREEN_CLOCK		17030
+#define VBL_CLOCK			(SCREEN_CLOCK-DRAW_CLOCK)
+
+// PAL
+// 14.25045*65/(65*14+2) = 1.015657
+#define CLOCK_PAL			1015657
+// 65c * 312line = 7800
+#define SCREEN_CLOCK_PAL	20280
+#define VBL_CLOCK_PAL		(SCREEN_CLOCK_PAL-DRAW_CLOCK)
+
+
+
+DWORD g_dwCPS = CLOCK_PAL;
+DWORD g_dwVBLClock = VBL_CLOCK_PAL;
+DWORD g_dwFrameClock = SCREEN_CLOCK_PAL;
+
 // 0.5 sec
 #define BOOST_CLOCK_INTERVAL	( CLOCK / 2 )
 
@@ -53,6 +83,7 @@ CAppleClock::CAppleClock()
 	m_pScreen = NULL;
 	m_cpu.init_6502();
 	m_dwClock = 0;
+	m_bPALMode = FALSE;
 }
 
 CAppleClock::~CAppleClock()
@@ -80,6 +111,7 @@ void CAppleClock::Run()
 	DWORD lastAppleClock=m_dwClock;
 	DWORD dwClockInc;
 	DWORD dwCurTickCount, dwLastTickCount;
+	DWORD dwCPMS = g_dwCPS / 1000;
 
 	int sig;
 	BOOL slept;
@@ -162,7 +194,7 @@ void CAppleClock::Run()
 		host_interval = dwCurTickCount - measure1;
 		if ( host_interval > 1000 )
 		{
-			m_dClockSpeed = (double)(dwCurClock - measure2) / host_interval / ( CLOCK / 1000 );
+			m_dClockSpeed = (double)(dwCurClock - measure2) / host_interval / 1000;
 			measure1 = dwCurTickCount;		// host tick count
 			measure2 = dwCurClock;
 		}
@@ -172,7 +204,7 @@ void CAppleClock::Run()
 		else
 			host_interval = 0;
 
-		apple_interval = ( dwCurClock / ( CLOCK / 1000 ) ) - ( lastAppleClock / ( CLOCK / 1000 ) );
+		apple_interval = ( dwCurClock / dwCPMS ) - ( lastAppleClock / dwCPMS );
 
 		if ( (int)(apple_interval - host_interval ) > 0
 			|| host_interval > 500 )
@@ -259,6 +291,21 @@ void CAppleClock::Reboot()
 
 void CAppleClock::PowerOn()
 {
+	if (m_bPALMode == TRUE)
+	{
+		g_dwCPS = CLOCK_PAL;
+		g_dwFrameClock = SCREEN_CLOCK_PAL;
+		g_dwVBLClock = VBL_CLOCK_PAL;
+	}
+	else
+	{
+		g_dwCPS = CLOCK;
+		g_dwFrameClock = SCREEN_CLOCK;
+		g_dwVBLClock = VBL_CLOCK;
+	}
+
+	m_cSpeaker.ChangeSampleRate();
+
 	SetPriority( THREAD_PRIORITY_HIGHEST );
 	SetActive(TRUE);
 	m_pScreen->SetMouseCapture(m_cSlots.HasMouseInterface());
@@ -366,6 +413,7 @@ void CAppleClock::Serialize( CArchive &ar )
 	{
 		ar << m_dwClock;
 		ar << m_nAppleStatus;
+		ar << m_bPALMode;
 		m_cpu.Serialize(ar);
 		m_cIOU.Serialize(ar);
 		m_cSlots.Serialize(ar);
@@ -377,6 +425,10 @@ void CAppleClock::Serialize( CArchive &ar )
 	{
 		ar >> m_dwClock;
 		ar >> m_nAppleStatus;
+		if (g_nSerializeVer >= 6)
+		{
+			ar >> m_bPALMode;
+		}
 		m_cpu.Serialize(ar);
 		m_cIOU.Serialize(ar);
 		m_cSlots.Serialize(ar);

@@ -42,7 +42,7 @@ C8913::C8913()
 {
 	int i;
 	Reset();
-	m_dwClock = CLOCK;
+	m_dwClock = g_dwCPS;
 	m_iUpdateStep = (int)( ( (double)STEP * g_DXSound.m_nSampleRate * 8 + m_dwClock / 2 ) / m_dwClock );
 	m_nNumOfBuf = 3;
 	m_lpwBuf = new LPWORD[3];
@@ -649,8 +649,11 @@ void C8913::ChangeSampleRate()
 
 void C8913::SetClockSpeed(DWORD clock)
 {
-	m_dwClock = clock;
-	ChangeSampleRate();
+	if (m_dwClock != clock)
+	{
+		m_dwClock = clock;
+		ChangeSampleRate();
+	}
 }
 
 

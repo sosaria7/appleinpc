@@ -200,9 +200,9 @@ void CDXSound::Clock()
 
 	interval = g_pBoard->GetClock() - m_dwLastClock;
 
-	if (interval < (DWORD)(CLOCK / 60 / CHECK_STEP ))
+	if (interval < (DWORD)(g_dwCPS / 60 / CHECK_STEP ))
 		return;
-	m_dwLastClock += ((DWORD)(interval / (CLOCK / 60 / CHECK_STEP))) * (CLOCK / 60 / CHECK_STEP);
+	m_dwLastClock += ((DWORD)(interval / (g_dwCPS / 60 / CHECK_STEP))) * (g_dwCPS / 60 / CHECK_STEP);
 
 	m_lpSndBuffer->GetCurrentPosition(&dwReadPos, &dwWritePos);
 	dwDxBuffered = dwWritePos - dwReadPos;

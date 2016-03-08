@@ -9,6 +9,7 @@
 
 #include "card.h"
 #include "arch/frame/wcsliderbutton.h"
+#include "afxwin.h"
 /////////////////////////////////////////////////////////////////////////////
 // CDlgConfigure dialog
 
@@ -34,6 +35,8 @@ public:
 	CButton		m_btnSetupCard[7];
 	wcSliderButton	m_sbKeyDelay;
 	wcSliderButton	m_sbKeyRepeat;
+	CButton m_btnMachineNTSC;
+	CButton m_btnMachinePAL;
 
 // Overrides
 	// ClassWizard generated virtual function overrides

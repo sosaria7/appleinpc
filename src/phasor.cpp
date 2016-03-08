@@ -156,13 +156,13 @@ void CPhasor::Write(WORD addr, BYTE data)
 {
 	DWORD clock;
 
-	clock = CLOCK;
+	clock = g_dwCPS;
 
 	if (!(m_byMode & 02))		// Native Phasor Mode
 	{
 		m_byMode = addr & 0x01;
 		if (addr & 0x04)
-			clock = CLOCK * 2;
+			clock = g_dwCPS * 2;
 	}
 
 	m_8913[0].SetClockSpeed(clock);
@@ -175,13 +175,13 @@ BYTE CPhasor::Read(WORD addr)
 {
 	DWORD clock;
 
-	clock = CLOCK;
+	clock = g_dwCPS;
 
 	if (!(m_byMode & 02))		// Native Phasor Mode
 	{
 		m_byMode = addr & 0x01;
 		if (addr & 0x04)
-			clock = CLOCK * 2;
+			clock = g_dwCPS * 2;
 	}
 
 	m_8913[0].SetClockSpeed(clock);
@@ -226,6 +226,14 @@ void CPhasor::Clock(int clock)
 
 	if ( m_6522[1].GetIRQB() )
 		g_pBoard->m_cpu.Assert_IRQ();
+}
+
+void CPhasor::PowerOn()
+{
+	m_8913[0].SetClockSpeed(g_dwCPS);
+	m_8913[1].SetClockSpeed(g_dwCPS);
+	m_8913[2].SetClockSpeed(g_dwCPS);
+	m_8913[3].SetClockSpeed(g_dwCPS);
 }
 
 void CPhasor::Reset()

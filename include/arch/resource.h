@@ -103,7 +103,6 @@
 #define IDC_KEYBOARD_DELAY              1068
 #define IDC_JOYSTICK_NONE               1070
 #define IDC_JOYSTICK_NUMPAD             1071
-#define IDC_JOYSTICK_PCJOY              1072
 #define IDC_JOYSTICK_PCJOYSTICK         1072
 #define IDC_VIDEO_COLOR                 1073
 #define IDC_VIDEO_FREQ                  1074
@@ -151,6 +150,8 @@
 #define IDC_JOYSAT                      1122
 #define IDC_VIDEO_B                     1123
 #define IDC_SCANLINE                    1124
+#define IDC_MACHINE_NTSC                1126
+#define IDC_MACHINE_PAL                 1127
 #define ID_DEBUG                        32771
 #define ID_CONFIGURE_SLOTS              32772
 #define ID_REBOOT                       32773
@@ -200,7 +201,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        166
 #define _APS_NEXT_COMMAND_VALUE         32797
-#define _APS_NEXT_CONTROL_VALUE         1126
+#define _APS_NEXT_CONTROL_VALUE         1128
 #define _APS_NEXT_SYMED_VALUE           111
 #endif
 #endif

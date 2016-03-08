@@ -39,6 +39,8 @@ public:
 	CSpeaker	m_cSpeaker;
 
 	CEvent	m_cMessage;
+	BOOL m_bPALMode;
+
 protected:
 	CMessageQue m_queSignal;
 
@@ -85,6 +87,9 @@ protected:
 
 extern CAppleClock *g_pBoard;
 extern int g_nSerializeVer;
+extern DWORD g_dwCPS;
+extern DWORD g_dwVBLClock;
+extern DWORD g_dwFrameClock;
 
 /////////////////////////////////////////////////////////////////////////////
 

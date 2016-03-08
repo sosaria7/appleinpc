@@ -31,6 +31,7 @@ class CPhasor : public CCard
 public:
 	void SetDipSwitch( int nDipSwitch );
 	virtual void Reset();
+	virtual void PowerOn();
 	DECLARE_DYNAMIC( CPhasor );
 
 	void Clock(int clock);

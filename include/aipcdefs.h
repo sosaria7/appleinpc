@@ -1,17 +1,6 @@
 #ifndef __AIPCDEFS_H__
 #define __AIPCDEFS_H__
 
-// 1MHz
-//#define CLOCK	1024000
-//#define CLOCK	8192000
-//#define CLOCK	1024000
-// 1.020484 MHz (http://mirrors.apple2.org.za/ground.icaen.uiowa.edu/MiscInfo/Empson/cpucycles)
-#define CLOCK	1020484
-
-#define LINE_CLOCK		65
-#define SCREEN_CLOCK	17030
-//#define VBL_CLOCK		(SCREEN_CLOCK-(LINE_CLOCK*192))
-#define VBL_CLOCK		4550
 
 // OS 환경에 따른 설정
 #define PATH_MAX _MAX_PATH

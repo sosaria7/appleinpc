@@ -17,6 +17,8 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
+#define CLOCK		1020484
+
 #define MOTOR_ON		CLOCK
 #define WRITE_ON		( CLOCK / 10 )
 //IMPLEMENT_DYNAMIC( CDiskInterface, CCard );
