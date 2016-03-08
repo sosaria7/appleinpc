@@ -204,15 +204,12 @@ void CAppleClock::Run()
 		else
 			host_interval = 0;
 
-		apple_interval = ( dwCurClock / dwCPMS ) - ( lastAppleClock / dwCPMS );
-		if (dwCurClock < lastAppleClock)
-		{
-			apple_interval += (DWORD)( 0x100000000 / dwCPMS );
-		}
+		apple_interval = (dwCurClock - lastAppleClock) / dwCPMS;
+
 		if ( (int)(apple_interval - host_interval ) > 0
 			|| host_interval > 500 )
 		{
-			if ( host_interval > 500)
+			if ( host_interval > 500 || ( apple_interval - host_interval ) > 1000 )
 			{
 				Sleep(1);
 				dwLastTickCount = dwCurTickCount;
@@ -228,7 +225,7 @@ void CAppleClock::Run()
 				}
 				dwLastTickCount += apple_interval;
 			}
-			lastAppleClock = dwCurClock;
+			lastAppleClock += apple_interval * dwCPMS;
 		}
 	}
 	m_pScreen->ClearBuffer();
