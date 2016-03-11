@@ -1,4 +1,4 @@
-// 65c02.cpp: implementation of the C65c02 class.
+// 65c02.cpp: implementation of the C6502 class.
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -6,12 +6,10 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-#define MC65C02
-
 #include "arch/frame/stdafx.h"
 #include "appleclock.h"
 #include "memory.h"
-#include "65c02.h"
+#include "6502.h"
 #include "65c02_op.h"
 
 #define RebootSig		0x01
@@ -63,22 +61,23 @@ static char THIS_FILE[]=__FILE__;
 static int g_breakpoint = -1;
 #endif
 
-C65c02::C65c02()
+C6502::C6502()
+	: C65c02()
 {
 	m_initialized=TRUE;
 
 #ifdef _DEBUG
 	m_current=0;
 #endif
-	init_6502();
+//	init_6502();
 }
 
-C65c02::~C65c02()
+C6502::~C6502()
 {
 
 }
 
-int C65c02::Process()
+int C6502::Process()
 {
 	register BYTE data;
 	register WORD addr;
@@ -355,11 +354,7 @@ int C65c02::Process()
 	case 0x6c:
 		// 65c02 : 6 cycle
 		// 6502 : 5 cycle
-#ifdef MC65C02
-		IND16; JMP; CLOCK(6); break;
-#else
 		IND16; JMP; CLOCK(5); break;
-#endif
 		/* JSR Absolute */
 	case 0x20:
 		ABS; JSR; CLOCK(6); break;
@@ -598,165 +593,7 @@ int C65c02::Process()
 	case 0x98:
 		TYA; CLOCK(2); break;
 
-#ifdef MC65C02
-		/* ADC (Indirect) */
-	case 0x72:
-		IND; MEM; ADC; WACC; CLOCK(5); break;
-		/* AND (Indirect) */
-	case 0x32:
-		IND; MEM; AND; WACC; CLOCK(5); break;
-		/* BBR(bit) ZeroPage rr */
-	case 0x0f:
-		ZP; MEM; BBR(0x01); CLOCK(5); break;
-	case 0x1f:
-		ZP; MEM; BBR(0x02); CLOCK(5); break;
-	case 0x2f:
-		ZP; MEM; BBR(0x04); CLOCK(5); break;
-	case 0x3f:
-		ZP; MEM; BBR(0x08); CLOCK(5); break;
-	case 0x4f:
-		ZP; MEM; BBR(0x10); CLOCK(5); break;
-	case 0x5f:
-		ZP; MEM; BBR(0x20); CLOCK(5); break;
-	case 0x6f:
-		ZP; MEM; BBR(0x40); CLOCK(5); break;
-	case 0x7f:
-		ZP; MEM; BBR(0x80); CLOCK(5); break;
-		/* BBS(bit) ZeroPage rr */
-	case 0x8f:
-		ZP; MEM; BBS(0x01); CLOCK(5); break;
-	case 0x9f:
-		ZP; MEM; BBS(0x02); CLOCK(5); break;
-	case 0xaf:
-		ZP; MEM; BBS(0x04); CLOCK(5); break;
-	case 0xbf:
-		ZP; MEM; BBS(0x08); CLOCK(5); break;
-	case 0xcf:
-		ZP; MEM; BBS(0x10); CLOCK(5); break;
-	case 0xdf:
-		ZP; MEM; BBS(0x20); CLOCK(5); break;
-	case 0xef:
-		ZP; MEM; BBS(0x40); CLOCK(5); break;
-	case 0xff:
-		ZP; MEM; BBS(0x80); CLOCK(5); break;
-		/* RMB(bit) ZeroPage */
-	case 0x07:
-		ZP; MEM; RMB(0x01); WMEM; CLOCK(5); break;
-	case 0x17:
-		ZP; MEM; RMB(0x02); WMEM; CLOCK(5); break;
-	case 0x27:
-		ZP; MEM; RMB(0x04); WMEM; CLOCK(5); break;
-	case 0x37:
-		ZP; MEM; RMB(0x08); WMEM; CLOCK(5); break;
-	case 0x47:
-		ZP; MEM; RMB(0x10); WMEM; CLOCK(5); break;
-	case 0x57:
-		ZP; MEM; RMB(0x20); WMEM; CLOCK(5); break;
-	case 0x67:
-		ZP; MEM; RMB(0x40); WMEM; CLOCK(5); break;
-	case 0x77:
-		ZP; MEM; RMB(0x80); WMEM; CLOCK(5); break;
-		/* SMB(bit) ZeroPage */
-	case 0x87:
-		ZP; MEM; SMB(0x01); WMEM; CLOCK(5); break;
-	case 0x97:
-		ZP; MEM; SMB(0x02); WMEM; CLOCK(5); break;
-	case 0xa7:
-		ZP; MEM; SMB(0x04); WMEM; CLOCK(5); break;
-	case 0xb7:
-		ZP; MEM; SMB(0x08); WMEM; CLOCK(5); break;
-	case 0xc7:
-		ZP; MEM; SMB(0x10); WMEM; CLOCK(5); break;
-	case 0xd7:
-		ZP; MEM; SMB(0x20); WMEM; CLOCK(5); break;
-	case 0xe7:
-		ZP; MEM; SMB(0x40); WMEM; CLOCK(5); break;
-	case 0xf7:
-		ZP; MEM; SMB(0x80); WMEM; CLOCK(5); break;
-		/* BIT Immediate */
-	case 0x89:
-		IMM; BIT; CLOCK(2); break;
-		/* BIT ZeroPage, X */
-	case 0x34:
-		ZP_X; MEM; BIT; CLOCK(2); break;
-		/* BIT Absolute, X */
-	case 0x3c:
-		ABS_X; MEM; BIT; CLOCK(4); break;
-		/* BRA rr */
-	case 0x80:
-		BRA; CLOCK(2); break;
-		/* CMP (Indirect) */
-	case 0xd2:
-		IND; MEM; CMP; CLOCK(5); break;
-		/* DEA */
-	case 0x3a:
-		ACC; DEC; WACC; CLOCK(2); break;
-		/* EOR (Indirect) */
-	case 0x52:
-		IND; MEM; EOR; WACC; CLOCK(5); break;
-		/* INA */
-	case 0x1a:
-		ACC; INC; WACC; CLOCK(2); break;
-		/* JMP (Absolute, X) */
-	case 0x7c:
-		IND16_X; JMP; CLOCK(6); break;
-		/* LDA (Indirect) */
-	case 0xb2:
-		IND; MEM; LOAD; WACC; CLOCK(5); break;
-		/* ORA (Indirect) */
-	case 0x12:
-		IND; MEM; ORA; WACC; CLOCK(5); break;
-		/* PHX */
-	case 0xda:
-		PUSH(this->m_regX); CLOCK(3); break;
-		/* PHY */
-	case 0x5a:
-		PUSH(this->m_regY); CLOCK(3); break;
-		/* PLX */
-	case 0xfa:
-		POPR; WXREG; CLOCK(4); break;
-		/* PLY */
-	case 0x7a:
-		POPR; WYREG; CLOCK(4); break;
-		/* SBC (Indirect) */
-	case 0xf2:
-		IND; MEM; SBC; WACC; CLOCK(5); break;
-		/* STA (Indirect) */
-	case 0x92:
-		IND; STA; CLOCK(6); break;
-		/* STP */
-	case 0xdb:
-		STOP; CLOCK(3); break;
-		/* STZ ZeroPage */
-	case 0x64:
-		ZP; STZ; CLOCK(3); break;
-		/* STZ ZeroPage, X */
-	case 0x74:
-		ZP_X; STZ; CLOCK(3); break;
-		/* STZ Absolute */
-	case 0x9c:
-		ABS; STZ; CLOCK(3); break;
-		/* STZ Absolute, X */
-	case 0x9e:
-		ABS_X; STZ; CLOCK(4); break;
-		/* TRB ZeroPage */
-	case 0x14:
-		ZP; MEM; TRB; WMEM; CLOCK(5); break;
-		/* TRB Absolute */
-	case 0x1c:
-		ABS; MEM; TRB; WMEM; CLOCK(6); break;
-		/* TSB ZeroPage */
-	case 0x04:
-		ZP; MEM; TSB; WMEM; CLOCK(5); break;
-		/* TSB Absolute */
-	case 0x0c:
-		ABS; MEM; TSB; WMEM; CLOCK(6); break;
-		/* WAI */
-	case 0xcb:
-		WAIT; CLOCK(3); break;
-#else
 
-#endif
 	default:
 		CLOCK(2); break;
 	}
@@ -773,80 +610,7 @@ int C65c02::Process()
 }
 
 
-void C65c02::init_6502()
+void C6502::Serialize(CArchive &ar)
 {
-	this->m_uException_Register = 0;
-	m_nClock = 0;
-	init_optable();
-
-	for(int i = 0; i < 512; i++ ) {
-	   m_BCD_Table1[i] = ((i & 0x0F) <= 0x09) ? i : i + 0x06;
-	   m_BCD_Table1[i] += ((m_BCD_Table1[i] & 0xF0) <= 0x90) ? 0 : 0x60;
-	   if ( m_BCD_Table1[i] > 0x1FF )
-	      m_BCD_Table1[i] -= 0x100;
-	   m_BCD_Table2[i] = ((i & 0x0F) <= 0x09) ? i : i - 0x06;
-	   m_BCD_Table2[i] -= ((m_BCD_Table2[i] & 0xF0) <= 0x90) ? 0 : 0x60;
-	}
-
-	// init registers
-	CCpu::Reset();
-
-	m_regA = 0;
-	m_regX = 0;
-	m_regY = 0;
-	m_regF = 0x24;
-	m_regS = 0xFF;
-	m_regPC = 0;
-	m_uException_Register = 0;
-	PendingIRQ = 0;
-}
-
-void C65c02::init_optable()
-{
-	m_initialized=TRUE;
-}
-
-WORD C65c02::getRegPC(void)
-{
-	return m_regPC;
-}
-
-void C65c02::Reset()
-{
-	CCpu::Reset();
-	m_regA = 0;
-	m_regX = 0;
-	m_regY = 0;
-	m_regF = 0x24;
-	m_regS = 0xFF;
-	m_regPC = READMEM16((WORD)0xFFFC);
-	m_nClock = 0;
-	READMEM8(0xC081);
-	m_uException_Register = 0;
-}
-
-void C65c02::Serialize(CArchive &ar)
-{
-	CCpu::Serialize( ar );
-
-	if ( ar.IsStoring() )
-	{
-		ar << m_regX;
-		ar << m_regY;
-		ar << m_regA;
-		ar << m_regF;
-		ar << m_regS;
-		ar << m_regPC;
-		ar << m_nClock;
-	}
-	else
-	{
-		ar >> m_regX;
-		ar >> m_regY;
-		ar >> m_regA;
-		ar >> m_regF;
-		ar >> m_regS;
-		ar >> m_regPC;
-		ar >> m_nClock;
-	}
+	C65c02::Serialize(ar);
 }

@@ -87,6 +87,8 @@ void CDlgConfigure::DoDataExchange(CDataExchange* pDX)
 	DDX_SliderButtonCtrl(pDX, IDC_KEYBOARD_REPEAT, m_sbKeyRepeat, 0);
 	DDX_Control(pDX, IDC_MACHINE_NTSC, m_btnMachineNTSC);
 	DDX_Control(pDX, IDC_MACHINE_PAL, m_btnMachinePAL);
+	DDX_Control(pDX, IDC_MACHINE_2PLUS, m_btnMachineA2p);
+	DDX_Control(pDX, IDC_MACHINE_2E, m_btnMachineA2e);
 }
 
 
@@ -206,11 +208,29 @@ BOOL CDlgConfigure::OnInitDialog()
 
 	// NTSC / PAL
 	m_btnMachineNTSC.EnableWindow(!bIsPowerOn);
+	m_btnMachineNTSC.SetCheck(BST_UNCHECKED);
 	m_btnMachinePAL.EnableWindow(!bIsPowerOn);
+	m_btnMachinePAL.SetCheck(BST_UNCHECKED);
+
 	if (g_pBoard->m_bPALMode == TRUE)
 		m_btnMachinePAL.SetCheck(BST_CHECKED);
 	else
 		m_btnMachineNTSC.SetCheck(BST_CHECKED);
+
+	m_btnMachineA2p.EnableWindow(!bIsPowerOn);
+	m_btnMachineA2p.SetCheck(BST_UNCHECKED);
+	m_btnMachineA2e.EnableWindow(!bIsPowerOn);
+	m_btnMachineA2e.SetCheck(BST_UNCHECKED);
+	switch (g_pBoard->m_nMachineType)
+	{
+	case MACHINE_APPLE2P:
+		m_btnMachineA2p.SetCheck(BST_CHECKED);
+		break;
+	case MACHINE_APPLE2E:
+	default:
+		m_btnMachineA2e.SetCheck(BST_CHECKED);
+		break;
+	}
 
 	// keyboard
 	g_cDIKeyboard.GetDelayTime( &nKeyRepeat, &nKeyDelay );
@@ -342,10 +362,15 @@ void CDlgConfigure::OnOK()
 		g_pBoard->m_cSpeaker.SetVolume( 5 - nVol );	// nVol is -26 to 0
 	g_pBoard->m_cSpeaker.m_bMute = m_bSpeakerMute;
 
-	if (m_btnMachinePAL.GetCheck() == BST_CHECKED)
-		g_pBoard->m_bPALMode = TRUE;
+	BOOL bPalMode = m_btnMachinePAL.GetCheck();
+	int nMachineType;
+
+	if (m_btnMachineA2p.GetCheck() == BST_CHECKED)
+		nMachineType = MACHINE_APPLE2P;
 	else
-		g_pBoard->m_bPALMode = FALSE;
+		nMachineType = MACHINE_APPLE2E;
+
+	g_pBoard->SetMachineType(nMachineType, bPalMode);
 
 	CDialog::OnOK();
 }

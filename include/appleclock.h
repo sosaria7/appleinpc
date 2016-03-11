@@ -28,7 +28,7 @@ class CAppleClock : public CCustomThread, public CObject
 {
 // Attributes
 public:
-	C65c02		m_cpu;
+	CCpu*		m_pCpu;
 	CAppleIOU	m_cIOU;
 	CKeyboard	m_keyboard;
 	CJoystick	m_joystick;
@@ -40,6 +40,7 @@ public:
 
 	CEvent	m_cMessage;
 	BOOL m_bPALMode;
+	int m_nMachineType;
 
 protected:
 	CMessageQue m_queSignal;
@@ -76,7 +77,7 @@ public:
 	virtual void Run();
 
 	void Serialize( CArchive &archive );
-
+	void SetMachineType(int nMachineType, BOOL bPalMode);
 
 // Implementation
 protected:

@@ -26,6 +26,8 @@
 #include "card.h"
 #include "phasor.h"
 #include "aipcdefs.h"
+#include "6502.h"
+#include "65c02.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -63,9 +65,9 @@ CAppleClock *g_pBoard = NULL;
 
 
 
-DWORD g_dwCPS = CLOCK_PAL;
-DWORD g_dwVBLClock = VBL_CLOCK_PAL;
-DWORD g_dwFrameClock = SCREEN_CLOCK_PAL;
+DWORD g_dwCPS = CLOCK;
+DWORD g_dwVBLClock = VBL_CLOCK;
+DWORD g_dwFrameClock = SCREEN_CLOCK;
 
 // 0.5 sec
 #define BOOST_CLOCK_INTERVAL	( CLOCK / 2 )
@@ -81,9 +83,13 @@ CAppleClock::CAppleClock()
 	m_nAppleStatus = ACS_POWEROFF;
 	m_dClockSpeed = 0;
 	m_pScreen = NULL;
-	m_cpu.init_6502();
+
 	m_dwClock = 0;
 	m_bPALMode = FALSE;
+	m_nMachineType = MACHINE_APPLE2E;
+	m_pCpu = new C65c02();
+
+	SetMachineType(MACHINE_APPLE2E, FALSE);
 }
 
 CAppleClock::~CAppleClock()
@@ -140,19 +146,19 @@ void CAppleClock::Run()
 			switch(sig){
 			case ACS_REBOOT:
 				m_cIOU.Init();
-				m_cpu.Reset();
+				m_pCpu->Reset();
 //				m_queSignal.ClearQueue();
 				break;
 			case ACS_RESET:
 				m_cIOU.InitMemoryMap();
-				m_cpu.Reset();
+				m_pCpu->Reset();
 //				m_queSignal.ClearQueue();
 				break;
 			case ACS_DEBUG:
 				g_DXSound.Suspend();
 				g_debug = TRUE;
 				{
-					CDlgDebug dlgDebug(&m_cpu, &m_cIOU);
+					CDlgDebug dlgDebug((C65c02*)m_pCpu, &m_cIOU);
 					dlgDebug.DoModal();
 				}
 				g_debug = FALSE;
@@ -163,7 +169,7 @@ void CAppleClock::Run()
 
 		for (i = 0; i < 100; i++)
 		{
-			dwClockInc = m_cpu.Process();
+			dwClockInc = m_pCpu->Process();
 			m_dwClock += dwClockInc;
 			m_pScreen->Clock(dwClockInc);
 			m_cSlots.Clock(dwClockInc);
@@ -243,7 +249,7 @@ void CAppleClock::OnDebug()
 	Suspend( TRUE );
 	g_debug = TRUE;
 	{
-		CDlgDebug dlgDebug(&m_cpu, &m_cIOU);
+		CDlgDebug dlgDebug((C65c02*)m_pCpu, &m_cIOU);
 		dlgDebug.DoModal();
 	}
 	g_debug = FALSE;
@@ -291,21 +297,6 @@ void CAppleClock::Reboot()
 
 void CAppleClock::PowerOn()
 {
-	if (m_bPALMode == TRUE)
-	{
-		g_dwCPS = CLOCK_PAL;
-		g_dwFrameClock = SCREEN_CLOCK_PAL;
-		g_dwVBLClock = VBL_CLOCK_PAL;
-	}
-	else
-	{
-		g_dwCPS = CLOCK;
-		g_dwFrameClock = SCREEN_CLOCK;
-		g_dwVBLClock = VBL_CLOCK;
-	}
-
-	m_cSpeaker.ChangeSampleRate();
-
 	SetPriority( THREAD_PRIORITY_HIGHEST );
 	SetActive(TRUE);
 	m_pScreen->SetMouseCapture(m_cSlots.HasMouseInterface());
@@ -344,12 +335,12 @@ BOOL CAppleClock::Initialize()
 	m_cSlots.SetDipSwitch( 3, PM_MB );
 	m_cSlots.InsertCard( 5, CARD_DISK_INTERFACE );			// slot 6
 	m_cSlots.Initialize();
-	m_cIOU.InitMemory();
+	m_cIOU.InitMemory(m_nMachineType);
 	g_DXSound.AddPSG( &m_cSpeaker, 0 );
 	m_joystick.Initialize();
 
 	//m_cIOU.Init();
-	m_cpu.Reset();
+	m_pCpu->Reset();
 
 	return TRUE;
 }
@@ -380,7 +371,7 @@ void CAppleClock::OnAfterDeactivate()
 	g_DXSound.Suspend();
 
 	m_cIOU.Init();
-	m_cpu.Reset();
+	m_pCpu->Reset();
 	m_cSlots.PowerOff();
 
 	SpeedStable();
@@ -400,10 +391,48 @@ void CAppleClock::SpeedStable()
 	m_nBoost = 0;
 }
 
+void CAppleClock::SetMachineType(int nMachineType, BOOL bPalMode)
+{
+	if (this->m_nMachineType != nMachineType)
+	{
+		this->m_nMachineType = nMachineType;
+		delete this->m_pCpu;
+		if (this->m_nMachineType == MACHINE_APPLE2E)
+		{
+			this->m_pCpu = new C65c02();
+		}
+		else
+		{
+			this->m_pCpu = new C6502();
+		}
+		this->m_cIOU.InitMemory(this->m_nMachineType);
+		this->m_pCpu->Reset();
+	}
+	if (this->m_bPALMode != bPalMode)
+	{
+		this->m_bPALMode = bPalMode;
+		if (m_bPALMode == TRUE)
+		{
+			g_dwCPS = CLOCK_PAL;
+			g_dwFrameClock = SCREEN_CLOCK_PAL;
+			g_dwVBLClock = VBL_CLOCK_PAL;
+		}
+		else
+		{
+			g_dwCPS = CLOCK;
+			g_dwFrameClock = SCREEN_CLOCK;
+			g_dwVBLClock = VBL_CLOCK;
+		}
+		m_cSpeaker.ChangeSampleRate();
+	}
+}
+
 void CAppleClock::Serialize( CArchive &ar )
 {
 	CObject::Serialize( ar );
 	BOOL bActive = GetIsActive();
+	BOOL bPalMode;
+	int nMachineType;
 
 	if ( bActive )
 	{
@@ -414,7 +443,8 @@ void CAppleClock::Serialize( CArchive &ar )
 		ar << m_dwClock;
 		ar << m_nAppleStatus;
 		ar << m_bPALMode;
-		m_cpu.Serialize(ar);
+		ar << m_nMachineType;
+		m_pCpu->Serialize(ar);
 		m_cIOU.Serialize(ar);
 		m_cSlots.Serialize(ar);
 		m_cSpeaker.Serialize(ar);
@@ -426,10 +456,12 @@ void CAppleClock::Serialize( CArchive &ar )
 		ar >> m_dwClock;
 		ar >> m_nAppleStatus;
 		if (g_nSerializeVer >= 6)
-		{
-			ar >> m_bPALMode;
-		}
-		m_cpu.Serialize(ar);
+			ar >> bPalMode;
+		if (g_nSerializeVer >= 7)
+			ar >> nMachineType;
+		SetMachineType(nMachineType, bPalMode);
+
+		m_pCpu->Serialize(ar);
 		m_cIOU.Serialize(ar);
 		m_cSlots.Serialize(ar);
 		m_cSpeaker.Serialize(ar);

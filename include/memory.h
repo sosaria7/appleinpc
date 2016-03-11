@@ -113,7 +113,7 @@ public:
 	virtual ~CAppleIOU();
 
 	void AppleIOWrite(WORD addr, BYTE data);
-	void InitMemory();
+	void InitMemory(int nMachineType);
 	BOOL ReadRomFile();
 
 	void Serialize(CArchive& ar);
@@ -125,6 +125,8 @@ public:
 protected:
 	BYTE* m_pMem;	// current memory ( main or aux )
 	BYTE* m_pROM;	// 16k
+
+	int m_nMachineType;
 
 public:
 	BOOL m_bMemTest;

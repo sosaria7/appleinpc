@@ -32,7 +32,7 @@ int g_nSerializeVer = 0;
 
 static CString GetStatusFilePath();
 
-#define STATUS_VERSION		(6)
+#define STATUS_VERSION		(7)
 #define STATUS_MIN_VERSION	(3)
 #define STATUS_MAGIC	0x89617391
 

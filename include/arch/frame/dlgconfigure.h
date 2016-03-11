@@ -37,6 +37,8 @@ public:
 	wcSliderButton	m_sbKeyRepeat;
 	CButton m_btnMachineNTSC;
 	CButton m_btnMachinePAL;
+	CButton m_btnMachineA2p;
+	CButton m_btnMachineA2e;
 
 // Overrides
 	// ClassWizard generated virtual function overrides

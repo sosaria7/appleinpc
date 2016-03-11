@@ -161,6 +161,7 @@
     <CustomBuild Include="RES\cursor2.cur" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\6502.h" />
     <ClInclude Include="include\6522.h" />
     <ClInclude Include="include\65c02.h" />
     <ClInclude Include="include\6821.h" />
@@ -215,6 +216,7 @@
     <ClInclude Include="include\speaker.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\6502.cpp" />
     <ClCompile Include="src\6522.cpp" />
     <ClCompile Include="src\65c02.cpp" />
     <ClCompile Include="src\6821.cpp" />

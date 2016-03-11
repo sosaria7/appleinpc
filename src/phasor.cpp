@@ -222,10 +222,10 @@ void CPhasor::Clock(int clock)
 	m_6522[1].SetCA1( m_cVotrax[1].m_bBusy );
 #endif
 	if ( m_6522[0].GetIRQB() )
-		g_pBoard->m_cpu.Assert_IRQ();
+		g_pBoard->m_pCpu->Assert_IRQ();
 
 	if ( m_6522[1].GetIRQB() )
-		g_pBoard->m_cpu.Assert_IRQ();
+		g_pBoard->m_pCpu->Assert_IRQ();
 }
 
 void CPhasor::PowerOn()

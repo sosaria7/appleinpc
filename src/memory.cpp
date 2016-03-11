@@ -9,6 +9,7 @@
 #include "appleclock.h"
 #include "memory.h"
 #include "debug.h"
+#include "aipcdefs.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -42,6 +43,7 @@ CAppleIOU::CAppleIOU()
 	m_pMem = new BYTE[A2MEMSIZE];	// allocate 128K memory
 	m_pROM = new BYTE[A2ROMSIZE]; // allocate 16K ROM
 	m_bMemTest = FALSE;
+	m_nMachineType = MACHINE_APPLE2E;
 }
 
 CAppleIOU::~CAppleIOU()
@@ -63,7 +65,19 @@ BOOL CAppleIOU::ReadRomFile()
 	CFile romFile;
 	CFileException ex;
 
-	if(!romFile.Open("apple2e.rom", CFile::modeRead, &ex)){
+	char* pszRomName;
+	switch (m_nMachineType)
+	{
+	case MACHINE_APPLE2P:
+		pszRomName = "APPLE2.ROM";
+		break;
+	case MACHINE_APPLE2E:
+	default:
+		pszRomName = "APPLE2E.ROM";
+		break;
+	}
+
+	if(!romFile.Open(pszRomName, CFile::modeRead, &ex)){
 		AfxMessageBox(IDS_NO_ROMFILE);
 		return FALSE;
 	}
@@ -94,7 +108,7 @@ void CAppleIOU::UpdateMemoryMap(void)
 	int diff = m_iLastMemMode ^ m_iMemMode;
 	if ( diff & ( MS_BANK1 | MS_WRITERAM | MS_READSAME | MS_RWAUXZP ) )
 	{
-		if ( m_iMemMode & MS_RWAUXZP )
+		if ( ( m_iMemMode & MS_RWAUXZP ) != 0 && m_nMachineType != MACHINE_APPLE2P )
 			aux = 0x10000;
 		else
 			aux = 0;
@@ -181,10 +195,11 @@ void CAppleIOU::Init()
 }
 
 // on start
-void CAppleIOU::InitMemory()
+void CAppleIOU::InitMemory(int nMachineType)
 {
 	int i;
 
+	this->m_nMachineType = nMachineType;
 	for(i=0; i < 0x20000; i++){
 		m_pMem[i] = 0x00;
 	}
@@ -197,6 +212,10 @@ void CAppleIOU::InitMemory()
 void CAppleIOU::SwitchAuxMemory(WORD addr)
 {
 	int offset, i;
+
+	if (m_nMachineType == MACHINE_APPLE2P)
+		return;
+
 	switch( addr )
 	{
 	case RDMAINRAM:
@@ -326,12 +345,13 @@ BYTE CAppleIOU::ReadMem8(int nAddr)
 	BYTE page;
 	WORD offset;
 	nAddr &= 0xFFFF;
-	page=nAddr>>12;
-	offset=nAddr&0xFFF;
+	page = nAddr >> 12;
+	offset = nAddr & 0xFFF;
 
 	// video memory
 	// if 80STORE is ON, Use page 1 video to Aux memory
-	if( ( m_iMemMode & MS_80STORE ) &&
+	if( m_nMachineType != MACHINE_APPLE2P &&
+		( m_iMemMode & MS_80STORE ) &&
 		( ( nAddr>=0x0400 && nAddr<0x0800) || (nAddr>=0x2000 && nAddr<0x4000) ) )
 	{
 		if ( nAddr < 0x800 || ( g_pBoard->m_pScreen->CheckMode(RDHIRES)&0x80 ) )
@@ -343,93 +363,93 @@ BYTE CAppleIOU::ReadMem8(int nAddr)
 		}
 	}
 
-	if ( page == 0xC )
+	switch (nAddr >> 8)
 	{
-		if ( nAddr < 0xC100 )
-		{
-			if ( m_bMemTest )
-				return 0;
+	case 0x00: case 0x01:	// Zero Page
+		if (m_iMemMode & MS_RWAUXZP)
+			return m_pMem[nAddr + 0x10000];
+		else
+			return m_pMem[nAddr];
 
-			else
-			{
-				switch( nAddr & 0xFF0 )
-				{
-				case 0x000:
-					return g_pBoard->m_keyboard.AppleKeyRead(nAddr&0xFF);
-					break;
-				case 0x010:
-					return CheckMode( nAddr ) | g_pBoard->m_keyboard.AppleKeyRead( nAddr&0xFF );
-				case 0x020:
-					break;
-				case 0x030:
-					g_pBoard->m_cSpeaker.Toggle();
-					break;
-					// set video mode
-				case 0x040:
-					break;
-				case 0x050:
-					if ( nAddr == LOWSCR )
-						m_iMemMode &= ~MS_HISCR;
-					else if ( nAddr == HISCR )
-						m_iMemMode |= MS_HISCR;
-					g_pBoard->m_pScreen->ChangeMode( nAddr );
-					break;
-				case 0x060:
-					return g_pBoard->m_joystick.GetStatus( nAddr & 0xFF );
-					break;
-				case 0x070:
-					if ( nAddr == 0xC070 )
-						g_pBoard->m_joystick.Strobe();
-					break;
-				case 0x080:
-					m_iLastMemMode = m_iMemMode;
-					m_iMemMode = ( m_iMemMode & ~0x0F ) | ( nAddr & 0x0F );
-					UpdateMemoryMap();
-					break;
-					// slot I/O
-				case 0x090: case 0x0A0: case 0x0B0: case 0x0C0:
-				case 0x0D0: case 0x0E0: case 0x0F0:
-					return g_pBoard->m_cSlots.Read( nAddr );
-					break;
-				}
-			}
-			return MemReturnRandomData( 2 );
-		}
-		// slot firmware
-		else if(nAddr<0xC800)
-		{
-			if ( (nAddr & 0xFF00) == 0xC300 )
-			{
-				if ((m_iMemMode & MS_SLOTC3ROM) != 0)
-				{
-					return g_pBoard->m_cSlots.ReadRom(nAddr);
-				}
-				m_iMemMode |= MS_INTCXROM2;
-			}
-			else if ( ( m_iMemMode & MS_INTCXROM ) == 0 )
-			{
-				return g_pBoard->m_cSlots.ReadRom( nAddr );
-			}
-		}
+	case 0xC0:
+		if (m_bMemTest)
+			return 0;
+
 		else
 		{
-			if ( ( m_iMemMode & MS_INTCXROM ) == 0 && ( m_iMemMode & MS_INTCXROM2 ) == 0 )
+			switch (nAddr & 0xFF0)
 			{
-				return MemReturnRandomData(2);
-			}
-			if (nAddr == 0xCFFF)
-			{
-				m_iMemMode &= ~MS_INTCXROM2;
+			case 0x000:
+				return g_pBoard->m_keyboard.AppleKeyRead(nAddr & 0xFF);
+				break;
+			case 0x010:
+				return CheckMode(nAddr) | g_pBoard->m_keyboard.AppleKeyRead(nAddr & 0xFF);
+			case 0x020:
+				break;
+			case 0x030:
+				g_pBoard->m_cSpeaker.Toggle();
+				break;
+				// set video mode
+			case 0x040:
+				break;
+			case 0x050:
+				if (nAddr == LOWSCR)
+					m_iMemMode &= ~MS_HISCR;
+				else if (nAddr == HISCR)
+					m_iMemMode |= MS_HISCR;
+				if (m_nMachineType != MACHINE_APPLE2P || nAddr < SETDHIRES)
+					g_pBoard->m_pScreen->ChangeMode(nAddr);
+				break;
+			case 0x060:
+				return g_pBoard->m_joystick.GetStatus(nAddr & 0xFF);
+				break;
+			case 0x070:
+				if (nAddr == 0xC070)
+					g_pBoard->m_joystick.Strobe();
+				break;
+			case 0x080:
+				m_iLastMemMode = m_iMemMode;
+				m_iMemMode = (m_iMemMode & ~0x0F) | (nAddr & 0x0F);
+				UpdateMemoryMap();
+				break;
+				// slot I/O
+			case 0x090: case 0x0A0: case 0x0B0: case 0x0C0:
+			case 0x0D0: case 0x0E0: case 0x0F0:
+				return g_pBoard->m_cSlots.Read(nAddr);
+				break;
 			}
 		}
+		return MemReturnRandomData(2);
+	case 0xC3:
+		if ((m_iMemMode & MS_SLOTC3ROM) != 0 || m_nMachineType == MACHINE_APPLE2P)
+		{
+			return g_pBoard->m_cSlots.ReadRom(nAddr);
+		}
+		m_iMemMode |= MS_INTCXROM2;
+		break;
+
+	case 0xC1: case 0xC2: case 0xC4: case 0xC5:
+	case 0xC6: case 0xC7:
+		if ((m_iMemMode & MS_INTCXROM) == 0 || m_nMachineType == MACHINE_APPLE2P)
+		{
+			return g_pBoard->m_cSlots.ReadRom(nAddr);
+		}
+		break;
+
+	case 0xC8: case 0xC9: case 0xCA: case 0xCB:
+	case 0xCC: case 0xCD: case 0xCE: case 0xCF:
+		if (((m_iMemMode & MS_INTCXROM) == 0 && (m_iMemMode & MS_INTCXROM2) == 0) || m_nMachineType == MACHINE_APPLE2P)
+		{
+			return MemReturnRandomData(2);
+		}
+		if (nAddr == 0xCFFF)
+		{
+			m_iMemMode &= ~MS_INTCXROM2;
+		}
+	default:
+		break;
 	}
-	else if ( nAddr < 0x200 )	// Zero Page
-	{
-		if ( m_iMemMode & MS_RWAUXZP )
-			return m_pMem[ nAddr + 0x10000 ];
-		else
-			return m_pMem[ nAddr ];
-	}
+
 	return m_pReadMap[page][offset];
 }
 
@@ -448,7 +468,8 @@ void CAppleIOU::WriteMem8(int nAddr, BYTE byData)
 
 		BOOL page1 = ( nAddr < 0x800 || ( nAddr >=0x2000 && nAddr < 0x4000 ) );
 
-		if ( ( m_iMemMode & MS_80STORE ) && page1 &&
+		if (m_nMachineType != MACHINE_APPLE2P &&
+			( m_iMemMode & MS_80STORE ) && page1 &&
 			( nAddr < 0x800 || ( g_pBoard->m_pScreen->CheckMode(RDHIRES)&0x80 ) ) )
 		{
 			if ( m_iMemMode & MS_HISCR )
@@ -469,86 +490,89 @@ void CAppleIOU::WriteMem8(int nAddr, BYTE byData)
 		}
 		return;
 	}
-	if ( page == 0x0C )
+
+	switch (nAddr >> 8)
 	{
-		if ( nAddr < 0xC100 )
+	case 0x00: case 0x01:
+		if (m_iMemMode & MS_RWAUXZP)
+			m_pMem[nAddr + 0x10000] = byData;
+		else
+			m_pMem[nAddr] = byData;
+		break;
+
+	case 0xC0:
+		switch (nAddr & 0xFF0)
 		{
-			switch( nAddr & 0xFF0 )
-			{
-			case 0x000: case 0x010:
-				SwitchAuxMemory( nAddr );
-				g_pBoard->m_keyboard.AppleKeyWrite( nAddr&0xFF, byData );
-				break;
-			case 0x020:
-				break;
-			case 0x030:
-				g_pBoard->m_cSpeaker.Toggle();
-				break;
-			case 0x040:
-//				TRACE("Write $%04X:#$%02X\n", nAddr, byData);
-				break;
-				// set video mode
-			case 0x050:
-				if ( nAddr == LOWSCR )
-					m_iMemMode &= ~MS_HISCR;
-				else if ( nAddr == HISCR )
-					m_iMemMode |= MS_HISCR;
+		case 0x000: case 0x010:
+			SwitchAuxMemory(nAddr);
+			g_pBoard->m_keyboard.AppleKeyWrite(nAddr & 0xFF, byData);
+			break;
+		case 0x020:
+			break;
+		case 0x030:
+			g_pBoard->m_cSpeaker.Toggle();
+			break;
+		case 0x040:
+			//TRACE("Write $%04X:#$%02X\n", nAddr, byData);
+			break;
+			// set video mode
+		case 0x050:
+			if (nAddr == LOWSCR)
+				m_iMemMode &= ~MS_HISCR;
+			else if (nAddr == HISCR)
+				m_iMemMode |= MS_HISCR;
+			if (m_nMachineType != MACHINE_APPLE2P || nAddr < SETDHIRES)
 				g_pBoard->m_pScreen->ChangeMode(nAddr);
-				break;
-			case 0x060:
-				break;
-			case 0x070:
-				if ( nAddr == 0xC070 )
-					g_pBoard->m_joystick.Strobe();
-				TRACE("Write $%04X:#$%02X\n", nAddr, byData);
-				break;
+			break;
+		case 0x060:
+			break;
+		case 0x070:
+			if (nAddr == 0xC070)
+				g_pBoard->m_joystick.Strobe();
+			//TRACE("Write $%04X:#$%02X\n", nAddr, byData);
+			break;
 			// change memory mode (Language Card)
-			case 0x080:
-				m_iLastMemMode = m_iMemMode;
-				m_iMemMode = ( m_iMemMode & ~0x0F ) | ( nAddr & 0x0F );
-				UpdateMemoryMap();
-				break;
+		case 0x080:
+			m_iLastMemMode = m_iMemMode;
+			m_iMemMode = (m_iMemMode & ~0x0F) | (nAddr & 0x0F);
+			UpdateMemoryMap();
+			break;
 			// slot I/O
-			case 0x090: case 0x0A0: case 0x0B0: case 0x0C0:
-			case 0x0D0: case 0x0E0: case 0x0F0:
-				g_pBoard->m_cSlots.Write( nAddr, byData );
-				break;
-			}
+		case 0x090: case 0x0A0: case 0x0B0: case 0x0C0:
+		case 0x0D0: case 0x0E0: case 0x0F0:
+			g_pBoard->m_cSlots.Write(nAddr, byData);
+			break;
 		}
-		else if(nAddr<0xC800)
+		break;
+
+	case 0xC3:
+		if ((m_iMemMode & MS_SLOTC3ROM) != 0 || m_nMachineType == MACHINE_APPLE2P)
 		{
-			if ((nAddr & 0xFF00) == 0xC300)
-			{
-				if ((m_iMemMode & MS_SLOTC3ROM) != 0)
-				{
-					g_pBoard->m_cSlots.WriteRom(nAddr, byData);
-				}
-				m_iMemMode |= MS_INTCXROM2;
-			}
-			else if ((m_iMemMode & MS_INTCXROM) == 0)
-			{
-				g_pBoard->m_cSlots.WriteRom(nAddr, byData);
-			}
+			g_pBoard->m_cSlots.WriteRom(nAddr, byData);
+			break;
 		}
-		else
+		m_iMemMode |= MS_INTCXROM2;
+		break;
+
+	case 0xC1: case 0xC2: case 0xC4: case 0xC5:
+	case 0xC6: case 0xC7:
+		if ((m_iMemMode & MS_INTCXROM) == 0 || m_nMachineType == MACHINE_APPLE2P)
 		{
-			if (nAddr == 0xCFFF)
-			{
-				m_iMemMode &= ~MS_INTCXROM2;
-			}
+			g_pBoard->m_cSlots.WriteRom(nAddr, byData);
 		}
-		return;
-	}
-	else if ( nAddr < 0x200 )	// Zero Page
-	{
-		if ( m_iMemMode & MS_RWAUXZP )
-			m_pMem[ nAddr + 0x10000 ] = byData;
-		else
-			m_pMem[ nAddr ] = byData;
-	}
-	else if( m_pWriteMap[page] != NULL )
-	{
+		break;
+
+	case 0xC8: case 0xC9: case 0xCA: case 0xCB:
+	case 0xCC: case 0xCD: case 0xCE: case 0xCF:
+		if (nAddr == 0xCFFF)
+		{
+			m_iMemMode &= ~MS_INTCXROM2;
+		}
+		break;
+
+	default:
 		m_pWriteMap[page][offset] = byData;
+		break;
 	}
 }
 
@@ -572,11 +596,16 @@ void CAppleIOU::Serialize(CArchive &ar)
 	{
 		ar.Write( m_pMem, A2MEMSIZE );
 		ar << m_iMemMode;
+		ar << m_nMachineType;
 	}
 	else
 	{
 		ar.Read( m_pMem, A2MEMSIZE );
 		ar >> m_iMemMode;
+		if (g_nSerializeVer >= 7)
+		{
+			ar >> m_nMachineType;
+		}
 		m_iLastMemMode = ~m_iMemMode;
 		UpdateMemoryMap();
 		if ( m_iMemMode & MS_READAUX )

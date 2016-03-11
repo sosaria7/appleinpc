@@ -244,6 +244,9 @@
     <ClInclude Include="include\arch\frame\wcSliderPopup.h">
       <Filter>Source\arch\frame</Filter>
     </ClInclude>
+    <ClInclude Include="include\6502.h">
+      <Filter>Header</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\arch\directx\ddutil.cpp">
@@ -386,6 +389,9 @@
     </ClCompile>
     <ClCompile Include="src\arch\frame\dlgconfigsddisk.cpp">
       <Filter>Source\arch\frame</Filter>
+    </ClCompile>
+    <ClCompile Include="src\6502.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

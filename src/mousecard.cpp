@@ -550,7 +550,7 @@ void CMouseCard::OnMouseEvent()
 	if ( byState & 0x0E )
 	{
 		m_byState |= byState;
-		g_pBoard->m_cpu.Assert_IRQ();
+		g_pBoard->m_pCpu->Assert_IRQ();
 	}
 }
 

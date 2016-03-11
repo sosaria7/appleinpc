@@ -262,7 +262,7 @@ BYTE CDiskDrive::ReadNibble()
 				return( 0x16 );
 		}
 
-		dwPC = g_pBoard->m_cpu.getRegPC();
+		dwPC = ((C65c02*)g_pBoard->m_pCpu)->getRegPC();
 		g_pBoard->m_cIOU.m_bMemTest = TRUE;
 		BYTE temp;
 

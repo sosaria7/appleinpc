@@ -54,4 +54,8 @@
 #define UM_MOUSE_EVENT	( WM_USER+5 )
 #define UM_DISPLAY_CHANGE	( WM_USER+6 )
 
+#define MACHINE_APPLE2P		1
+#define MACHINE_APPLE2E		2
+#define MACHINE_APPLE2C		3
+
 #endif
