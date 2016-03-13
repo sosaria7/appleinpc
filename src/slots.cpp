@@ -315,6 +315,7 @@ void CSlots::Serialize(CArchive &ar)
 				m_slots[i]->Serialize(ar);
 			}
 		}
+		ar << m_nLastSlotNum;
 	}
 	else
 	{
@@ -330,6 +331,9 @@ void CSlots::Serialize(CArchive &ar)
 				}
 			}
 		}
+		if (g_nSerializeVer >= 7)
+			ar >> m_nLastSlotNum;
+
 		Initialize();
 	}
 }
