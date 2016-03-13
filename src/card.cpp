@@ -5,6 +5,7 @@
 #include "arch/frame/stdafx.h"
 #include "arch/frame/aipc.h"
 #include "card.h"
+#include "memory.h"
 #include "aipcdefs.h"
 
 #ifdef _DEBUG
@@ -24,6 +25,7 @@ CCard::CCard()
 	m_iDeviceNum = CARD_EMPTY;
 	m_nDipSwitch = 0;
 	m_pbyRom = NULL;
+	m_bHasExtendRom = FALSE;
 }
 
 CCard::~CCard()
@@ -39,6 +41,15 @@ BYTE CCard::ReadRom(WORD addr)
 }
 
 void CCard::WriteRom(WORD addr, BYTE data)
+{
+}
+
+BYTE CCard::ReadExRom(WORD addr)
+{
+	return MemReturnRandomData(2);
+}
+
+void CCard::WriteExRom(WORD addr, BYTE data)
 {
 }
 

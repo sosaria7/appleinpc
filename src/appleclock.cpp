@@ -215,7 +215,7 @@ void CAppleClock::Run()
 		if ( (int)(apple_interval - host_interval ) > 0
 			|| host_interval > 500 )
 		{
-			if ( host_interval > 500 || ( apple_interval - host_interval ) > 1000 )
+			if ( host_interval > 500 || (int)( apple_interval - host_interval ) > 1000 )
 			{
 				Sleep(1);
 				dwLastTickCount = dwCurTickCount;

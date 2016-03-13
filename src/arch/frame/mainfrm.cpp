@@ -95,6 +95,7 @@ CMainFrame::CMainFrame()
 	m_bKeyboardCapture = FALSE;
 	m_stCursorPos.x = 0;
 	m_stCursorPos.y = 0;
+	ZeroMemory(&m_stCursorClip, sizeof(m_stCursorClip));
 	m_hCursor = NULL;
 	g_pBoard = new CAppleClock();
 }
@@ -485,6 +486,10 @@ LRESULT CMainFrame::OnReqAcquire(WPARAM wParam, LPARAM lParam)
 			{
 				m_hCursor = SetCursor(NULL);
 				GetCursorPos(&m_stCursorPos);
+				RECT rect;
+				::GetClipCursor(&m_stCursorClip);
+				GetWindowRect(&rect);
+				::ClipCursor(&rect);
 			}
 		}
 	}
@@ -506,6 +511,7 @@ LRESULT CMainFrame::OnReqAcquire(WPARAM wParam, LPARAM lParam)
 		{
 			SetCursorPos(m_stCursorPos.x, m_stCursorPos.y);
 			SetCursor(m_hCursor);
+			::ClipCursor(&m_stCursorClip);
 			m_hCursor = NULL;
 		}
 	}

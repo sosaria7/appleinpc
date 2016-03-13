@@ -439,13 +439,14 @@ BYTE CAppleIOU::ReadMem8(int nAddr)
 	case 0xC8: case 0xC9: case 0xCA: case 0xCB:
 	case 0xCC: case 0xCD: case 0xCE: case 0xCF:
 		if (((m_iMemMode & MS_INTCXROM) == 0 && (m_iMemMode & MS_INTCXROM2) == 0) || m_nMachineType == MACHINE_APPLE2P)
-		{
-			return MemReturnRandomData(2);
-		}
+			return g_pBoard->m_cSlots.ReadRom(nAddr);
+
 		if (nAddr == 0xCFFF)
 		{
+			g_pBoard->m_cSlots.ReadRom(nAddr);	// clear extend rom slot number;
 			m_iMemMode &= ~MS_INTCXROM2;
 		}
+
 	default:
 		break;
 	}
@@ -557,17 +558,22 @@ void CAppleIOU::WriteMem8(int nAddr, BYTE byData)
 	case 0xC1: case 0xC2: case 0xC4: case 0xC5:
 	case 0xC6: case 0xC7:
 		if ((m_iMemMode & MS_INTCXROM) == 0 || m_nMachineType == MACHINE_APPLE2P)
-		{
 			g_pBoard->m_cSlots.WriteRom(nAddr, byData);
-		}
+
 		break;
 
 	case 0xC8: case 0xC9: case 0xCA: case 0xCB:
 	case 0xCC: case 0xCD: case 0xCE: case 0xCF:
 		if (nAddr == 0xCFFF)
 		{
+			g_pBoard->m_cSlots.ReadRom(nAddr);	// clear extend rom slot number;
 			m_iMemMode &= ~MS_INTCXROM2;
 		}
+
+		if (((m_iMemMode & MS_INTCXROM) == 0 && (m_iMemMode & MS_INTCXROM2) == 0) || m_nMachineType == MACHINE_APPLE2P)
+			g_pBoard->m_cSlots.WriteRom(nAddr, byData);
+
+
 		break;
 
 	default:

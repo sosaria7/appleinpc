@@ -26,6 +26,8 @@ public:
 
 	virtual void WriteRom(WORD addr, BYTE data);
 	virtual BYTE ReadRom(WORD addr);
+	virtual void WriteExRom(WORD addr, BYTE data);
+	virtual BYTE ReadExRom(WORD addr);
 	virtual void InitRomImage();
 	virtual void Write(WORD addr, BYTE data);
 	virtual BYTE Read(WORD addr);
@@ -40,6 +42,8 @@ public:
 	{
 		m_nDipSwitch = nMode;
 	};
+	virtual BOOL HasExtendRom() { return m_bHasExtendRom; }
+
 	virtual int GetDipSwitch() { return m_nDipSwitch; };
 
 	virtual void Serialize( CArchive &ar );
@@ -49,6 +53,7 @@ protected:
 	CString m_strDeviceName;
 	int m_iDeviceNum;
 	int m_nDipSwitch;
+	BOOL m_bHasExtendRom;
 };
 
 #endif // !defined(AFX_CARD_H__F3CE19E7_6ECF_4B71_B319_87955300BBCE__INCLUDED_)

@@ -50,6 +50,7 @@ public:
 	BOOL  m_bKeyboardCapture;
 	HCURSOR m_hCursor;
 	POINT m_stCursorPos;
+	RECT m_stCursorClip;
 	virtual ~CMainFrame();
 #ifdef _DEBUG
 	virtual void AssertValid() const;

@@ -30,6 +30,7 @@ CSlots::CSlots()
 	m_nDiskSlotNum = -1;
 	m_nHardDiskSlotNum = -1;
 	m_nMouseSlotNum = -1;
+	m_nLastSlotNum = -1;
 }
 
 CSlots::~CSlots()
@@ -145,38 +146,71 @@ BYTE CSlots::Read(WORD addr)
 	int slot;
 	BYTE retval;
 	slot = ( ( addr >> 4 ) & 0x07 ) - 1;
+	ASSERT(slot >= 0 && slot < 7);
 	if ( m_slots[slot] )
 	{
+		if (m_slots[slot]->HasExtendRom())
+			m_nLastSlotNum = slot;
+
 		retval = m_slots[slot]->Read(addr);
 		return( retval );
 	}
-	return MemReturnRandomData( 0 );
+	return MemReturnRandomData( 2 );
 }
 
 BYTE CSlots::ReadRom(WORD addr)
 {
 	int slot;
-	slot = ( ( addr >> 8 ) & 0x7 ) - 1;
-	if( m_slots[slot] )
-		return m_slots[slot]->ReadRom(addr);
-				
-	return MemReturnRandomData( 0 );
+	if (addr < 0xC800)
+	{
+		slot = ((addr >> 8) & 0x7) - 1;
+		ASSERT(slot >= 0 && slot < 7);
+		if (m_slots[slot])
+			return m_slots[slot]->ReadRom(addr);
+	}
+	else if (m_nLastSlotNum >= 0)
+	{
+		slot = m_nLastSlotNum;
+		if (addr == 0xCFFF)
+			m_nLastSlotNum = -1;
+		if (m_slots[slot])
+			return m_slots[slot]->ReadExRom(addr);
+	}
+
+	return MemReturnRandomData( 2 );
 }
 
 void CSlots::Write(WORD addr, BYTE data)
 {
 	int slot;
 	slot = ( ( addr >> 4 ) & 0x07 ) - 1;
-	if ( m_slots[slot] )
+	ASSERT(slot >= 0 && slot < 7);
+	if (m_slots[slot])
+	{
+		if (m_slots[slot]->HasExtendRom())
+			m_nLastSlotNum = slot;
 		m_slots[slot]->Write(addr, data);
+	}
 }
 
 void CSlots::WriteRom(WORD addr, BYTE data)
 {
 	int slot;
-	slot = ( ( addr >> 8 ) & 0x7 ) - 1;
-	if ( m_slots[slot] )
-		m_slots[slot]->WriteRom(addr, data);
+	if (addr < 0xC800)
+	{
+		slot = ((addr >> 8) & 0x7) - 1;
+		ASSERT(slot >= 0 && slot < 7);
+		if (m_slots[slot])
+			m_slots[slot]->WriteRom(addr, data);
+	}
+	else if (m_nLastSlotNum >= 0)
+	{
+		slot = m_nLastSlotNum;
+		if (addr == 0xCFFF)
+			m_nLastSlotNum = -1;
+		if (m_slots[slot])
+			m_slots[slot]->WriteExRom(addr, data);
+	}
 }
 
 void CSlots::Reset()
