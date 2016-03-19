@@ -11,7 +11,7 @@
 
 #include "aipcdefs.h"
 
-// 1024000 / ( 32 * 6400 ) = 5 rps = 300 rpm
+// 1020484 / ( 32 * 6656 ) = 4.7912 rps = 287.47 rpm
 //#define RAW_TRACK_BYTES	6400
 #define RAW_TRACK_BYTES	6656
 #define MAX_TRACK_BYTES	6656
@@ -51,12 +51,23 @@ public:
 	virtual int Mount(const char* szFileName);
 	virtual void Umount();
 
+	virtual BOOL InitImage() { return TRUE; }
+
 	virtual void MoveTrack(UINT m_nTrack);
 	static BOOL IsMyType(int hFile, const char* szExt )
 	{
 		return FALSE;
 	}
+	static int Get2mgFormat(int hFile);
 
+	int GetNibblesPerTrack()
+	{
+		return m_nNibblesPerTrack;
+	}
+	int GetNumOfTrack()
+	{
+		return (int)m_uNumOfTrack;
+	}
 protected:
 	virtual BOOL ReadBuffer(){ m_nStatus |= DIS_BUFFER_VALID; return TRUE; };
 	virtual void SaveBuffer(){ m_nStatus &= ~DIS_BUFFER_DIRTY; };
@@ -70,6 +81,10 @@ protected:
 	BYTE	m_abyLogicalSector[16];			// Physical sector to Logical sector
 	char	m_szImagePath[PATH_MAX+1];
 	int		m_nNibblesPerTrack;
+	UINT	m_uNumOfTrack;
+	UINT	m_uVolumeNo;
+	UINT	m_uDataOffset;
+	UINT	m_uDataLength;
 };
 
 #endif // !defined(AFX_DISKIMAGE_H__8D677F92_8D18_4BC1_B58E_46C13A940CE5__INCLUDED_)

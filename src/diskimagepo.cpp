@@ -31,7 +31,7 @@ BOOL CDiskImagePo::IsMyType(int hFile, const char* szExt )
 	// 확장자로 확인
 	if ( IsMatch( "po", szExt ) )
 		return TRUE;
-	if ( IsMatch( "do;dsk;nib;apl;iie;prg", szExt ) )
+	if (IsMatch("do;dsk;nib;apl;iie;prg;2mg", szExt))
 		return FALSE;
 	// 모르는 확장자 인경우 내용 확인
 	// check for a dos order image of a dos diskette

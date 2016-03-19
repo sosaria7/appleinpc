@@ -32,6 +32,8 @@ protected:
 	virtual void Nibblize();				// disk image format data to nibble
 	virtual void Denibblize();				// nibble data to disk image format
 	virtual void Code62( int nSector );
+	virtual BOOL InitImage();
+
 	void Decode62(int nSector);
 	static BOOL CheckImage( int hFile, const BYTE* order );
 	inline void WriteNibble(BYTE data)

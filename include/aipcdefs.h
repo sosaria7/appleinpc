@@ -33,6 +33,7 @@
 #define CARD_VIDEX_VIDEOTERM	5
 
 // define for disk images
+#define IMAGE_NONE		0
 #define IMAGE_DOS		1
 #define IMAGE_PRODOS	2
 #define	IMAGE_NIBBLE	3

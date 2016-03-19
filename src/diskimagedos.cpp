@@ -58,12 +58,20 @@ CDiskImageDos::~CDiskImageDos()
 
 }
 
+BOOL CDiskImageDos::InitImage()
+{
+	m_uNumOfTrack = (unsigned)(m_uDataLength / DOS_TRACK_BYTES);
+	return TRUE;
+}
+
 BOOL CDiskImageDos::ReadBuffer()
 {
 	long lLen;
 	if ( m_hFile == -1 )
 		return FALSE;
-	_lseek( m_hFile, m_nTrack << 12, SEEK_SET );
+	if (m_nTrack >= m_uNumOfTrack)
+		return FALSE;
+	_lseek( m_hFile, m_uDataOffset + (m_nTrack * DOS_TRACK_BYTES), SEEK_SET );
 	lLen = _read( m_hFile, m_abyDosBuffer, DOS_TRACK_BYTES );
 	Nibblize();
 	m_nStatus |= DIS_BUFFER_VALID;
@@ -76,8 +84,10 @@ void CDiskImageDos::SaveBuffer()
 	long lLen;
 	if ( m_hFile == -1 )
 		return;
+	if (m_nTrack >= m_uNumOfTrack)
+		return;
 	Denibblize();
-	_lseek( m_hFile, m_nTrack << 12, SEEK_SET );
+	_lseek( m_hFile, m_uDataOffset + (m_nTrack * DOS_TRACK_BYTES), SEEK_SET );
 	lLen = _write( m_hFile, m_abyDosBuffer, DOS_TRACK_BYTES );
 	m_nStatus &= ~DIS_BUFFER_DIRTY;
 }
@@ -190,10 +200,10 @@ void CDiskImageDos::Nibblize()
 		WriteNibble(0xD5);
 		WriteNibble(0xAA);
 		WriteNibble(0x96);
-		WriteNibble(0xFF);			// Volume = 254
-		WriteNibble(0xFE);
 #define CODE44A(a)	((((a) >> 1) & 0x55) | 0xAA)
 #define CODE44B(a)	(((a) & 0x55) | 0xAA )
+		WriteNibble( CODE44A((BYTE)m_uVolumeNo) );			// Volume = 254
+		WriteNibble( CODE44B((BYTE)m_uVolumeNo) );
 		WriteNibble( CODE44A( (BYTE)m_nTrack ) );			// track
 		WriteNibble( CODE44B( (BYTE)m_nTrack ) );
 		WriteNibble( CODE44A( sector ) );					// sector
@@ -337,7 +347,7 @@ BOOL CDiskImageDos::IsMyType(int hFile, const char* szExt )
 	// 확장자로 확인
 	if ( IsMatch( "dsk;do", szExt ) )
 		return TRUE;
-	if ( IsMatch( "po;nib;apl;iie;prg", szExt ) )
+	if (IsMatch("po;nib;apl;iie;prg", szExt))
 		return FALSE;
 	// 모르는 확장자 인경우 내용 확인
 	// check for a dos order image of a dos diskette

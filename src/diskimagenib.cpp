@@ -13,35 +13,23 @@
 
 CDiskImageNib::CDiskImageNib()
 {
-	m_nNibblesPerTrack = 0;
+	m_nNibblesPerTrack = MAX_TRACK_BYTES;
 }
 
 CDiskImageNib::~CDiskImageNib()
 {
 
 }
-int CDiskImageNib::Mount(const char* szFileName)
+
+BOOL CDiskImageNib::InitImage()
 {
-	int nRet;
-	nRet = CDiskImage::Mount( szFileName );
-	if ( nRet == E_SUCCESS )
+	m_nNibblesPerTrack = (int)(m_uDataLength / 35);
+	if (m_nNibblesPerTrack == 0 || m_nNibblesPerTrack > MAX_TRACK_BYTES)
 	{
-		m_nNibblesPerTrack = (int)( _lseek( m_hFile, 0, SEEK_END ) / 35 );
-		if ( m_nNibblesPerTrack > MAX_TRACK_BYTES )
-		{
-			m_nNibblesPerTrack = MAX_TRACK_BYTES;
-		}
+		m_nNibblesPerTrack = MAX_TRACK_BYTES;
 	}
-	else
-	{
-		m_nNibblesPerTrack = 0;
-	}
-	return nRet;
-}
-void CDiskImageNib::Umount()
-{
-	CDiskImage::Umount();
-	m_nNibblesPerTrack = 0;
+	m_uNumOfTrack = (UINT)(m_uDataLength / m_nNibblesPerTrack);
+	return TRUE;
 }
 
 BOOL CDiskImageNib::ReadBuffer()
@@ -52,16 +40,10 @@ BOOL CDiskImageNib::ReadBuffer()
 	if ( m_hFile == -1 )
 		return FALSE;
 
-	if ( m_nNibblesPerTrack == 0 )
-	{
-		m_nNibblesPerTrack = (int)(_lseek(m_hFile, 0, SEEK_END ) / 35 );
-		if ( m_nNibblesPerTrack > MAX_TRACK_BYTES )
-		{
-			m_nNibblesPerTrack = MAX_TRACK_BYTES;
-		}
-	}
+	if (m_nTrack >= m_uNumOfTrack)
+		return FALSE;
 
-	_lseek(m_hFile, m_nTrack * m_nNibblesPerTrack, SEEK_SET );
+	_lseek(m_hFile, m_uDataOffset + (m_nTrack * m_nNibblesPerTrack), SEEK_SET );
 	lLen = _read( m_hFile, abyBuff, m_nNibblesPerTrack );
 	m_nStatus |= DIS_BUFFER_VALID;
 	m_nStatus &= ~DIS_BUFFER_DIRTY;
@@ -80,7 +62,10 @@ void CDiskImageNib::SaveBuffer()
 	if ( m_hFile == -1 )
 		return;
 
-	_lseek(m_hFile, m_nTrack * m_nNibblesPerTrack, SEEK_SET );
+	if (m_nTrack >= m_uNumOfTrack)
+		return;
+
+	_lseek(m_hFile, m_uDataOffset + (m_nTrack * m_nNibblesPerTrack), SEEK_SET );
 	lLen = _write( m_hFile, m_abyNibBuffer, m_nNibblesPerTrack );
 	m_nStatus &= ~DIS_BUFFER_DIRTY;
 	return;
@@ -90,22 +75,21 @@ BOOL CDiskImageNib::CheckImage(int hFile)
 {
 	BYTE abyBuff[ 512 ];
 	int i;
-	char ch;
-	DWORD val;
+	BYTE ch;
+	DWORD val = 0;
 	_lseek(hFile, 0, SEEK_SET );
 	if (_read(hFile, abyBuff, 512 ) != 512 )
 		return FALSE;
-	for( i = 0; i < 508; i++ )
+	for( i = 0; i < 512; i++ )
 	{
 		ch = abyBuff[i];
-		if ( !( ch & 0x80 ) )
-			return FALSE;
-		val = *(DWORD*)(abyBuff+i);
-		val = DWORD_ORDER(val) & 0x00FFFFFF;
-		if ( val == 0x96AAD5 || val == 0xB5AAD5 || val == 0xADAAD5 )
+//		if ( !( ch & 0x80 ) )
+//			return FALSE;
+		val = ((val << 8) | ch) & 0x00FFFFFF;
+		if ( val == 0xD5AA96 || val == 0xD5AAB5 || val == 0xD5AAAD )
 			break;
 	}
-	return( i < 508 );
+	return( i < 512 );
 }
 
 BOOL CDiskImageNib::IsMyType(int hFile, const char* szExt )
@@ -113,7 +97,7 @@ BOOL CDiskImageNib::IsMyType(int hFile, const char* szExt )
 	int nSize;
 
 	// 확장자로 확인
-	if ( IsMatch( "do;dsk;po;apl;iie;prg", szExt ) )
+	if (IsMatch("do;dsk;po;apl;iie;prg;2mg", szExt))
 		return FALSE;
 
 	nSize = _lseek(hFile, 0, SEEK_END );

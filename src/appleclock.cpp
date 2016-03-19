@@ -432,7 +432,7 @@ void CAppleClock::Serialize( CArchive &ar )
 	CObject::Serialize( ar );
 	BOOL bActive = GetIsActive();
 	BOOL bPalMode;
-	int nMachineType;
+	int nMachineType = MACHINE_APPLE2E;
 
 	if ( bActive )
 	{

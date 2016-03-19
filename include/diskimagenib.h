@@ -25,8 +25,7 @@ protected:
 	static BOOL CheckImage(int hFile);
 	virtual BOOL ReadBuffer();
 	virtual void SaveBuffer();
-	virtual int Mount(const char* szFileName);
-	virtual void Umount();
+	virtual BOOL InitImage();
 
 protected:
 	BOOL StoreData(BYTE* pbyData);

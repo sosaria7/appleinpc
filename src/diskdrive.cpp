@@ -122,6 +122,8 @@ int CDiskDrive::Mount( const char* pszImageName )
 	int i, j;
 	char ch;
 	int hFile, nErrNo;
+	int nImageFormat;
+
 	CDiskImage* pNewImage;
 
 	hFile = _open( pszImageName, O_RDONLY | O_BINARY );
@@ -142,8 +144,10 @@ int CDiskDrive::Mount( const char* pszImageName )
 	if ( j != 0 )
 		strncpy( szExt, pszImageName + j, 3 );
 
+	nImageFormat = CDiskImage::Get2mgFormat(hFile);
 	// 이미지가 어느 형식인지 확인한다.
-	if ( CDiskImageDos::IsMyType( hFile, szExt ) )
+	if (nImageFormat == IMAGE_DOS ||
+		CDiskImageDos::IsMyType( hFile, szExt ) )
 	{
 		// 이미 있는 CDiskImage와 동일한 종류이면 새로 생성하지 않는다.
 		if ( m_pDiskImage && m_pDiskImage->GetId() == IMAGE_DOS )
@@ -151,14 +155,16 @@ int CDiskDrive::Mount( const char* pszImageName )
 		else
 			pNewImage = new CDiskImageDos();
 	}
-	else if ( CDiskImagePo::IsMyType( hFile, szExt ) )
+	else if (nImageFormat == IMAGE_PRODOS ||
+		CDiskImagePo::IsMyType( hFile, szExt ) )
 	{
 		if ( m_pDiskImage && m_pDiskImage->GetId() == IMAGE_PRODOS )
 			pNewImage = m_pDiskImage;
 		else
 			pNewImage = new CDiskImagePo();
 	}
-	else if ( CDiskImageNib::IsMyType( hFile, szExt ) )
+	else if (nImageFormat == IMAGE_NIBBLE ||
+		CDiskImageNib::IsMyType( hFile, szExt ) )
 	{
 		if ( m_pDiskImage && m_pDiskImage->GetId() == IMAGE_NIBBLE )
 			pNewImage = m_pDiskImage;
@@ -278,12 +284,12 @@ BYTE CDiskDrive::ReadNibble()
 			while ( m_pDiskImage->Read(m_iPosition) != 0xD5 )
 			{
 				m_iPosition++;
-				if ( m_iPosition >= MAX_TRACK_BYTES )
+				if ( m_iPosition >= m_pDiskImage->GetNibblesPerTrack())
 					m_iPosition = 0;
 				if ( m_iPosition == origpos )
 				{
 					m_iPosition++;
-					if ( m_iPosition >= MAX_TRACK_BYTES )
+					if ( m_iPosition >= m_pDiskImage->GetNibblesPerTrack())
 						m_iPosition = 0;
 					m_bEnhanced = FALSE;
 					TRACE( "corrupted header.");
@@ -302,7 +308,7 @@ BYTE CDiskDrive::ReadNibble()
 		if ( m_bReadFlag )
 		{
 			m_iPosition++;
-			if ( m_iPosition >= MAX_TRACK_BYTES )
+			if ( m_iPosition >= m_pDiskImage->GetNibblesPerTrack())
 				m_iPosition = 0;
 			return m_pDiskImage->Read( m_iPosition );
 		}
@@ -329,7 +335,7 @@ BYTE CDiskDrive::ReadNibble()
 	interval /= READ_CLOCK;
 	DWORD dwClockInc = interval * READ_CLOCK;
 	m_dwLastAppleClock += dwClockInc;
-	m_iPosition = ( m_iPosition + interval ) % MAX_TRACK_BYTES;
+	m_iPosition = ( m_iPosition + interval ) % m_pDiskImage->GetNibblesPerTrack();
 	if ( m_pDiskImage == NULL
 		|| !m_pDiskImage->IsMounted() )
 	{
@@ -360,7 +366,7 @@ BYTE CDiskDrive::WriteNibble(BYTE data)
 
 	DWORD dwClockInc = interval * READ_CLOCK;
 	m_dwLastAppleClock += dwClockInc;
-	m_iPosition = ( m_iPosition + interval ) % MAX_TRACK_BYTES;
+	m_iPosition = ( m_iPosition + interval ) % m_pDiskImage->GetNibblesPerTrack();
 
 	if ( data & 0x80 )
 	{

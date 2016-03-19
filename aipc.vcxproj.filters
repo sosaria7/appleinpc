@@ -264,9 +264,6 @@
     <ClCompile Include="src\arch\directx\dimouse.cpp">
       <Filter>Source\arch\directx</Filter>
     </ClCompile>
-    <ClCompile Include="src\diskimagepo.cpp">
-      <Filter>Source\arch\directx</Filter>
-    </ClCompile>
     <ClCompile Include="src\arch\directx\dxsound.cpp">
       <Filter>Source\arch\directx</Filter>
     </ClCompile>
@@ -391,6 +388,9 @@
       <Filter>Source\arch\frame</Filter>
     </ClCompile>
     <ClCompile Include="src\6502.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\diskimagepo.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
