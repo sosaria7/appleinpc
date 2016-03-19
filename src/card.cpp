@@ -71,6 +71,7 @@ void CCard::Write(WORD addr, BYTE data)
 void CCard::Serialize( CArchive &ar )
 {
 	CObject::Serialize( ar );
+	CString dummy = "";
 
 	if ( ar.IsStoring() )
 	{
@@ -80,7 +81,7 @@ void CCard::Serialize( CArchive &ar )
 	}
 	else
 	{
-		ar >> m_strDeviceName;
+		ar >> dummy;
 		ar >> m_iDeviceNum;
 		ar >> m_nDipSwitch;
 	}
