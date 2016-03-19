@@ -69,7 +69,7 @@ CDiskInterface::CDiskInterface()
 	for (int i = 0; i < MAX_DRIVES; i++)
 		m_pDiskDrive[i] = new CDiskDrive();
 	m_iDeviceNum = CARD_DISK_INTERFACE;
-	m_strDeviceName = "Apple DISK II";
+	m_strDeviceName = "Apple DISK ][";
 	stLightHandler.func = NULL;
 
 	m_iCurrentDisk = 0;

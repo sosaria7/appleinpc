@@ -20,7 +20,7 @@ IMPLEMENT_DYNAMIC( CPhasor, CCard );
 
 CPhasor::CPhasor()
 {
-	m_strDeviceName = "Phasor";
+	m_strDeviceName = "Mocking B./Phasor";
 	m_iDeviceNum = CARD_PHASOR;
 	g_DXSound.AddPSG( &m_8913[0], 1 );
 	g_DXSound.AddPSG( &m_8913[1], 1 );
@@ -263,13 +263,6 @@ void CPhasor::SetDipSwitch(int nDipSwitch)
 	if ( m_nDipSwitch == nDipSwitch )
 		return;
 	byMode = nDipSwitch & 0x03;
-
-	if ( byMode == PM_MB )
-		m_strDeviceName = "Phasor : MB";
-	else if ( byMode == PM_ECHO )
-		m_strDeviceName = "Phasor : ECHO";
-	else
-		m_strDeviceName = "Phasor";
 
 	m_byMode = byMode;
 

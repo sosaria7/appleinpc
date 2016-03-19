@@ -37,7 +37,7 @@ BYTE CCard::ReadRom(WORD addr)
 {
 	if ( m_pbyRom )
 		return m_pbyRom[addr&0xFF];
-	return 0;
+	return MemReturnRandomData(2);
 }
 
 void CCard::WriteRom(WORD addr, BYTE data)

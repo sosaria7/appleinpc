@@ -60,6 +60,9 @@ protected:
 	//}}AFX_MSG
 	afx_msg void OnSelchangeSlot(UINT uId);
 	afx_msg void OnClickedSlotSetup(UINT uId);
+
+	static int DeviceNameToDeviceID(CString strDeviceName);
+
 public:
 	virtual  ~CDlgConfigure();
 protected:

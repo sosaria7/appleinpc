@@ -11,6 +11,7 @@
 #include "diskinterface.h"
 #include "mousecard.h"
 #include "sddiskii.h"
+//#include "videxterm.h"
 
 extern BYTE MemReturnRandomData(BYTE highbit);
 extern CALLBACK_HANDLER(OnDiskLightChange);
@@ -149,9 +150,6 @@ BYTE CSlots::Read(WORD addr)
 	ASSERT(slot >= 0 && slot < 7);
 	if ( m_slots[slot] )
 	{
-		if (m_slots[slot]->HasExtendRom())
-			m_nLastSlotNum = slot;
-
 		retval = m_slots[slot]->Read(addr);
 		return( retval );
 	}
@@ -166,7 +164,11 @@ BYTE CSlots::ReadRom(WORD addr)
 		slot = ((addr >> 8) & 0x7) - 1;
 		ASSERT(slot >= 0 && slot < 7);
 		if (m_slots[slot])
+		{
+			if (m_slots[slot]->HasExtendRom())
+				m_nLastSlotNum = slot;
 			return m_slots[slot]->ReadRom(addr);
+		}
 	}
 	else if (m_nLastSlotNum >= 0)
 	{
@@ -186,11 +188,7 @@ void CSlots::Write(WORD addr, BYTE data)
 	slot = ( ( addr >> 4 ) & 0x07 ) - 1;
 	ASSERT(slot >= 0 && slot < 7);
 	if (m_slots[slot])
-	{
-		if (m_slots[slot]->HasExtendRom())
-			m_nLastSlotNum = slot;
 		m_slots[slot]->Write(addr, data);
-	}
 }
 
 void CSlots::WriteRom(WORD addr, BYTE data)
@@ -201,7 +199,11 @@ void CSlots::WriteRom(WORD addr, BYTE data)
 		slot = ((addr >> 8) & 0x7) - 1;
 		ASSERT(slot >= 0 && slot < 7);
 		if (m_slots[slot])
+		{
+			if (m_slots[slot]->HasExtendRom())
+				m_nLastSlotNum = slot;
 			m_slots[slot]->WriteRom(addr, data);
+		}
 	}
 	else if (m_nLastSlotNum >= 0)
 	{
@@ -269,6 +271,9 @@ BOOL CSlots::InsertCard(int nSlot, int nDeviceNum)
 		break;
 	case CARD_SD_DISK_II:
 		pCard = new CSDDiskII();
+		break;
+	case CARD_VIDEX_VIDEOTERM:
+		//pCard = new CVidexTerm();
 		break;
 	default:
 		return FALSE;
