@@ -20,7 +20,7 @@ public:
 
 // Dialog Data
 	//{{AFX_DATA(CDlgConfigHDD)
-	enum { IDD = IDD_CONFIGURE_SD_DISK };
+	enum { IDD = IDD_CONFIGURE_HDD };
 	CButton	m_btnEnableDisk1;
 	CButton	m_btnBrowseDisk1;
 	CString	m_strDisk1Image;
