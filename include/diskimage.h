@@ -24,7 +24,7 @@ class CDiskImage
 {
 public:
 
-	char* GetImagePath();
+	LPCTSTR GetImagePath();
 	virtual int GetId(){ return 0; }
 	BOOL IsWriteProtected();
 	BOOL IsMounted();
@@ -79,7 +79,7 @@ protected:
 	int		m_hFile;
 	BYTE	m_abyNibBuffer[MAX_TRACK_BYTES];
 	BYTE	m_abyLogicalSector[16];			// Physical sector to Logical sector
-	char	m_szImagePath[PATH_MAX+1];
+	CString m_strImagePath;
 	int		m_nNibblesPerTrack;
 	UINT	m_uNumOfTrack;
 	UINT	m_uVolumeNo;

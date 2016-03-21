@@ -30,7 +30,7 @@
 #define IDD_CONFIGURE_MOCKINGBOARD      152
 #define IDR_ACCELERATOR                 154
 #define IDD_CONFIGURE                   157
-#define IDD_CONFIGURE_SD_DISK           158
+#define IDD_CONFIGURE_HDD               158
 #define IDI_ICON1                       162
 #define IDI_ICON2                       163
 #define IDC_LIST_PROCESS                1000

@@ -10,7 +10,7 @@
 #include "phasor.h"
 #include "diskinterface.h"
 #include "mousecard.h"
-#include "sddiskii.h"
+#include "hdd.h"
 //#include "videxterm.h"
 
 extern BYTE MemReturnRandomData(BYTE highbit);
@@ -72,8 +72,8 @@ BOOL CSlots::Initialize()
 					m_nDiskSlotNum = i;
 				}
 				break;
-			case CARD_SD_DISK_II:
-				((CSDDiskII*)m_slots[i])->SetMotorLightHandler( (void*)nDiskInterface, OnDiskLightChange );
+			case CARD_HDD:
+				((CHDDInterface*)m_slots[i])->SetMotorLightHandler( (void*)nDiskInterface, OnDiskLightChange );
 				nDiskInterface ^= 1;
 				if ( m_nHardDiskSlotNum == -1 )
 				{
@@ -107,7 +107,7 @@ void CSlots::ConfigureHardDisk()
 {
 	if ( m_nHardDiskSlotNum >= 0 )
 	{
-		((CSDDiskII*)m_slots[m_nHardDiskSlotNum])->Configure();
+		((CHDDInterface*)m_slots[m_nHardDiskSlotNum])->Configure();
 	}
 }
 
@@ -269,8 +269,8 @@ BOOL CSlots::InsertCard(int nSlot, int nDeviceNum)
 	case CARD_PHASOR:
 		pCard = new CPhasor();
 		break;
-	case CARD_SD_DISK_II:
-		pCard = new CSDDiskII();
+	case CARD_HDD:
+		pCard = new CHDDInterface();
 		break;
 	case CARD_VIDEX_VIDEOTERM:
 		//pCard = new CVidexTerm();

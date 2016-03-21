@@ -13,7 +13,7 @@
 #include "phasor.h"
 #include "appleclock.h"
 #include "joystick.h"
-#include "sddiskii.h"
+#include "hdd.h"
 //#include "videxterm.h"
 
 #ifdef _DEBUG
@@ -122,8 +122,8 @@ int CDlgConfigure::DeviceNameToDeviceID(CString strDeviceName)
 	else if (strDeviceName.Compare("Mocking B./Phasor") == 0)
 		return CARD_PHASOR;
 
-	else if (strDeviceName.Compare("SD DISK][ HDD") == 0)
-		return CARD_SD_DISK_II;
+	else if (strDeviceName.Compare("HDD") == 0)
+		return CARD_HDD;
 
 	else if (strDeviceName.Compare("Videx VideoTerm") == 0)
 		return CARD_VIDEX_VIDEOTERM;
@@ -174,8 +174,8 @@ void CDlgConfigure::OnSelchangeSlot(UINT uId)
 			case CARD_PHASOR:				// phasor/mocking board sound card
 				m_pCards[uId] = new CPhasor();
 				break;
-			case CARD_SD_DISK_II:			// SD DISK][ interface card
-				m_pCards[uId] = new CSDDiskII();
+			case CARD_HDD:					// HDD interface card
+				m_pCards[uId] = new CHDDInterface();
 				break;
 			case CARD_VIDEX_VIDEOTERM:
 				//m_pCards[uId] = new CVidexTerm();

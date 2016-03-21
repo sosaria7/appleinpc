@@ -247,6 +247,12 @@
     <ClInclude Include="include\6502.h">
       <Filter>Header</Filter>
     </ClInclude>
+    <ClInclude Include="include\hdd.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\arch\frame\dlgconfighdd.h">
+      <Filter>Header\arch.h\frame.h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\arch\directx\ddutil.cpp">
@@ -381,17 +387,17 @@
     <ClCompile Include="src\arch\frame\dlgcolor.cpp">
       <Filter>Source\arch\frame</Filter>
     </ClCompile>
-    <ClCompile Include="src\sddiskii.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="src\arch\frame\dlgconfigsddisk.cpp">
-      <Filter>Source\arch\frame</Filter>
-    </ClCompile>
     <ClCompile Include="src\6502.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="src\diskimagepo.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hdd.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\frame\dlgconfighdd.cpp">
+      <Filter>Source\arch\frame</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

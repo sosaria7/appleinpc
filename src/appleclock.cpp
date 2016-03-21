@@ -39,6 +39,9 @@ BOOL g_debug = FALSE;
 
 CAppleClock *g_pBoard = NULL;
 
+#ifdef _DEBUG
+static int g_breakpoint = -1;
+#endif
 
 
 #define LINE_CLOCK			65
@@ -106,6 +109,7 @@ CAppleClock::~CAppleClock()
 	}
 */
 }
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CAppleClock message handlers
@@ -176,8 +180,16 @@ void CAppleClock::Run()
 			g_DXSound.Clock();
 			if (m_queSignal.Size() > 0)
 			{
-				continue;
+				break;
 			}
+#ifdef _DEBUG
+			if (((C65c02*)m_pCpu)->getRegPC() == g_breakpoint)
+			{
+				Suspend(FALSE);
+				::PostMessage(this->m_lpwndMainFrame->m_hWnd, WM_COMMAND, ID_DEBUG, 0);
+				break;
+			}
+#endif
 		}
 
 		DWORD dwCurClock;
@@ -331,12 +343,13 @@ int CAppleClock::GetAppleStatus()
 BOOL CAppleClock::Initialize()
 {
 	SpeedStable();
-	m_cSlots.InsertCard( 3, CARD_PHASOR );					// slot 4
-	m_cSlots.SetDipSwitch( 3, PM_MB );
-	m_cSlots.InsertCard( 5, CARD_DISK_INTERFACE );			// slot 6
+	m_cSlots.InsertCard(3, CARD_PHASOR);					// slot 4
+	m_cSlots.SetDipSwitch(3, PM_MB);
+	m_cSlots.InsertCard(5, CARD_DISK_INTERFACE);			// slot 6
+	m_cSlots.InsertCard(6, CARD_HDD);						// slot 7
 	m_cSlots.Initialize();
 	m_cIOU.InitMemory(m_nMachineType);
-	g_DXSound.AddPSG( &m_cSpeaker, 0 );
+	g_DXSound.AddPSG(&m_cSpeaker, 0);
 	m_joystick.Initialize();
 
 	//m_cIOU.Init();

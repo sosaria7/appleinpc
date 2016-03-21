@@ -50,16 +50,6 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
-#ifdef _DEBUG
-#define TRACE_ADDR  m_trace[(m_current++)&0xFF] = ( m_regPC - 1 ) & 0xFFFF;
-#else
-#define TRACE_ADDR
-#endif
-
-
-#ifdef _DEBUG
-static int g_breakpoint = -1;
-#endif
 
 C6502::C6502()
 	: C65c02()
@@ -85,14 +75,16 @@ int C6502::Process()
 	BYTE offset;
 	BYTE opcode;
 	int clock = 0;
-
+#ifdef _DEBUG
+	WORD opcode_addr = m_regPC;
+#endif
 	if ( ( m_uException_Register & SIG_CPU_IRQ ) )
 	{
 		m_uException_Register &= ~SIG_CPU_IRQ;
 		m_uException_Register &= ~SIG_CPU_WAIT;
 		if ( !( m_regF & I_Flag ) && !( m_regF & B_Flag ) )
 		{
-			TRACE_ADDR
+			TRACE_CALL;
 			PUSH( m_regPC >> 8 );
 			PUSH( m_regPC & 0xFF );
 			PUSH( m_regF );
@@ -207,7 +199,7 @@ int C6502::Process()
 		BRA_NCOND(N_Flag); CLOCK(2); break;
 		/* BRK */
 	case 0x00:
-		TRACE_ADDR
+		TRACE_CALL
 #ifdef _DEBUG
 			TRACE("BRK at $%04X\n", m_regPC - 1);
 		{
@@ -598,14 +590,6 @@ int C6502::Process()
 		CLOCK(2); break;
 	}
 
-
-#ifdef _DEBUG
-	if ( m_regPC == g_breakpoint )
-	{
-		g_pBoard->OnDebug();
-		clock = 0;		// break loop
-	}
-#endif
 	return clock;
 }
 

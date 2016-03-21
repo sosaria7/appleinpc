@@ -180,6 +180,7 @@
     <ClInclude Include="include\arch\frame\aipc.h" />
     <ClInclude Include="include\arch\frame\applestatusbar.h" />
     <ClInclude Include="include\arch\frame\dlgconfigdisk.h" />
+    <ClInclude Include="include\arch\frame\dlgconfighdd.h" />
     <ClInclude Include="include\arch\frame\dlgconfigmockingboard.h" />
     <ClInclude Include="include\arch\frame\dlgconfigure.h" />
     <ClInclude Include="include\arch\frame\dlgdebug.h" />
@@ -200,6 +201,7 @@
     <ClInclude Include="include\diskinterface.h" />
     <ClInclude Include="include\fontdata.h" />
     <ClInclude Include="include\gcr_table.h" />
+    <ClInclude Include="include\hdd.h" />
     <ClInclude Include="include\iou.h" />
     <ClInclude Include="include\joystick.h" />
     <ClInclude Include="include\keyboard.h" />
@@ -235,8 +237,8 @@
     <ClCompile Include="src\arch\frame\colorbutton.cpp" />
     <ClCompile Include="src\arch\frame\dlgcolor.cpp" />
     <ClCompile Include="src\arch\frame\dlgconfigdisk.cpp" />
+    <ClCompile Include="src\arch\frame\dlgconfighdd.cpp" />
     <ClCompile Include="src\arch\frame\dlgConfigmockingboard.cpp" />
-    <ClCompile Include="src\arch\frame\dlgconfigsddisk.cpp" />
     <ClCompile Include="src\arch\frame\dlgconfigure.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -255,6 +257,7 @@
     <ClCompile Include="src\diskimagenib.cpp" />
     <ClCompile Include="src\diskimagepo.cpp" />
     <ClCompile Include="src\diskinterface.cpp" />
+    <ClCompile Include="src\hdd.cpp" />
     <ClCompile Include="src\iou.cpp" />
     <ClCompile Include="src\joystick.cpp" />
     <ClCompile Include="src\keyboard.cpp" />
@@ -264,7 +267,6 @@
     <ClCompile Include="src\mousecard.cpp" />
     <ClCompile Include="src\phasor.cpp" />
     <ClCompile Include="src\psg.cpp" />
-    <ClCompile Include="src\sddiskii.cpp" />
     <ClCompile Include="src\slots.cpp" />
     <ClCompile Include="src\speaker.cpp" />
   </ItemGroup>

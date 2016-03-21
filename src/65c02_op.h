@@ -14,6 +14,17 @@
 		clock++;								\
 	addr += off
 
+#ifdef _DEBUG
+#define TRACE_CALL  m_trace[(m_current++)&0xFF] = opcode_addr
+//#define TRACE_JMP	m_trace[(m_current++)&0xFF] = opcode_addr
+#endif
+#ifndef TRACE_CALL
+#define TRACE_CALL
+#endif
+#ifndef TRACE_JMP
+#define TRACE_JMP
+#endif
+
 /* Absolute */
 #define ABS			addr = READOPCODE16
 /* Absolute, X */
@@ -69,6 +80,7 @@
 		SET_FLAG( C_Flag )
 
 #define BRANCH(off)							\
+	TRACE_JMP								\
 	CALC_ADDR(this->m_regPC, (char)off);	\
 	clock++
 
@@ -151,8 +163,10 @@
 	result = data + 1;						\
 	UPDATEFLAG_NZ
 #define JMP									\
+	TRACE_JMP								\
 	this->m_regPC = addr
 #define JSR									\
+	TRACE_CALL								\
 	this->m_regPC--;							\
 	PUSH( (BYTE)( this->m_regPC >> 8 ) );	\
 	PUSH( (BYTE)( this->m_regPC ) );		\
@@ -173,10 +187,12 @@
 	result = ( (data&1)<<8 ) | ((this->m_regF&C_Flag)<<7) | (data>>1);	\
 	UPDATEFLAG_NZC
 #define RTI									\
+	TRACE_CALL								\
 	this->m_regF = POP | 0x20; /* bit 5 bug of 6502 */ \
 	this->m_regPC = POP;						\
 	this->m_regPC += POP << 8
 #define RTS									\
+	TRACE_CALL								\
 	this->m_regPC = POP;						\
 	this->m_regPC += ( POP << 8 ) + 1
 

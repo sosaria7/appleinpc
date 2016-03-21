@@ -40,8 +40,7 @@ CDiskImage::CDiskImage()
 	m_nTrack = 0;
 	m_nStatus = 0;
 	m_hFile = -1;
-	m_szImagePath[0] = '\0';
-	m_szImagePath[PATH_MAX] = '\0';
+	m_strImagePath = "";
 	m_nNibblesPerTrack = MAX_TRACK_BYTES;
 	m_uNumOfTrack = 35;
 	m_uDataOffset = 0;
@@ -76,7 +75,7 @@ int CDiskImage::Mount(const char *szFileName)
 	Umount();
 	if ( szFileName == NULL )
 	{
-		m_szImagePath[0] = 0;
+		m_strImagePath = "";
 		return E_SUCCESS;
 	}
 
@@ -89,8 +88,7 @@ int CDiskImage::Mount(const char *szFileName)
 			return E_OPEN_FAIL;
 		m_nStatus |= DIS_WRITE_PROTECTED;
 	}
-	strncpy( m_szImagePath, szFileName, PATH_MAX );
-	m_hFile = hFile;
+	m_strImagePath = szFileName;
 	m_nTrack = 0;
 	m_nStatus &= ~DIS_BUFFER_VALID;
 
@@ -107,7 +105,10 @@ int CDiskImage::Mount(const char *szFileName)
 		_lseek(hFile, 0, SEEK_SET);
 		nRead = _read(hFile, &st2mgHeader, sizeof(st2mgHeader));
 		if (nRead != sizeof(st2mgHeader))
+		{
+			_close(hFile);
 			return E_READ_FAIL;
+		}
 		m_uDataOffset = st2mgHeader.dwDataOffset;
 		m_uDataLength = st2mgHeader.dwDataLength;
 		if ((st2mgHeader.dwFlagsVolumeNumber & 0x100) != 0)
@@ -116,8 +117,13 @@ int CDiskImage::Mount(const char *szFileName)
 			m_nStatus |= DIS_WRITE_PROTECTED;
 	}
 
-	if ( !InitImage() || !ReadBuffer() )
+	m_hFile = hFile;
+	if (!InitImage() || !ReadBuffer())
+	{
+		m_hFile = -1;
+		_close(hFile);
 		return E_READ_FAIL;
+	}
 
 	return E_SUCCESS;
 }
@@ -211,8 +217,8 @@ BOOL CDiskImage::IsMatch(const char* extlist, const char* ext)
 	return FALSE;
 }
 
-char* CDiskImage::GetImagePath()
+LPCTSTR CDiskImage::GetImagePath()
 {
-	return m_szImagePath;
+	return (LPCTSTR)m_strImagePath;
 }
 

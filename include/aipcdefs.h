@@ -29,7 +29,7 @@
 #define CARD_MOUSE_INTERFACE	1
 #define CARD_DISK_INTERFACE		2
 #define CARD_PHASOR				3
-#define CARD_SD_DISK_II			4
+#define CARD_HDD				4
 #define CARD_VIDEX_VIDEOTERM	5
 
 // define for disk images
