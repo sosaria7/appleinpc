@@ -177,6 +177,7 @@ BYTE CHDDInterface::Read(WORD addr)
 		MotorOn(FALSE);
 		byData = m_abyData[m_nCurOffset++];
 		m_byCheckSum = (BYTE)(m_byCheckSum + byData);
+		g_pBoard->SpeedUp();
 		break;
 
 	case 0x02:		// BLOCK_L
@@ -277,6 +278,7 @@ void CHDDInterface::Write(WORD addr, BYTE data)
 				break;
 			}
 		}
+		g_pBoard->SpeedUp();
 		break;
 	case 0x02:		// BLOCK_L
 		m_nBlockNo = (m_nBlockNo & 0xFF00) | data;

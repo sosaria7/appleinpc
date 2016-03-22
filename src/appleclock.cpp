@@ -72,8 +72,8 @@ DWORD g_dwCPS = CLOCK;
 DWORD g_dwVBLClock = VBL_CLOCK;
 DWORD g_dwFrameClock = SCREEN_CLOCK;
 
-// 0.5 sec
-#define BOOST_CLOCK_INTERVAL	( CLOCK / 2 )
+// 0.001 sec
+#define BOOST_CLOCK_INTERVAL	( CLOCK/1000 )
 
 #undef SEED
 #define SEED	0x10
@@ -178,10 +178,23 @@ void CAppleClock::Run()
 			m_pScreen->Clock(dwClockInc);
 			m_cSlots.Clock(dwClockInc);
 			g_DXSound.Clock();
+
+			if (m_nBoost > 0)
+			{
+				m_nBoost -= dwClockInc;
+				lastAppleClock += dwClockInc;
+				if (m_nBoost < 0)
+				{
+					lastAppleClock += m_nBoost;
+					m_nBoost = 0;
+				}
+			}
+
 			if (m_queSignal.Size() > 0)
 			{
 				break;
 			}
+
 #ifdef _DEBUG
 			if (((C65c02*)m_pCpu)->getRegPC() == g_breakpoint)
 			{
@@ -197,17 +210,6 @@ void CAppleClock::Run()
 
 		// measure clock speed
 		dwCurTickCount = GetTickCount();
-
-		if ( m_nBoost > 0 )
-		{
-			m_nBoost -= dwCurClock - lastAppleClock;
-			lastAppleClock = dwCurClock;
-			if ( m_nBoost < 0 )
-			{
-				lastAppleClock += m_nBoost;
-				m_nBoost = 0;
-			}
-		}
 
 		host_interval = dwCurTickCount - measure1;
 		if ( host_interval > 1000 )
