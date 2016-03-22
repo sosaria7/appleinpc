@@ -73,8 +73,7 @@ BOOL CSlots::Initialize()
 				}
 				break;
 			case CARD_HDD:
-				((CHDDInterface*)m_slots[i])->SetMotorLightHandler( (void*)nDiskInterface, OnDiskLightChange );
-				nDiskInterface ^= 1;
+				((CHDDInterface*)m_slots[i])->SetMotorLightHandler( (void*)2, OnDiskLightChange );
 				if ( m_nHardDiskSlotNum == -1 )
 				{
 					m_nHardDiskSlotNum = i;

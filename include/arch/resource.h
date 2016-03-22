@@ -28,6 +28,7 @@
 #define IDD_CONFIGURE_SOUND             151
 #define IDB_DISK_WRITE_F                151
 #define IDD_CONFIGURE_MOCKINGBOARD      152
+#define IDB_HDD                         152
 #define IDR_ACCELERATOR                 154
 #define IDD_CONFIGURE                   157
 #define IDD_CONFIGURE_HDD               158

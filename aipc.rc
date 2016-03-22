@@ -127,8 +127,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,1,38,0
- PRODUCTVERSION 0,1,38,0
+ FILEVERSION 0,1,38,1
+ PRODUCTVERSION 0,1,38,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -144,12 +144,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "FileDescription", "Apple in PC"
-            VALUE "FileVersion", "0.1.38.0"
+            VALUE "FileVersion", "0.1.38.1"
             VALUE "InternalName", "aipc"
             VALUE "LegalCopyright", "Copyright (C) 2016"
             VALUE "OriginalFilename", "aipc.exe"
             VALUE "ProductName", "Apple in PC"
-            VALUE "ProductVersion", "0.1.38.0"
+            VALUE "ProductVersion", "0.1.38.1"
         END
     END
     BLOCK "VarFileInfo"
@@ -177,6 +177,8 @@ IDB_DISK_OFF_F          BITMAP                  "res\\disk_off.bmp"
 IDB_DISK_READ_F         BITMAP                  "res\\disk_rea.bmp"
 
 IDB_DISK_WRITE_F        BITMAP                  "res\\disk_wri.bmp"
+
+IDB_HDD                 BITMAP                  "res\\disk1.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -236,7 +238,7 @@ CAPTION "Apple in PC"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
-    LTEXT           "Apple in PC v0.1.38.0",IDC_STATIC,40,10,119,8,SS_NOPREFIX
+    LTEXT           "Apple in PC v0.1.38.1",IDC_STATIC,40,10,119,8,SS_NOPREFIX
     LTEXT           "Copyright (C) 2002-2016",IDC_STATIC,40,62,79,8
     DEFPUSHBUTTON   "&OK",IDOK,125,56,50,14,WS_GROUP
     LTEXT           "Keonwoo Kim",IDC_STATIC,65,22,86,8

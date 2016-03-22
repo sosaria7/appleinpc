@@ -81,6 +81,9 @@
     <Image Include="res\disk_wri.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\disk1.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="aipc.rc">

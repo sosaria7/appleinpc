@@ -72,8 +72,8 @@ DWORD g_dwCPS = CLOCK;
 DWORD g_dwVBLClock = VBL_CLOCK;
 DWORD g_dwFrameClock = SCREEN_CLOCK;
 
-// 0.001 sec
-#define BOOST_CLOCK_INTERVAL	( CLOCK/1000 )
+// 0.005 sec
+#define BOOST_CLOCK_INTERVAL	( CLOCK/200 )
 
 #undef SEED
 #define SEED	0x10

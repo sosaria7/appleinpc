@@ -54,7 +54,6 @@ public:
 	BOOL OnBeforeActivate();
 	void Exit();
 	DWORD GetClock();
-	int GetScanFreq();
 	BOOL Initialize();
 	void Resume();
 	void Suspend(BOOL bWait=TRUE);

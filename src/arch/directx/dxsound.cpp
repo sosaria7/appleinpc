@@ -218,12 +218,18 @@ void CDXSound::Clock()
 		// enough buffer
 		return;
 	}
+
 	m_nCheckStep = 0;
-	if (dwBufferedBytes >= (m_nSampleRate / 2) || dwBufferedBytes < dwDxBuffered)
+	if (dwBufferedBytes >= (m_nSampleRate / 2) || dwBufferedBytes < dwDxBuffered)	// 6 / 12
 	{
 		m_iRateHigh = 0;
 		m_iRateLow = 0;
 		m_dwBufferIn = dwReadPos + ((m_nSampleRate / 4) & ~0x0F);	// 3 / 12
+	}
+	else if (dwBufferedBytes >= (m_nSampleRate * 5 / 12))
+	{
+		// enough buffer
+		return;
 	}
 	else if (dwBufferedBytes >= m_nSampleRate / 3)	// 4 / 12
 	{

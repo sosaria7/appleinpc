@@ -140,6 +140,7 @@
     <Image Include="RES\bitmap1.bmp" />
     <Image Include="RES\bmp00001.bmp" />
     <Image Include="RES\bmp00002.bmp" />
+    <Image Include="res\disk1.bmp" />
     <Image Include="RES\diskOff.bmp" />
     <Image Include="RES\diskRead.bmp" />
     <Image Include="RES\diskWrite.bmp" />

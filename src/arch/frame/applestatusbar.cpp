@@ -41,8 +41,9 @@ CAppleStatusBar::CAppleStatusBar()
 	VERIFY(m_bmDiskRead_Full.LoadBitmap( IDB_DISK_READ_F ));
 	VERIFY(m_bmDiskWrite_Full.LoadBitmap( IDB_DISK_WRITE_F ));
 	VERIFY(m_bmDiskOff_Full.LoadBitmap( IDB_DISK_OFF_F ));
+	VERIFY(m_bmHdd.LoadBitmap(IDB_HDD));
 	int i;
-	for( i = 0; i < 4; i++ )
+	for( i = 0; i < 5; i++ )
 		m_iDiskStatus[i] = 0;
 }
 
@@ -78,10 +79,10 @@ BOOL CAppleStatusBar::Create(CWnd *pParentWnd, DWORD dwStyle)
 		||	!SetIndicators(indicators, sizeof(indicators)/sizeof(UINT)) )
 		return FALSE;
 
-	SetPaneInfo( 0, GetItemID( 0 ), GetPaneStyle( 0 ), 350 );
-	SetPaneInfo( 1, GetItemID( 1 ), GetPaneStyle( 1 ) | SBT_OWNERDRAW, 70 );
-	SetPaneInfo( 2, GetItemID( 2 ), GetPaneStyle( 2 ), 60 );
-	SetPaneInfo( 3, GetItemID( 3 ), GetPaneStyle( 3 ), 60 );
+	SetPaneInfo( 0, GetItemID( 0 ), GetPaneStyle( 0 ), 330 );
+	SetPaneInfo( 1, GetItemID( 1 ), GetPaneStyle( 1 ) | SBT_OWNERDRAW, 106 );
+	SetPaneInfo( 2, GetItemID( 2 ), GetPaneStyle( 2 ), 55 );
+	SetPaneInfo( 3, GetItemID( 3 ), GetPaneStyle( 3 ), 55 );
 	GetItemRect( 1, &m_rectDisk );
 	return TRUE;
 }
@@ -108,14 +109,32 @@ void CAppleStatusBar::SetFrame(double frame)
 void CAppleStatusBar::SetDiskStatus(int index, int status)
 {
 	int i;
-	if ( index < -1 || index >= 2 )
+	if ( index < -1 || index >= 3 )
 		return;
 	int old1 = 0, old2 = 0;
+	int w;
+	BOOL bChanged = TRUE;
 
-	if ( index >= 0 )
+	if (index == 2)		// hdd
+	{
+		index = 4;
+		old1 = m_iDiskStatus[index];
+
+		w = status >> 2;
+		if ((status & 3) != 0)
+		{
+			m_iDiskStatus[index] = 1 + w;
+		}
+		else
+		{
+			m_iDiskStatus[index] = 0;
+		}
+		bChanged = (old1 != m_iDiskStatus[index]);
+	}
+	else if ( index >= 0 )
 	{
 		index <<= 1;
-		int w = status >> 2;
+		w = status >> 2;
 		
 		old1 = m_iDiskStatus[index];
 		old2 = m_iDiskStatus[index+1];
@@ -126,9 +145,9 @@ void CAppleStatusBar::SetDiskStatus(int index, int status)
 			m_iDiskStatus[index] += w;
 		else if ( m_iDiskStatus[index+1] )
 			m_iDiskStatus[index+1] += w;
+		bChanged = (old1 != m_iDiskStatus[index] || old2 != m_iDiskStatus[index + 1]);
 	}
-	if ( index == -1 || old1 != m_iDiskStatus[index] ||
-		 old2 != m_iDiskStatus[index+1] )
+	if ( bChanged )
 	{
 		CScreen* pScreen = NULL;
 		
@@ -146,14 +165,14 @@ void CAppleStatusBar::SetDiskStatus(int index, int status)
 			HDC hDC;
 			CSurface* pSurface = pScreen->GetDiskSurface();
 
-			for( i = 0; i < 4; i++ )
+			for( i = 0; i < 5; i++ )
 			{
 				if ( m_iDiskStatus[i] != 0 )
 				{
 					break;
 				}
 			}
-			if ( i >= 4 )
+			if ( i >= 5 )
 			{
 				// all off
 				pSurface->Clear();
@@ -220,7 +239,28 @@ void CAppleStatusBar::DrawDiskLight(HDC hDC, RECT rc)
 			&srcDC, 0, 0, SRCCOPY );
 		rect.left += info.bmWidth;
 	}
-	
+
+	rect.top -= (rect.Height() - info.bmHeight) / 2;
+	rect.left += 4;
+
+	// draw hdd
+	srcDC.SelectObject(&m_bmHdd);
+	m_bmHdd.GetObject(sizeof(BITMAP), &info);
+	dc.BitBlt(rect.left, rect.top + (rect.Height() - info.bmHeight) / 2,
+		info.bmWidth, info.bmHeight, &srcDC, 0, 0, SRCCOPY);
+	rect.left += info.bmWidth + 2;
+
+	// draw hdd lightm_bmHdd
+	if (m_iDiskStatus[4] == 1)
+		srcDC.SelectObject(&m_bmDiskRead);
+	else if (m_iDiskStatus[4] == 2)
+		srcDC.SelectObject(&m_bmDiskWrite);
+	else
+		srcDC.SelectObject(&m_bmDiskOff);
+
+	dc.BitBlt(rect.left, rect.top + (rect.Height() - info.bmHeight) / 2
+		, info.bmWidth, info.bmHeight, &srcDC, 0, 0, SRCCOPY);
+
 	srcDC.SelectObject(pOldBitmap);
 	dc.Detach();
 }
@@ -270,7 +310,21 @@ void CAppleStatusBar::DrawDiskLight_Full(HDC hDC, RECT rc)
 			&srcDC, 0, 0, SRCCOPY );
 		rect.left += info.bmWidth;
 	}
-	
+
+	// blank space
+	rect.left += info.bmWidth;
+
+	// draw hdd light
+	if (m_iDiskStatus[4] == 1)
+		srcDC.SelectObject(&m_bmDiskRead_Full);
+	else if (m_iDiskStatus[4] == 2)
+		srcDC.SelectObject(&m_bmDiskWrite_Full);
+	else
+		srcDC.SelectObject(&m_bmDiskOff_Full);
+
+	dc.BitBlt(rect.left, rect.top, info.bmWidth, info.bmHeight,
+		&srcDC, 0, 0, SRCCOPY);
+
 	srcDC.SelectObject(pOldBitmap);
 	dc.Detach();
 }

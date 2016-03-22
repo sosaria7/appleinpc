@@ -372,7 +372,8 @@ void CScreen::Run()
 	bool bIsFirstCycle = TRUE;
 	DWORD dwInterval;
 	DWORD dwFrameCount = 0;
-
+	DWORD dwTickStart;
+	DWORD dwElasped;
 	m_dFrameRate = 0;
 
 	dwHostClock = GetTickCount();
@@ -385,6 +386,7 @@ void CScreen::Run()
 
 	while (TRUE)
 	{
+		dwTickStart = GetTickCount();
 		SuspendHere();
 		if (ShutdownHere())
 			break;
@@ -414,7 +416,9 @@ void CScreen::Run()
 				}
 			}
 		}
-		Sleep(5);
+		dwElasped = GetTickCount() - dwTickStart;
+		if ( dwElasped < 1000/70 )		// max 70 frame
+			Sleep(1000/70 - dwElasped);
 	}
 	m_bPowerOn = FALSE;
 	Render();
@@ -971,7 +975,7 @@ HRESULT CScreen::Present()
 			m_pDisplay->Clear();
             m_pDisplay->StretchBlt( &this->m_stMainRect, lpdds );
 			m_pDisplay->Blt( m_stMainRect.left, m_stMainRect.bottom + 4, m_pSurfaceMsg, NULL );
-			m_pDisplay->Blt( m_stMainRect.right - 50, m_stMainRect.bottom + 4, m_pSurfaceDisk, NULL );
+			m_pDisplay->Blt( m_stMainRect.right - 70, m_stMainRect.bottom + 4, m_pSurfaceDisk, NULL );
 
 			hr = m_pDisplay->GetFrontBuffer()->Flip( NULL, 0 );
 		}
