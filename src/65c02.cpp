@@ -86,7 +86,7 @@ int C65c02::Process()
 		m_uException_Register &= ~SIG_CPU_WAIT;
 		if ( !( m_regF & I_Flag ) && !( m_regF & B_Flag ) )
 		{
-			TRACE_CALL
+			TRACE_CALL;
 			PUSH( m_regPC >> 8 );
 			PUSH( m_regPC & 0xFF );
 			PUSH( m_regF );
@@ -201,7 +201,7 @@ int C65c02::Process()
 		BRA_NCOND(N_Flag); CLOCK(2); break;
 		/* BRK */
 	case 0x00:
-		TRACE_CALL
+		TRACE_CALL;
 #ifdef _DEBUG
 			TRACE("BRK at $%04X\n", m_regPC - 1);
 		{

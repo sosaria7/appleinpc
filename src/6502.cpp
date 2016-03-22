@@ -199,7 +199,7 @@ int C6502::Process()
 		BRA_NCOND(N_Flag); CLOCK(2); break;
 		/* BRK */
 	case 0x00:
-		TRACE_CALL
+		TRACE_CALL;
 #ifdef _DEBUG
 			TRACE("BRK at $%04X\n", m_regPC - 1);
 		{
