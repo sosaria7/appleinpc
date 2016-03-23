@@ -178,7 +178,7 @@ IDB_DISK_READ_F         BITMAP                  "res\\disk_rea.bmp"
 
 IDB_DISK_WRITE_F        BITMAP                  "res\\disk_wri.bmp"
 
-IDB_HDD                 BITMAP                  "res\\disk1.bmp"
+IDB_HDD                 BITMAP                  "res\\hdd.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////
