@@ -212,7 +212,8 @@ void CAppleStatusBar::DrawDiskLight(HDC hDC, RECT rc)
 	CDC maskDC;
 	BITMAP info;
 	CBitmap* pOldBitmap;
-	
+	int margin;
+
 	srcDC.CreateCompatibleDC(NULL);
 	pOldBitmap = srcDC.SelectObject(&m_bmDisk);
 	m_bmDisk.GetObject(sizeof(BITMAP), &info);
@@ -223,7 +224,7 @@ void CAppleStatusBar::DrawDiskLight(HDC hDC, RECT rc)
 	rect.left += info.bmWidth + 2;
 	
 	m_bmDiskOff.GetObject(sizeof(BITMAP), &info);
-	rect.top += ( rect.Height()-info.bmHeight ) / 2;
+	margin = (rect.Height() - info.bmHeight) / 2;
 	
 	int i;
 	for( i = 0; i < 4; i++ )
@@ -235,12 +236,11 @@ void CAppleStatusBar::DrawDiskLight(HDC hDC, RECT rc)
 		else
 			srcDC.SelectObject( &m_bmDiskOff );
 		
-		dc.BitBlt( rect.left, rect.top, info.bmWidth, info.bmHeight,
+		dc.BitBlt( rect.left, rect.top + margin, info.bmWidth, info.bmHeight,
 			&srcDC, 0, 0, SRCCOPY );
 		rect.left += info.bmWidth;
 	}
 
-	rect.top -= (rect.Height() - info.bmHeight) / 2;
 	rect.left += 4;
 
 	// draw hdd
@@ -258,7 +258,7 @@ void CAppleStatusBar::DrawDiskLight(HDC hDC, RECT rc)
 	else
 		srcDC.SelectObject(&m_bmDiskOff);
 
-	dc.BitBlt(rect.left, rect.top + (rect.Height() - info.bmHeight) / 2
+	dc.BitBlt(rect.left, rect.top + margin
 		, info.bmWidth, info.bmHeight, &srcDC, 0, 0, SRCCOPY);
 
 	srcDC.SelectObject(pOldBitmap);
