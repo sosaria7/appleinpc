@@ -77,7 +77,6 @@ public:
 
 protected:
 	void SetIFR7();
-//	DWORD m_dwLastClock;
 	BOOL m_bIRQB;
 	BYTE m_abyRegs[16];
 	BYTE m_byORB;
