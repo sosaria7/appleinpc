@@ -20,7 +20,7 @@ IMPLEMENT_DYNAMIC( CPhasor, CCard );
 
 CPhasor::CPhasor()
 {
-	m_strDeviceName = "Phasor";
+	m_strDeviceName = "Mocking B./Phasor";
 	m_iDeviceNum = CARD_PHASOR;
 	g_DXSound.AddPSG( &m_8913[0], 1 );
 	g_DXSound.AddPSG( &m_8913[1], 1 );
@@ -156,12 +156,15 @@ void CPhasor::Write(WORD addr, BYTE data)
 {
 	DWORD clock;
 
-	if ( !( m_byMode & 02 ) )		// Native Phasor Mode
-		m_byMode = addr & 0x01;
+	clock = g_dwCPS;
 
-	clock = CLOCK;
-	if ( addr & 0x04 )
-		clock = CLOCK * 2;
+	if (!(m_byMode & 02))		// Native Phasor Mode
+	{
+		m_byMode = addr & 0x05;
+		if (m_byMode & 0x04)
+			clock = g_dwCPS * 2;
+	}
+
 	m_8913[0].SetClockSpeed(clock);
 	m_8913[1].SetClockSpeed(clock);
 	m_8913[2].SetClockSpeed(clock);
@@ -172,12 +175,15 @@ BYTE CPhasor::Read(WORD addr)
 {
 	DWORD clock;
 
-	if ( !( m_byMode & 02 ) )		// Native Phasor Mode
-		m_byMode = addr & 0x01;
+	clock = g_dwCPS;
 
-	clock = CLOCK;
-	if ( addr & 0x04 )
-		clock = CLOCK * 2;
+	if (!(m_byMode & 02))		// Native Phasor Mode
+	{
+		m_byMode = addr & 0x05;
+		if (m_byMode & 0x04)
+			clock = g_dwCPS * 2;
+	}
+
 	m_8913[0].SetClockSpeed(clock);
 	m_8913[1].SetClockSpeed(clock);
 	m_8913[2].SetClockSpeed(clock);
@@ -215,11 +221,30 @@ void CPhasor::Clock(int clock)
 	m_6522[0].SetCA1( m_cVotrax[0].m_bBusy );
 	m_6522[1].SetCA1( m_cVotrax[1].m_bBusy );
 #endif
-	if ( m_6522[0].GetIRQB() )
-		g_pBoard->m_cpu.Assert_IRQ();
 
+	if ( m_6522[0].GetIRQB() )
+		g_pBoard->m_pCpu->Assert_IRQ();
+	/*
 	if ( m_6522[1].GetIRQB() )
-		g_pBoard->m_cpu.Assert_IRQ();
+		g_pBoard->m_pCpu->Assert_IRQ();
+	//*/
+}
+
+void CPhasor::PowerOn()
+{
+	DWORD clock;
+	
+	clock = g_dwCPS;
+
+	if (!(m_byMode & 02))		// Native Phasor Mode
+	{
+		if (m_byMode & 0x04)
+			clock = g_dwCPS * 2;
+	}
+	m_8913[0].SetClockSpeed(clock);
+	m_8913[1].SetClockSpeed(clock);
+	m_8913[2].SetClockSpeed(clock);
+	m_8913[3].SetClockSpeed(clock);
 }
 
 void CPhasor::Reset()
@@ -240,13 +265,6 @@ void CPhasor::SetDipSwitch(int nDipSwitch)
 	if ( m_nDipSwitch == nDipSwitch )
 		return;
 	byMode = nDipSwitch & 0x03;
-
-	if ( byMode == PM_MB )
-		m_strDeviceName = "Phasor : MB";
-	else if ( byMode == PM_ECHO )
-		m_strDeviceName = "Phasor : ECHO";
-	else
-		m_strDeviceName = "Phasor";
 
 	m_byMode = byMode;
 

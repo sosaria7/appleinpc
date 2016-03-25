@@ -1,17 +1,6 @@
 #ifndef __AIPCDEFS_H__
 #define __AIPCDEFS_H__
 
-// 1MHz
-//#define CLOCK	1024000
-//#define CLOCK	8192000
-//#define CLOCK	1024000
-// 1.020484 MHz (http://mirrors.apple2.org.za/ground.icaen.uiowa.edu/MiscInfo/Empson/cpucycles)
-#define CLOCK	1020484
-
-#define LINE_CLOCK		65
-#define SCREEN_CLOCK	17030
-//#define VBL_CLOCK		(SCREEN_CLOCK-(LINE_CLOCK*192))
-#define VBL_CLOCK		4550
 
 // OS 환경에 따른 설정
 #define PATH_MAX _MAX_PATH
@@ -40,9 +29,11 @@
 #define CARD_MOUSE_INTERFACE	1
 #define CARD_DISK_INTERFACE		2
 #define CARD_PHASOR				3
-#define CARD_SD_DISK_II			4
+#define CARD_HDD				4
+#define CARD_VIDEX_VIDEOTERM	5
 
 // define for disk images
+#define IMAGE_NONE		0
 #define IMAGE_DOS		1
 #define IMAGE_PRODOS	2
 #define	IMAGE_NIBBLE	3
@@ -64,5 +55,9 @@
 #define UM_KEYREPEAT	( WM_USER+4 )
 #define UM_MOUSE_EVENT	( WM_USER+5 )
 #define UM_DISPLAY_CHANGE	( WM_USER+6 )
+
+#define MACHINE_APPLE2P		1
+#define MACHINE_APPLE2E		2
+#define MACHINE_APPLE2C		3
 
 #endif

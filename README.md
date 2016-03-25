@@ -8,8 +8,8 @@ Features include:
   - Emulates Apple //e enhanced computer
   - Mockingboard and/or PHASOR card support
   - Mouse Interface card support
-  - Disk II card with disk image (DSI, DO, PO, NIB images supported)
-  - Mass storage "SD Disk][ HDD" (HDV, 2MG images supported)
+  - Disk II card with disk image (DSK, DO, PO, NIB, 2MG images supported)
+  - Mass storage (HDV, 2MG images supported)
   - Joystick with NumPad or PC Joystick
   - Various screen mode: Full screen, 2x mode, Scan line, Color/Mono/Green/Custom colors
   - NTSC color approximation
@@ -19,4 +19,7 @@ Source download:
   https://github.com/sosaria7/appleinpc
 
 Latest release:
-  [Apple in PC 0.1.34.4](https://github.com/sosaria7/appleinpc/releases/download/0.1.34.4a/aipc_0.1.34.4.zip)
+  [Apple in PC 0.1.38.1](https://github.com/sosaria7/appleinpc/releases/download/0.1.38.1/aipc_0.1.38.1.zip)
+
+Screen shots:
+  https://github.com/sosaria7/appleinpc/wiki/Apple-in-PC---Screen-Shot

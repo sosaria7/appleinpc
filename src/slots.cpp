@@ -10,7 +10,8 @@
 #include "phasor.h"
 #include "diskinterface.h"
 #include "mousecard.h"
-#include "sddiskii.h"
+#include "hdd.h"
+//#include "videxterm.h"
 
 extern BYTE MemReturnRandomData(BYTE highbit);
 extern CALLBACK_HANDLER(OnDiskLightChange);
@@ -29,6 +30,8 @@ CSlots::CSlots()
 	}
 	m_nDiskSlotNum = -1;
 	m_nHardDiskSlotNum = -1;
+	m_nMouseSlotNum = -1;
+	m_nLastSlotNum = -1;
 }
 
 CSlots::~CSlots()
@@ -52,6 +55,7 @@ BOOL CSlots::Initialize()
 	nDiskInterface = 0;
 	m_nDiskSlotNum = -1;
 	m_nHardDiskSlotNum = -1;
+	m_nMouseSlotNum = -1;
 
 	for ( i = MAX_SLOTS-1; i >= 0; i-- )
 	{
@@ -68,15 +72,20 @@ BOOL CSlots::Initialize()
 					m_nDiskSlotNum = i;
 				}
 				break;
-			case CARD_SD_DISK_II:
-				((CSDDiskII*)m_slots[i])->SetMotorLightHandler( (void*)nDiskInterface, OnDiskLightChange );
-				nDiskInterface ^= 1;
+			case CARD_HDD:
+				((CHDDInterface*)m_slots[i])->SetMotorLightHandler( (void*)2, OnDiskLightChange );
 				if ( m_nHardDiskSlotNum == -1 )
 				{
 					m_nHardDiskSlotNum = i;
 				}
 				break;
 			case CARD_MOUSE_INTERFACE:
+				if (m_nMouseSlotNum == -1)
+				{
+					m_nMouseSlotNum = i;
+				}
+				break;
+
 			case CARD_PHASOR:
 				break;
 			}
@@ -97,7 +106,7 @@ void CSlots::ConfigureHardDisk()
 {
 	if ( m_nHardDiskSlotNum >= 0 )
 	{
-		((CSDDiskII*)m_slots[m_nHardDiskSlotNum])->Configure();
+		((CHDDInterface*)m_slots[m_nHardDiskSlotNum])->Configure();
 	}
 }
 
@@ -111,6 +120,10 @@ BOOL CSlots::HasHardDiskInterface()
 	return ( m_nHardDiskSlotNum >= 0 );
 }
 
+BOOL CSlots::HasMouseInterface()
+{
+	return (m_nMouseSlotNum >= 0);
+}
 
 void CSlots::PowerOn()
 {
@@ -133,38 +146,72 @@ BYTE CSlots::Read(WORD addr)
 	int slot;
 	BYTE retval;
 	slot = ( ( addr >> 4 ) & 0x07 ) - 1;
+	ASSERT(slot >= 0 && slot < 7);
 	if ( m_slots[slot] )
 	{
 		retval = m_slots[slot]->Read(addr);
 		return( retval );
 	}
-	return MemReturnRandomData( 0 );
+	return MemReturnRandomData( 2 );
 }
 
 BYTE CSlots::ReadRom(WORD addr)
 {
 	int slot;
-	slot = ( ( addr >> 8 ) & 0x7 ) - 1;
-	if( m_slots[slot] )
-		return m_slots[slot]->ReadRom(addr);
-				
-	return MemReturnRandomData( 0 );
+	if (addr < 0xC800)
+	{
+		slot = ((addr >> 8) & 0x7) - 1;
+		ASSERT(slot >= 0 && slot < 7);
+		if (m_slots[slot])
+		{
+			if (m_slots[slot]->HasExtendRom())
+				m_nLastSlotNum = slot;
+			return m_slots[slot]->ReadRom(addr);
+		}
+	}
+	else if (m_nLastSlotNum >= 0)
+	{
+		slot = m_nLastSlotNum;
+		if (addr == 0xCFFF)
+			m_nLastSlotNum = -1;
+		if (m_slots[slot])
+			return m_slots[slot]->ReadExRom(addr);
+	}
+
+	return MemReturnRandomData( 2 );
 }
 
 void CSlots::Write(WORD addr, BYTE data)
 {
 	int slot;
 	slot = ( ( addr >> 4 ) & 0x07 ) - 1;
-	if ( m_slots[slot] )
+	ASSERT(slot >= 0 && slot < 7);
+	if (m_slots[slot])
 		m_slots[slot]->Write(addr, data);
 }
 
 void CSlots::WriteRom(WORD addr, BYTE data)
 {
 	int slot;
-	slot = ( ( addr >> 8 ) & 0x7 ) - 1;
-	if ( m_slots[slot] )
-		m_slots[slot]->WriteRom(addr, data);
+	if (addr < 0xC800)
+	{
+		slot = ((addr >> 8) & 0x7) - 1;
+		ASSERT(slot >= 0 && slot < 7);
+		if (m_slots[slot])
+		{
+			if (m_slots[slot]->HasExtendRom())
+				m_nLastSlotNum = slot;
+			m_slots[slot]->WriteRom(addr, data);
+		}
+	}
+	else if (m_nLastSlotNum >= 0)
+	{
+		slot = m_nLastSlotNum;
+		if (addr == 0xCFFF)
+			m_nLastSlotNum = -1;
+		if (m_slots[slot])
+			m_slots[slot]->WriteExRom(addr, data);
+	}
 }
 
 void CSlots::Reset()
@@ -221,8 +268,11 @@ BOOL CSlots::InsertCard(int nSlot, int nDeviceNum)
 	case CARD_PHASOR:
 		pCard = new CPhasor();
 		break;
-	case CARD_SD_DISK_II:
-		pCard = new CSDDiskII();
+	case CARD_HDD:
+		pCard = new CHDDInterface();
+		break;
+	case CARD_VIDEX_VIDEOTERM:
+		//pCard = new CVidexTerm();
 		break;
 	default:
 		return FALSE;
@@ -269,6 +319,7 @@ void CSlots::Serialize(CArchive &ar)
 				m_slots[i]->Serialize(ar);
 			}
 		}
+		ar << m_nLastSlotNum;
 	}
 	else
 	{
@@ -284,6 +335,9 @@ void CSlots::Serialize(CArchive &ar)
 				}
 			}
 		}
+		if (g_nSerializeVer >= 7)
+			ar >> m_nLastSlotNum;
+
 		Initialize();
 	}
 }

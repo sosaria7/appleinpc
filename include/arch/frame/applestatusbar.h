@@ -27,7 +27,8 @@ protected:
 	CBitmap m_bmDiskOff_Full;
 	CBitmap m_bmDiskRead_Full;
 	CBitmap m_bmDiskWrite_Full;
-	int m_iDiskStatus[4];
+	int m_iDiskStatus[5];
+	CBitmap m_bmHdd;
 
 // Operations
 public:

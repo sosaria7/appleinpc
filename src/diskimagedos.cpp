@@ -58,13 +58,21 @@ CDiskImageDos::~CDiskImageDos()
 
 }
 
+BOOL CDiskImageDos::InitImage()
+{
+	m_uNumOfTrack = (unsigned)(m_uDataLength / DOS_TRACK_BYTES);
+	return TRUE;
+}
+
 BOOL CDiskImageDos::ReadBuffer()
 {
 	long lLen;
 	if ( m_hFile == -1 )
 		return FALSE;
-	lseek( m_hFile, m_nTrack << 12, SEEK_SET );
-	lLen = read( m_hFile, m_abyDosBuffer, DOS_TRACK_BYTES );
+	if (m_nTrack >= m_uNumOfTrack)
+		return FALSE;
+	_lseek( m_hFile, m_uDataOffset + (m_nTrack * DOS_TRACK_BYTES), SEEK_SET );
+	lLen = _read( m_hFile, m_abyDosBuffer, DOS_TRACK_BYTES );
 	Nibblize();
 	m_nStatus |= DIS_BUFFER_VALID;
 	m_nStatus &= ~DIS_BUFFER_DIRTY;
@@ -76,9 +84,11 @@ void CDiskImageDos::SaveBuffer()
 	long lLen;
 	if ( m_hFile == -1 )
 		return;
+	if (m_nTrack >= m_uNumOfTrack)
+		return;
 	Denibblize();
-	lseek( m_hFile, m_nTrack << 12, SEEK_SET );
-	lLen = write( m_hFile, m_abyDosBuffer, DOS_TRACK_BYTES );
+	_lseek( m_hFile, m_uDataOffset + (m_nTrack * DOS_TRACK_BYTES), SEEK_SET );
+	lLen = _write( m_hFile, m_abyDosBuffer, DOS_TRACK_BYTES );
 	m_nStatus &= ~DIS_BUFFER_DIRTY;
 }
 
@@ -190,10 +200,10 @@ void CDiskImageDos::Nibblize()
 		WriteNibble(0xD5);
 		WriteNibble(0xAA);
 		WriteNibble(0x96);
-		WriteNibble(0xFF);			// Volume = 254
-		WriteNibble(0xFE);
 #define CODE44A(a)	((((a) >> 1) & 0x55) | 0xAA)
 #define CODE44B(a)	(((a) & 0x55) | 0xAA )
+		WriteNibble( CODE44A((BYTE)m_uVolumeNo) );			// Volume = 254
+		WriteNibble( CODE44B((BYTE)m_uVolumeNo) );
 		WriteNibble( CODE44A( (BYTE)m_nTrack ) );			// track
 		WriteNibble( CODE44B( (BYTE)m_nTrack ) );
 		WriteNibble( CODE44A( sector ) );					// sector
@@ -307,8 +317,8 @@ BOOL CDiskImageDos::CheckImage(int hFile, const BYTE* order)
 	err = FALSE;
 	for ( i = 1; i < 16 &&  !err; i++ )
 	{
-		lseek( hFile, 0x11002 + ( order[i] << 8 ), SEEK_SET );
-		if ( read( hFile, &ch, 1 ) != 1 )
+		_lseek( hFile, 0x11002 + ( order[i] << 8 ), SEEK_SET );
+		if (_read(hFile, &ch, 1 ) != 1 )
 			err = TRUE;
 		if ( !err && ch != i - 1 )
 			err = TRUE;
@@ -319,8 +329,8 @@ BOOL CDiskImageDos::CheckImage(int hFile, const BYTE* order)
 	err = 0;
 	for ( i = 2; i < 6 && !err; i++ )
 	{
-		lseek( hFile, 0x100 + ( order[i] << 9 ), SEEK_SET );
-		if ( read( hFile, val, 4 ) != 4 )
+		_lseek( hFile, 0x100 + ( order[i] << 9 ), SEEK_SET );
+		if (_read(hFile, val, 4 ) != 4 )
 		{
 			err = TRUE;
 			break;
@@ -337,7 +347,7 @@ BOOL CDiskImageDos::IsMyType(int hFile, const char* szExt )
 	// 확장자로 확인
 	if ( IsMatch( "dsk;do", szExt ) )
 		return TRUE;
-	if ( IsMatch( "po;nib;apl;iie;prg", szExt ) )
+	if (IsMatch("po;nib;apl;iie;prg", szExt))
 		return FALSE;
 	// 모르는 확장자 인경우 내용 확인
 	// check for a dos order image of a dos diskette

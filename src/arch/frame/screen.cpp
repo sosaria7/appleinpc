@@ -48,12 +48,13 @@ END_MESSAGE_MAP()
 IMPLEMENT_SERIAL( CScreen, CObject, 1 );
 
 CScreen::CScreen()
+	: CCustomThread("AppleVideoThread")
 {
 	m_bPowerOn = FALSE;
 	m_iBlinkCount = 0;
 	m_nVideoMode = SM_COLOR;
-	m_iFrameCount = 0;
 	m_bScanline = FALSE;
+	m_dFrameRate = 0;
 
 	int i, j;
 	
@@ -80,11 +81,14 @@ CScreen::CScreen()
 //	m_bInitializing = FALSE;
 	m_iScrMode = SS_TEXT;
 	m_szMessage = "";
+	m_bMouseCapture = FALSE;
 
 	m_hFont = ::CreateFont( 15, 0, 0, 0, 0, 0, 0, 0, ANSI_CHARSET,
 							OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
 							ANTIALIASED_QUALITY, FF_DONTCARE, "Arial Narrow" );
 	m_bPreview = FALSE;
+	m_bTextMode = TRUE;
+	m_bTextModeCheck = TRUE;
 	SetDefaultColors();
 }
 
@@ -94,6 +98,17 @@ CScreen::~CScreen()
 	SAFE_RELEASE(m_pSurfaceDisk);
 	SAFE_RELEASE(m_pSurfaceMsg);
 	SAFE_RELEASE(m_pSurfaceMain);
+}
+
+void CScreen::PowerOn()
+{
+	this->SetActive(TRUE);
+	CaptureInput(FALSE);
+}
+
+void CScreen::PowerOff()
+{
+	this->SetActive(FALSE);
 }
 
 BYTE CScreen::GetVideoData()
@@ -150,8 +165,21 @@ void CScreen::Draw( int nLine, int nColumn )
 	if ( m_iScrMode & SS_80STORE )		// display page 2 only if 80STORE is off
 		mode &= ~SS_PAGE2;
 	
+	if (nLine == 0 && nColumn == 0)
+	{
+		m_bTextModeCheck = ((m_iScrMode & SS_TEXT) != 0);
+	}
+	else if ((m_iScrMode & SS_TEXT) == 0)
+	{
+		m_bTextModeCheck = FALSE;
+	}
+	if (nLine == 191 && nColumn == 39)
+	{
+		m_bTextMode = m_bTextModeCheck;
+	}
+
 	y = nLine;
-	if( m_iScrMode&SS_TEXT || !(m_iScrMode&SS_HIRES) || (m_iScrMode&SS_MIXED && nLine > 159) )
+	if (m_iScrMode&SS_TEXT || !(m_iScrMode&SS_HIRES) || (m_iScrMode&SS_MIXED && nLine > 159))
 	{
 		nLine = nLine & ~0x07;
 	}
@@ -232,7 +260,6 @@ void CScreen::Draw( int nLine, int nColumn )
 	if ( nColumn == 0 )
 	{
 		// clear line
-		memset( m_pixelInfo[y], 0, WIN_WIDTH );
 		m_pixelCarry = 0;
 	}
 	if ( b80COL == FALSE )
@@ -270,6 +297,10 @@ void CScreen::Draw( int nLine, int nColumn )
 		x = nColumn * 14 + 10;
 	}
 
+	if (nColumn == 0)
+	{
+		memset( m_pixelInfo[y], 0, x );
+	}
 	for( index = 0; index < 14; index++ )
 	{
 		if ( ( data & 1 ) != 0 )
@@ -288,6 +319,10 @@ void CScreen::Draw( int nLine, int nColumn )
 			color = 1;
 		}
 	}
+	if (nColumn == 39)
+	{
+		memset(m_pixelInfo[y] + x, 0, WIN_WIDTH - x);
+	}
 }
 
 
@@ -304,27 +339,93 @@ void CScreen::Clock( DWORD clock )
 			m_nLine++;
 		}
 		m_dwClock++;
-		if ( m_dwClock >= SCREEN_CLOCK )
+		if (m_dwClock == g_dwFrameClock - g_dwVBLClock)
 		{
-			m_dwClock -= SCREEN_CLOCK;
+			Redraw();
+		}
+		if ( m_dwClock >= g_dwFrameClock)
+		{
+			m_dwClock -= g_dwFrameClock;
 			m_nLine = 0;
 			m_nColumn = 0;
 			m_iBlinkCount++;
-			Redraw();
 		}
 	}
 }
 
 BOOL CScreen::IsVBL()
 {
-	return ( m_dwClock >= SCREEN_CLOCK - VBL_CLOCK );
+	return ( m_dwClock >= g_dwFrameClock - g_dwVBLClock);
 }
 
 void CScreen::Redraw()
 {
-	if( !m_bPowerOn )
-		return;
-	
+	this->WakeUp();
+	Sleep(1);
+}
+
+void CScreen::Run()
+{
+	DWORD dwHostClock;
+	int i;
+	int nCurFrameIndex = 0;
+	bool bIsFirstCycle = TRUE;
+	DWORD dwInterval;
+	DWORD dwFrameCount = 0;
+	DWORD dwTickStart;
+	DWORD dwElasped;
+	m_dFrameRate = 0;
+
+	dwHostClock = GetTickCount();
+	for (i = 0; i < FRAME_CHECK_COUNT; i++)
+	{
+		m_adwFrameCheck[i] = dwHostClock;
+	}
+	Suspend(FALSE);
+	m_bPowerOn = TRUE;
+
+	while (TRUE)
+	{
+		dwTickStart = GetTickCount();
+		SuspendHere();
+		if (ShutdownHere())
+			break;
+		Render();
+		dwFrameCount++;
+		if (dwFrameCount == FRAME_CHECK_POINT)
+		{
+			dwFrameCount = 0;
+			dwHostClock = GetTickCount();
+			dwInterval = dwHostClock - m_adwFrameCheck[nCurFrameIndex];
+			m_adwFrameCheck[nCurFrameIndex] = dwHostClock;
+			nCurFrameIndex = (nCurFrameIndex + 1) % FRAME_CHECK_COUNT;
+
+			if (dwInterval != 0)
+			{
+				if (bIsFirstCycle == TRUE)
+				{
+					m_dFrameRate = (double)(FRAME_CHECK_POINT * nCurFrameIndex * 1000) / dwInterval;
+					if (nCurFrameIndex == FRAME_CHECK_COUNT-1)
+					{
+						bIsFirstCycle = FALSE;
+					}
+				}
+				else
+				{
+					m_dFrameRate = (double)(FRAME_CHECK_POINT * FRAME_CHECK_COUNT * 1000) / dwInterval;
+				}
+			}
+		}
+		dwElasped = GetTickCount() - dwTickStart;
+		if ( dwElasped < 1000/70 )		// max 70 frame
+			Sleep(1000/70 - dwElasped);
+	}
+	m_bPowerOn = FALSE;
+	Render();
+}
+
+void CScreen::Render()
+{
 	DDSURFACEDESC2 ddsd;
     RECT rect={0, 0, WIN_WIDTH, WIN_HEIGHT};
 
@@ -414,7 +515,7 @@ void CScreen::Redraw()
 	switch( m_nVideoMode )
 	{
 	case SM_COLOR:
-		if ( !(m_iScrMode & SS_TEXT ) )
+		if (m_bTextMode == FALSE )
 		{
 			color = 0;
 			appleColor = m_auColorByHSB;
@@ -428,7 +529,7 @@ void CScreen::Redraw()
 		}
 		break;
 	case SM_COLOR2:
-		if ( !(m_iScrMode & SS_TEXT ) )
+		if (m_bTextMode == FALSE )
 		{
 			color = 0;
 			appleColor = m_auColor;
@@ -564,9 +665,6 @@ _DrawNextLine:
 		::Sleep(0);
 	}
 
-	m_iFrameCount++;
-
-
 /*	
 	if(result!=DD_OK){
 		KillTimer(1);
@@ -605,6 +703,10 @@ BOOL CScreen::InitDirectX()
 			return hr;
 		}
 		m_pDisplay->Clear();
+		if (m_bMouseCapture == FALSE)
+		{
+			g_cDIMouse.SetActive(FALSE, FALSE);
+		}
 	}
 	else
 	{
@@ -778,7 +880,7 @@ int CScreen::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 	CMainFrame* pParent = g_pBoard->m_lpwndMainFrame;
 	InitDirectX();	
-	SetTimer(1, 3000, NULL);
+	SetTimer(1, 1000, NULL);
 	// TODO: Add your specialized creation code here
 	return 0;
 }
@@ -787,16 +889,10 @@ void CScreen::OnTimer(UINT nIDEvent)
 {
 	// TODO: Add your message handler code here and/or call default
 	// measure clock speed
-	DWORD sec = GetTickCount();
-	DWORD cpu_interval = sec - m_nTime;
-	if ( cpu_interval > 3000 )
 	{
-		double frame = (double)( m_iFrameCount * 1000 ) / ( cpu_interval );
-		m_iFrameCount = 0;
-		m_nTime = sec;
 		CMainFrame* pParent = g_pBoard->m_lpwndMainFrame;
-		pParent->m_wndStatusBar.SetFrame( frame );
-		pParent->m_wndStatusBar.SetSpeed( g_pBoard->m_dClockSpeed );
+		pParent->m_wndStatusBar.SetFrame(m_dFrameRate);
+		pParent->m_wndStatusBar.SetSpeed(g_pBoard->m_dClockSpeed);
 		switch( m_nMsgVisiable )
 		{
 		case 0:
@@ -879,7 +975,7 @@ HRESULT CScreen::Present()
 			m_pDisplay->Clear();
             m_pDisplay->StretchBlt( &this->m_stMainRect, lpdds );
 			m_pDisplay->Blt( m_stMainRect.left, m_stMainRect.bottom + 4, m_pSurfaceMsg, NULL );
-			m_pDisplay->Blt( m_stMainRect.right - 50, m_stMainRect.bottom + 4, m_pSurfaceDisk, NULL );
+			m_pDisplay->Blt( m_stMainRect.right - 70, m_stMainRect.bottom + 4, m_pSurfaceDisk, NULL );
 
 			hr = m_pDisplay->GetFrontBuffer()->Flip( NULL, 0 );
 		}
@@ -996,7 +1092,6 @@ void CScreen::setLookUp(BYTE *pMemory)
 		for(j=0; j<40; j++)
 			m_abPosTable[i*40+j] = (BYTE)(i<<6);
 	}
-	m_bPowerOn = TRUE;
 }
 
 int CScreen::GetMonitorType()
@@ -1346,12 +1441,25 @@ void CScreen::Reset()
 	RedrawAll();
 }
 
+void CScreen::CaptureInput(BOOL bMouseCapture)
+{
+	g_cDIKeyboard.SetActive(TRUE, FALSE);
+	if (bMouseCapture == TRUE)
+	{
+		g_cDIMouse.SetActive(TRUE, FALSE);
+		SetMessage("press \"LEFT CTRL+ALT\" key to release mouse and keyboard");
+	}
+	else
+	{
+		SetMessage("press \"LEFT CTRL+ALT\" key to release keyboard");
+	}
+}
+
 void CScreen::OnLButtonUp(UINT nFlags, CPoint point) 
 {
 	// TODO: Add your message handler code here and/or call default
-	g_cDIMouse.SetActive(TRUE, FALSE);
-	g_cDIKeyboard.SetActive(TRUE, FALSE);
-	SetMessage("press \"LEFT CTRL+ALT\" key to show the cursor");
+	CaptureInput(m_bMouseCapture);
+
 	CWnd::OnLButtonUp(nFlags, point);
 }
 
@@ -1385,9 +1493,7 @@ CSurface* CScreen::GetDiskSurface()
 
 void CScreen::UpdateDiskSurface()
 {
-	//CLockMgr<CCSWrapper> guard( m_Lock, TRUE );
-	//m_pDisplay->Blt( FULL_WIDTH - 50, FULL_HEIGHT - 40, m_pSurfaceDisk, NULL );
-	Present();
+	//Present();
 }
 
 void CScreen::SetMessage(TCHAR *szText)
@@ -1412,7 +1518,7 @@ void CScreen::SetMessage(TCHAR *szText)
 //	    if ( !m_bInitializing )
 	    Present();
 	}
-	m_nMsgVisiable = 2;
+	m_nMsgVisiable = 5;
 }
 
 void CScreen::ToggleMessage()
@@ -1604,4 +1710,9 @@ void CScreen::Serialize(CArchive &ar)
 void CScreen::ClearBuffer()
 {
 	memset( m_pixelInfo, 0, sizeof(m_pixelInfo) );
+}
+
+void CScreen::SetMouseCapture(BOOL bCapture)
+{
+	m_bMouseCapture = bCapture;
 }

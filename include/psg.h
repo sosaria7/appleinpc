@@ -27,6 +27,8 @@ public:
 	}
 	virtual void Serialize( CArchive &ar );
 
+	WORD m_awVolume[32];
+
 public:
 	BOOL m_bMute;
 	WORD **m_lpwBuf;

@@ -15,6 +15,7 @@ public:
 	void ClearQueue();
 	int GetMesg();
 	void AddMessage(int message);
+	int Size();
 	CMessageQue();
 	virtual ~CMessageQue();
 

@@ -32,7 +32,7 @@ int g_nSerializeVer = 0;
 
 static CString GetStatusFilePath();
 
-#define STATUS_VERSION		(5)
+#define STATUS_VERSION		(7)
 #define STATUS_MIN_VERSION	(3)
 #define STATUS_MAGIC	0x89617391
 
@@ -73,8 +73,14 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_DISKETTE, OnUpdateDiskette)
 	ON_UPDATE_COMMAND_UI(ID_HARDDISK, OnUpdateHarddisk)
 	ON_UPDATE_COMMAND_UI(ID_SCANLINE, OnUpdateScanline)
+	ON_UPDATE_COMMAND_UI(ID_SUSPEND, OnUpdateSuspend)
+	ON_UPDATE_COMMAND_UI(ID_RESUME, OnUpdateResume)
 	ON_COMMAND(ID_SCANLINE, OnScanline)
+	ON_WM_SETFOCUS()
 	//}}AFX_MSG_MAP
+	ON_COMMAND(ID_SUSPEND, &CMainFrame::OnSuspend)
+	ON_COMMAND(ID_RESUME, &CMainFrame::OnResume)
+	ON_WM_INPUT()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -86,6 +92,11 @@ CMainFrame::CMainFrame()
 	m_winRect.SetRectEmpty();
 	m_bDoubleSize = FALSE;
 	m_bFullScreen = FALSE;
+	m_bKeyboardCapture = FALSE;
+	m_stCursorPos.x = 0;
+	m_stCursorPos.y = 0;
+	ZeroMemory(&m_stCursorClip, sizeof(m_stCursorClip));
+	m_hCursor = NULL;
 	g_pBoard = new CAppleClock();
 }
 
@@ -145,7 +156,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	// Initialise Mouse
 	g_cDIMouse.SetHWND(m_hWnd);
-	g_cDIMouse.SetCoOpLevel(TRUE);			// exclusive mode
 	g_cDIMouse.InitMouse();
 
 	m_cMenu.LoadMenu( IDR_MAINFRAME );
@@ -365,6 +375,10 @@ void CMainFrame::OnMonitor()
 void CMainFrame::OnChangeSize()
 {
 	m_bDoubleSize = !m_bDoubleSize;
+	RECT rc;
+	::GetWindowRect(m_hWnd, &rc);
+	m_stWindowPos.x = rc.left;
+	m_stWindowPos.y = rc.top;
 	ResizeWindow();
 }
 
@@ -386,6 +400,7 @@ void CMainFrame::OnPowerOn()
 {
 	// TODO: Add your command handler code here
 	g_pBoard->PowerOn();
+	g_pBoard->Resume();
 }
 
 void CMainFrame::OnUpdatePowerOn(CCmdUI* pCmdUI) 
@@ -425,7 +440,6 @@ void CMainFrame::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
 	// TODO: Add your message handler code here and/or call default
 	
-	g_pBoard->m_keyboard.OnKeyUp(nChar, nFlags);
 	CFrameWnd::OnKeyUp(nChar, nRepCnt, nFlags);
 }
 
@@ -464,30 +478,41 @@ void CMainFrame::OnUpdatePower(CCmdUI* pCmdUI)
 
 LRESULT CMainFrame::OnReqAcquire(WPARAM wParam, LPARAM lParam)
 {
-	CDIBase* cDIBase = (CDIBase*)lParam;
 	if ( wParam )
 	{
-		if ( cDIBase != NULL )
+		if (lParam == (LPARAM)&g_cDIMouse)
 		{
-			if ( cDIBase->Acquire( TRUE ) )
+			if (m_hCursor == NULL)
 			{
-				return 0;
+				m_hCursor = SetCursor(NULL);
+				GetCursorPos(&m_stCursorPos);
+				RECT rect;
+				::GetClipCursor(&m_stCursorClip);
+				GetWindowRect(&rect);
+				::ClipCursor(&rect);
 			}
 		}
 	}
-//	else
+	else
 	{
-		if ( cDIBase != NULL )
+		g_cDIMouse.SetActive(FALSE, FALSE);	// don't wait for mouse exit. mouse will wait for unacquiring it self.
+		if (lParam == NULL)
 		{
-			cDIBase->Acquire( FALSE );
+			g_cDIKeyboard.SetActive(FALSE, FALSE);
 		}
-		g_cDIMouse.SetActive( FALSE, FALSE );	// don't wait for mouse exit. mouse will wait for unacquiring it self.
-		g_cDIKeyboard.SetActive( FALSE, FALSE );	// same
+
 		if ( m_bFullScreen == TRUE )
 		{
 			m_bFullScreen = FALSE;
 			m_wndView.SetFullScreenMode( FALSE );
 			ResizeWindow();
+		}
+		if (m_hCursor != NULL)
+		{
+			SetCursorPos(m_stCursorPos.x, m_stCursorPos.y);
+			SetCursor(m_hCursor);
+			::ClipCursor(&m_stCursorClip);
+			m_hCursor = NULL;
 		}
 	}
 	return 0;
@@ -501,7 +526,6 @@ LRESULT CMainFrame::OnMyKeyDown(WPARAM wParam, LPARAM lParam)
 
 LRESULT CMainFrame::OnMyKeyUp(WPARAM wParam, LPARAM lParam)
 {
-//	g_pBoard->m_keyboard.OnKeyUp(wParam, lParam);
 	return 0;
 }
 
@@ -604,8 +628,7 @@ void CMainFrame::ResizeWindow()
 		CPoint ptOffset(rcClientNow.left - rcClientStart.left,
 			rcClientNow.top - rcClientStart.top);
 		
-		// pScreen 이 수정한 창 크기는 다른 child 창을 포함하지 않고 계산한 것이다.
-		// 그러므로 child 창들의 크기를 더해준다. : status bar, tool bar
+		// add size of child windows : status bar, tool bar
 		CRect rcChild;
 		CWnd* pwndChild = GetWindow(GW_CHILD);
 		while (pwndChild)
@@ -664,9 +687,25 @@ static CString GetStatusFilePath()
 void CMainFrame::OnKillFocus(CWnd* pNewWnd) 
 {
 	CFrameWnd::OnKillFocus(pNewWnd);
-	
+
+	m_bKeyboardCapture = g_cDIKeyboard.GetIsActive();
+	TRACE("keyboard capture=%d\n", m_bKeyboardCapture);
 	// TODO: Add your message handler code here
 	::PostMessage( m_hWnd, UM_REQACQUIRE, FALSE, (LPARAM)NULL );
+}
+
+void CMainFrame::OnSetFocus(CWnd* pOldWnd)
+{
+	__super::OnSetFocus(pOldWnd);
+
+	if (m_bKeyboardCapture == TRUE)
+	{
+		g_cDIKeyboard.SetActive(TRUE, FALSE);
+	}
+	else
+	{
+		g_cDIKeyboard.Restore();
+	}
 }
 
 void CMainFrame::OnUpdateDiskette(CCmdUI* pCmdUI) 
@@ -712,4 +751,136 @@ void CMainFrame::OnScanline()
 		g_pBoard->m_pScreen->SetScanline( TRUE );
 	}
 		
+}
+
+void CMainFrame::OnSuspend()
+{
+	// TODO: Add your command handler code here
+	g_pBoard->Suspend(FALSE);
+}
+
+
+void CMainFrame::OnResume()
+{
+	// TODO: Add your command handler code here
+	g_pBoard->Resume();
+}
+
+void CMainFrame::OnUpdateSuspend(CCmdUI* pCmdUI)
+{
+	// TODO: Add your command update UI handler code here
+	if (g_pBoard->GetIsActive() && !g_pBoard->GetIsSuspended())
+		pCmdUI->Enable(TRUE);
+	else
+		pCmdUI->Enable(FALSE);
+
+	const int nSuspendIndex = m_wndToolBar.CommandToIndex(ID_SUSPEND);
+	const int nResumeIndex = m_wndToolBar.CommandToIndex(ID_RESUME);
+	if (nSuspendIndex == -1 || nResumeIndex == -1)
+	{
+		return;
+	}
+	if (g_pBoard->GetIsSuspended())
+	{
+		m_wndToolBar.GetToolBarCtrl().HideButton(ID_SUSPEND, TRUE);
+	}
+	else
+	{
+		m_wndToolBar.GetToolBarCtrl().HideButton(ID_SUSPEND, FALSE);
+	}
+}
+
+void CMainFrame::OnUpdateResume(CCmdUI* pCmdUI)
+{
+	// TODO: Add your command update UI handler code here
+	if (g_pBoard->GetIsActive() && g_pBoard->GetIsSuspended())
+		pCmdUI->Enable(TRUE);
+	else
+		pCmdUI->Enable(FALSE);
+	if (g_pBoard->GetIsSuspended())
+	{
+		m_wndToolBar.GetToolBarCtrl().HideButton(ID_RESUME, FALSE);
+	}
+	else
+	{
+		m_wndToolBar.GetToolBarCtrl().HideButton(ID_RESUME, TRUE);
+	}
+}
+
+
+#include <ntddkbd.h>
+
+void CMainFrame::OnRawInput(UINT nInputcode, HRAWINPUT hRawInput)
+{
+	// This feature requires Windows XP or greater.
+	// The symbol _WIN32_WINNT must be >= 0x0501.
+	// TODO: Add your message handler code here and/or call default
+
+	UINT dwSize;
+	DWORD dwCheck;
+	USHORT wCode;
+
+	GetRawInputData(hRawInput, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER));
+	LPBYTE lpb = new BYTE[dwSize];
+	if (lpb == NULL)
+	{
+		return;
+	}
+
+	if (GetRawInputData(hRawInput, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER)) != dwSize)
+	{
+		TRACE("GetRawInputData does not return correct size !\n");
+		delete[] lpb;
+		return;
+	}
+
+	RAWINPUT* raw = (RAWINPUT*)lpb;
+
+	if (raw->header.dwType == RIM_TYPEKEYBOARD)
+	{
+/*
+		TRACE(" Kbd: make=%04x Flags:%04x Reserved:%04x ExtraInformation:%08x, msg=%04x VK=%04x \n",
+			raw->data.keyboard.MakeCode,
+			raw->data.keyboard.Flags,
+			raw->data.keyboard.Reserved,
+			raw->data.keyboard.ExtraInformation,
+			raw->data.keyboard.Message,
+			raw->data.keyboard.VKey);
+*/
+		dwCheck = raw->data.keyboard.Flags & 1;
+		wCode = raw->data.keyboard.MakeCode;
+		if ((raw->data.keyboard.Flags & 2) != 0)
+		{
+			wCode |= 0x80;
+		}
+			if (dwCheck == KEY_MAKE)
+		{
+			g_cDIKeyboard.KeyDown(wCode);
+		}
+		else if (dwCheck == KEY_BREAK)
+		{
+			g_cDIKeyboard.KeyUp(wCode);
+		}
+
+	}
+	else if (raw->header.dwType == RIM_TYPEMOUSE)
+	{
+/*
+		TRACE("Mouse: usFlags=%04x ulButtons=%04x usButtonFlags=%04x usButtonData=%04x ulRawButtons=%04x lLastX=%04x lLastY=%04x ulExtraInformation=%04x\r\n",
+			raw->data.mouse.usFlags,
+			raw->data.mouse.ulButtons,
+			raw->data.mouse.usButtonFlags,
+			raw->data.mouse.usButtonData,
+			raw->data.mouse.ulRawButtons,
+			raw->data.mouse.lLastX,
+			raw->data.mouse.lLastY,
+			raw->data.mouse.ulExtraInformation);
+*/
+		g_cDIMouse.ChangeState(raw->data.mouse.lLastX, raw->data.mouse.lLastY, raw->data.mouse.usButtonFlags);
+	}
+
+	delete[] lpb;
+
+
+	CFrameWnd::OnRawInput(nInputcode, hRawInput);
 }

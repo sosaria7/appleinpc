@@ -5,6 +5,7 @@
 #include "arch/directx/dxsound.h"
 #include "speaker.h"
 #include "appleclock.h"
+#include "aipcdefs.h"
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -20,7 +21,7 @@ CSpeaker::CSpeaker()
 	m_nNumOfBuf = 1;
 	m_lpwBuf = new LPWORD[1];
 	m_lpwBuf[0] = new WORD[SAMPLES_PER_SEC * BITS_PER_SAMPLE / 8];
-	clock = CLOCK;		// 1MHz
+	clock = g_dwCPS;		// 1MHz
 	m_iUpdateStep = (int)( ( (double)STEP * g_DXSound.m_nSampleRate + clock / 2 ) / clock );
 	m_dwLastAppleClock = 0;
 	m_iLastUpdatePos = -1;
@@ -85,9 +86,9 @@ void CSpeaker::Toggle()
 void CSpeaker::ChangeSampleRate()
 {
 	int clock;
-	clock = CLOCK;		// 1MHz
+	clock = g_dwCPS;		// 1MHz
 	m_iUpdateStep = (int)( ( (double)STEP * g_DXSound.m_nSampleRate + clock / 2 ) / clock );
-	m_dwLastAppleClock = g_pBoard->GetClock();
+	m_dwLastAppleClock = 0;
 	m_iLastUpdatePos = -1;
 	m_bToggle = FALSE;
 }

@@ -233,7 +233,7 @@ void wcSliderButton::OnNcCalcSize(BOOL bCalcValidRects, NCCALCSIZE_PARAMS FAR* l
 	m_rcButtonRect.NormalizeRect();
 }
 
-UINT wcSliderButton::OnNcHitTest(CPoint point) 
+LRESULT wcSliderButton::OnNcHitTest(CPoint point) 
 {
 	// If the mouse is over the button, OnNcHitTest() would normally return
 	// HTNOWHERE, and we would not get any mouse messages. So we return 

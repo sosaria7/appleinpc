@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Developer Studio generated include file.
-// Used by C:\Project\night\aipc\trunk\aipc.rc
+// Microsoft Visual C++ generated include file.
+// Used by F:\night_project\appleinpc\aipc.rc
 //
 #define IDC_DEFAULT                     3
 #define IDD_ABOUTBOX                    100
@@ -28,9 +28,10 @@
 #define IDD_CONFIGURE_SOUND             151
 #define IDB_DISK_WRITE_F                151
 #define IDD_CONFIGURE_MOCKINGBOARD      152
+#define IDB_HDD                         152
 #define IDR_ACCELERATOR                 154
 #define IDD_CONFIGURE                   157
-#define IDD_CONFIGURE_SD_DISK           158
+#define IDD_CONFIGURE_HDD               158
 #define IDI_ICON1                       162
 #define IDI_ICON2                       163
 #define IDC_LIST_PROCESS                1000
@@ -103,7 +104,6 @@
 #define IDC_KEYBOARD_DELAY              1068
 #define IDC_JOYSTICK_NONE               1070
 #define IDC_JOYSTICK_NUMPAD             1071
-#define IDC_JOYSTICK_PCJOY              1072
 #define IDC_JOYSTICK_PCJOYSTICK         1072
 #define IDC_VIDEO_COLOR                 1073
 #define IDC_VIDEO_FREQ                  1074
@@ -151,6 +151,8 @@
 #define IDC_JOYSAT                      1122
 #define IDC_VIDEO_B                     1123
 #define IDC_SCANLINE                    1124
+#define IDC_MACHINE_NTSC                1126
+#define IDC_MACHINE_PAL                 1127
 #define ID_DEBUG                        32771
 #define ID_CONFIGURE_SLOTS              32772
 #define ID_REBOOT                       32773
@@ -167,6 +169,8 @@
 #define ID_BUTTON32792                  32792
 #define ID_HARDDISK                     32793
 #define ID_SCANLINE                     32794
+#define ID_SUSPEND                      32795
+#define ID_RESUME                       32796
 #define ID_SLOT_NONE                    33000
 #define ID_SLOT_DISK                    33001
 #define ID_SLOT_MOCKINGBOARD            33002
@@ -196,9 +200,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        164
-#define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1126
+#define _APS_NEXT_RESOURCE_VALUE        166
+#define _APS_NEXT_COMMAND_VALUE         32797
+#define _APS_NEXT_CONTROL_VALUE         1128
 #define _APS_NEXT_SYMED_VALUE           111
 #endif
 #endif

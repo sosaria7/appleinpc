@@ -47,6 +47,10 @@ public:
 	POINT m_stWindowPos;
 	BOOL  m_bDoubleSize;
 	BOOL  m_bFullScreen;
+	BOOL  m_bKeyboardCapture;
+	HCURSOR m_hCursor;
+	POINT m_stCursorPos;
+	RECT m_stCursorClip;
 	virtual ~CMainFrame();
 #ifdef _DEBUG
 	virtual void AssertValid() const;
@@ -88,9 +92,16 @@ protected:
 	afx_msg void OnUpdateDiskette(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateHarddisk(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateScanline(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateSuspend(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateResume(CCmdUI* pCmdUI);
 	afx_msg void OnScanline();
+	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnSuspend();
+	afx_msg void OnResume();
+	afx_msg void OnRawInput(UINT nInputcode, HRAWINPUT hRawInput);
 };
 
 /////////////////////////////////////////////////////////////////////////////

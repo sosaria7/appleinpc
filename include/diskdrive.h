@@ -20,9 +20,8 @@
 #define DDS_ACTIVE			( 1 << 2 )
 
 // read cycle per 1 nibble data
-// 1020480 / ( x * 6656 ) = 5 rps = 300 rpm
-// x = 1020480 / ( 5 * 6656 ) = 30.66
-#define READ_CLOCK		31
+// 1020484 / ( 32 * 6656 ) = 4.7912 rps = 287.47 rpm
+#define READ_CLOCK		32
 
 class CDiskDrive : public CObject
 {

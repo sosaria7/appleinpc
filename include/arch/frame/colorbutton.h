@@ -30,14 +30,14 @@ protected:
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CColorButton)
-	public:
-	virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
+public:
+	void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
 	//}}AFX_VIRTUAL
 
 // Implementation
 public:
 	void SetColor( COLORREF crColor, BYTE byMask);
-	virtual ~CColorButton();
+	~CColorButton() {}
 
 	// Generated message map functions
 protected:

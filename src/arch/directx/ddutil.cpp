@@ -783,7 +783,7 @@ HRESULT CSurface::Clear(DWORD dwColor)
         return hr;
 
 	hbr = ::CreateSolidBrush(dwColor);
-	RECT rc = { 0, 0, ddsd.dwWidth, ddsd.dwHeight };
+	RECT rc = { 0, 0, (LONG)ddsd.dwWidth, (LONG)ddsd.dwHeight };
     ::FillRect( hDC, &rc, hbr );
 	::DeleteObject( hbr );
     if( FAILED( hr = m_pdds->ReleaseDC( hDC ) ) )

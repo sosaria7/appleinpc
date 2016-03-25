@@ -27,23 +27,13 @@ public:
 	virtual void Shutdown();
 	virtual void Reset();
 	virtual void Wait();
-	virtual void Clock(int nClock);
 	virtual int Process() = NULL;
-	_STCallbackHandler sClockFunc;
-	friend CALLBACK_HANDLER(Clock);
-
-	DWORD GetClock();
-	DWORD GetCpuClock();
-	void SetSpeed(int nSpeed);
-	void SetClockListener( void* objTo, callback_handler func );
 
 	virtual void Serialize( CArchive& ar );
 
 	unsigned m_uException_Register;
 protected:
 	int PendingIRQ;
-	int m_nRemain;
-	int m_nSpeed;
 };
 
 #endif // !defined(AFX_CPU_H__4143AA29_8CA5_4EBB_9EDB_87147331C999__INCLUDED_)

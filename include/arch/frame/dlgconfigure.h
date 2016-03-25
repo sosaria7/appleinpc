@@ -9,6 +9,7 @@
 
 #include "card.h"
 #include "arch/frame/wcsliderbutton.h"
+#include "afxwin.h"
 /////////////////////////////////////////////////////////////////////////////
 // CDlgConfigure dialog
 
@@ -34,6 +35,10 @@ public:
 	CButton		m_btnSetupCard[7];
 	wcSliderButton	m_sbKeyDelay;
 	wcSliderButton	m_sbKeyRepeat;
+	CButton m_btnMachineNTSC;
+	CButton m_btnMachinePAL;
+	CButton m_btnMachineA2p;
+	CButton m_btnMachineA2e;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -55,6 +60,9 @@ protected:
 	//}}AFX_MSG
 	afx_msg void OnSelchangeSlot(UINT uId);
 	afx_msg void OnClickedSlotSetup(UINT uId);
+
+	static int DeviceNameToDeviceID(CString strDeviceName);
+
 public:
 	virtual  ~CDlgConfigure();
 protected:

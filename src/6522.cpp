@@ -21,7 +21,6 @@ static char THIS_FILE[]=__FILE__;
 C6522::C6522()
 {
 	Reset();
-//	m_dwLastClock = 0;
 }
 
 C6522::~C6522()
@@ -182,10 +181,8 @@ void C6522::Clock(WORD clock)
 {
 	WORD temp;
 	BYTE bPB7 = m_byORB & 0x80;
-//	clock = (WORD)( g_pBoard->GetClock() - m_dwLastClock );
 	if ( m_bDoubleClock )
 		clock <<= 1;
-//	m_dwLastClock = g_pBoard->GetClock();
 	BYTE timer1_ctrl = m_abyRegs[SY_ACR] >> 6;
 	temp = m_abyRegs[SY_T1C_L] | ( m_abyRegs[SY_T1C_H] << 8 );
 

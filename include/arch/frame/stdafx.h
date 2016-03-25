@@ -23,7 +23,6 @@
 #include "afxmt.h"
 
 #include "arch/resource.h"
-#include "aipcdefs.h"
 
 typedef void	(*mem_write_handler) (void* objFrom, void* objTo, int nAddr, BYTE byData);
 typedef BYTE	(*mem_read_handler) (void* objFrom, void* objTo, int nAddr);

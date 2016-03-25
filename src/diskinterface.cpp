@@ -17,6 +17,8 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
+#define CLOCK		1020484
+
 #define MOTOR_ON		CLOCK
 #define WRITE_ON		( CLOCK / 10 )
 //IMPLEMENT_DYNAMIC( CDiskInterface, CCard );
@@ -67,7 +69,7 @@ CDiskInterface::CDiskInterface()
 	for (int i = 0; i < MAX_DRIVES; i++)
 		m_pDiskDrive[i] = new CDiskDrive();
 	m_iDeviceNum = CARD_DISK_INTERFACE;
-	m_strDeviceName = "Apple DISK II";
+	m_strDeviceName = "Apple DISK ][";
 	stLightHandler.func = NULL;
 
 	m_iCurrentDisk = 0;

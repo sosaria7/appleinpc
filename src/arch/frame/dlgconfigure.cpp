@@ -13,7 +13,8 @@
 #include "phasor.h"
 #include "appleclock.h"
 #include "joystick.h"
-#include "sddiskii.h"
+#include "hdd.h"
+//#include "videxterm.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -85,6 +86,10 @@ void CDlgConfigure::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_SLOT7_SETUP, m_btnSetupCard[6]);
 	DDX_SliderButtonCtrl(pDX, IDC_KEYBOARD_DELAY, m_sbKeyDelay, 0);
 	DDX_SliderButtonCtrl(pDX, IDC_KEYBOARD_REPEAT, m_sbKeyRepeat, 0);
+	DDX_Control(pDX, IDC_MACHINE_NTSC, m_btnMachineNTSC);
+	DDX_Control(pDX, IDC_MACHINE_PAL, m_btnMachinePAL);
+	DDX_Control(pDX, IDC_MACHINE_2PLUS, m_btnMachineA2p);
+	DDX_Control(pDX, IDC_MACHINE_2E, m_btnMachineA2e);
 }
 
 
@@ -102,15 +107,43 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CDlgConfigure message handlers
 
+int CDlgConfigure::DeviceNameToDeviceID(CString strDeviceName)
+{
+	//Empty;Mouse Interface;Apple Disk II;Mocking B./Phasor;Videx VideoTerm;
+	if (strDeviceName.Compare("Empty") == 0)
+		return CARD_EMPTY;
+
+	else if (strDeviceName.Compare("Mouse Interface") == 0)
+		return CARD_MOUSE_INTERFACE;
+
+	else if (strDeviceName.Compare("Apple DISK ][") == 0)
+		return CARD_DISK_INTERFACE;
+
+	else if (strDeviceName.Compare("Mocking B./Phasor") == 0)
+		return CARD_PHASOR;
+
+	else if (strDeviceName.Compare("HDD") == 0)
+		return CARD_HDD;
+
+	else if (strDeviceName.Compare("Videx VideoTerm") == 0)
+		return CARD_VIDEX_VIDEOTERM;
+
+	return CARD_EMPTY;
+}
+
 void CDlgConfigure::OnSelchangeSlot(UINT uId) 
 {
 	int nCurSel;
 	CCard* pCard;
+	CString strSelDeviceName;
 	if ( uId < IDC_SLOT1 || uId > IDC_SLOT7 )
 		return;			// it must not occur
+
 	uId -= IDC_SLOT1;
 	nCurSel = m_cbSlot[uId].GetCurSel();
-	if ( m_pCards[uId] == NULL || m_pCards[uId]->GetDeviceNum() != nCurSel )
+	m_cbSlot[uId].GetLBText(nCurSel, strSelDeviceName);
+
+	if ( m_pCards[uId] == NULL || m_pCards[uId]->GetDeviceName().Compare(strSelDeviceName) != 0 )
 	{
 		pCard = g_pBoard->m_cSlots.GetCard(uId);
 		if ( m_pCards[uId] != NULL )
@@ -122,11 +155,12 @@ void CDlgConfigure::OnSelchangeSlot(UINT uId)
 			m_pCards[uId] = NULL;
 		}
 		// 기존에 있던 카드와 동일하면 기존의 카드를 사용한다.
-		if ( pCard != NULL && pCard->GetDeviceNum() == nCurSel )
+		if ( pCard != NULL && pCard->GetDeviceName().Compare(strSelDeviceName) == 0 )
 			m_pCards[uId] = pCard;
 		else
 		{
-			switch( nCurSel )
+			int nDeviceID = DeviceNameToDeviceID(strSelDeviceName);
+			switch(nDeviceID)
 			{
 			case CARD_EMPTY:		// empty
 				m_btnSetupCard[uId].EnableWindow(FALSE);
@@ -140,8 +174,11 @@ void CDlgConfigure::OnSelchangeSlot(UINT uId)
 			case CARD_PHASOR:				// phasor/mocking board sound card
 				m_pCards[uId] = new CPhasor();
 				break;
-			case CARD_SD_DISK_II:			// SD DISK][ interface card
-				m_pCards[uId] = new CSDDiskII();
+			case CARD_HDD:					// HDD interface card
+				m_pCards[uId] = new CHDDInterface();
+				break;
+			case CARD_VIDEX_VIDEOTERM:
+				//m_pCards[uId] = new CVidexTerm();
 				break;
 			default:
 				return;	// it must not occur
@@ -167,7 +204,7 @@ void CDlgConfigure::OnClickedSlotSetup(UINT uId)
 
 BOOL CDlgConfigure::OnInitDialog() 
 {
-	int i;
+	int i, j;
 	int nKeyDelay, nKeyRepeat;
 	BOOL bIsPowerOn;
 	int nVol, nPan;
@@ -181,12 +218,22 @@ BOOL CDlgConfigure::OnInitDialog()
 		m_pCards[i] = g_pBoard->m_cSlots.GetCard(i);
 		if ( m_pCards[i] != NULL )
 		{
-			m_cbSlot[i].SetCurSel( m_pCards[i]->GetDeviceNum() );
-			m_btnSetupCard[i].EnableWindow(TRUE);
+			CString strDeviceName = m_pCards[i]->GetDeviceName();
+			CString strSlotText;
+			for (j = 0; j < m_cbSlot[i].GetCount(); j++)
+			{
+				m_cbSlot[i].GetLBText(j, strSlotText);
+				if (strSlotText.Compare(strDeviceName) == 0)
+				{
+					m_cbSlot[i].SetCurSel(j);
+					m_btnSetupCard[i].EnableWindow(TRUE);
+					break;
+				}
+			}
 		}
 		else
 		{
-			m_cbSlot[i].SetCurSel(CARD_EMPTY);
+			m_cbSlot[i].SetCurSel(0);
 			m_btnSetupCard[i].EnableWindow(FALSE);
 		}
 		m_cbSlot[i].EnableWindow( !bIsPowerOn );
@@ -201,6 +248,32 @@ BOOL CDlgConfigure::OnInitDialog()
 	}
 	// not implemented yet
 	CheckRadioButton( IDC_MACHINE_2PLUS, IDC_MACHINE_2C, IDC_MACHINE_2E );
+
+	// NTSC / PAL
+	m_btnMachineNTSC.EnableWindow(!bIsPowerOn);
+	m_btnMachineNTSC.SetCheck(BST_UNCHECKED);
+	m_btnMachinePAL.EnableWindow(!bIsPowerOn);
+	m_btnMachinePAL.SetCheck(BST_UNCHECKED);
+
+	if (g_pBoard->m_bPALMode == TRUE)
+		m_btnMachinePAL.SetCheck(BST_CHECKED);
+	else
+		m_btnMachineNTSC.SetCheck(BST_CHECKED);
+
+	m_btnMachineA2p.EnableWindow(!bIsPowerOn);
+	m_btnMachineA2p.SetCheck(BST_UNCHECKED);
+	m_btnMachineA2e.EnableWindow(!bIsPowerOn);
+	m_btnMachineA2e.SetCheck(BST_UNCHECKED);
+	switch (g_pBoard->m_nMachineType)
+	{
+	case MACHINE_APPLE2P:
+		m_btnMachineA2p.SetCheck(BST_CHECKED);
+		break;
+	case MACHINE_APPLE2E:
+	default:
+		m_btnMachineA2e.SetCheck(BST_CHECKED);
+		break;
+	}
 
 	// keyboard
 	g_cDIKeyboard.GetDelayTime( &nKeyRepeat, &nKeyDelay );
@@ -298,6 +371,8 @@ void CDlgConfigure::OnOK()
 		}
 	}
 	g_pBoard->m_cSlots.Initialize();
+	g_pBoard->m_pScreen->SetMouseCapture(g_pBoard->m_cSlots.HasMouseInterface());
+
 	// keyboard
 	g_cDIKeyboard.SetDelayTime( m_sbKeyRepeat.GetPos(), m_sbKeyDelay.GetPos() );
 
@@ -329,6 +404,16 @@ void CDlgConfigure::OnOK()
 	else
 		g_pBoard->m_cSpeaker.SetVolume( 5 - nVol );	// nVol is -26 to 0
 	g_pBoard->m_cSpeaker.m_bMute = m_bSpeakerMute;
+
+	BOOL bPalMode = m_btnMachinePAL.GetCheck();
+	int nMachineType;
+
+	if (m_btnMachineA2p.GetCheck() == BST_CHECKED)
+		nMachineType = MACHINE_APPLE2P;
+	else
+		nMachineType = MACHINE_APPLE2E;
+
+	g_pBoard->SetMachineType(nMachineType, bPalMode);
 
 	CDialog::OnOK();
 }

@@ -6,10 +6,45 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
+#define MC65C02
+
 #include "arch/frame/stdafx.h"
 #include "appleclock.h"
 #include "memory.h"
 #include "65c02.h"
+#include "65c02_op.h"
+
+#define RebootSig		0x01
+#define ResetSig		0x02
+#define DebugStepSig	0x04
+#define EnterDebugSig	0x08
+
+#define C_Flag			0x1			/* 6502 Carry	 	   */
+#define Z_Flag			0x2			/* 6502 Zero		   */
+#define I_Flag			0x4			/* 6502 Interrupt disable  */
+#define D_Flag			0x8			/* 6502 Decimal mode	   */
+#define B_Flag			0x10		/* 6502 Break		   */
+#define X_Flag			0x20		/* 6502 Xtra		   */
+#define V_Flag			0x40		/* 6502 Overflow	   */
+#define N_Flag			0x80		/* 6502 Neg		   */
+
+#define NZ_Flag			0x82
+#define NZC_Flag		0x83
+#define NV_Flag			0xC0
+#define NVZ_Flag		0xC2
+#define NVZC_Flag		0xC3
+#define C_Flag_Bit	0		/* 6502 Carry		   */
+#define Z_Flag_Bit	1		/* 6502 Zero		   */
+#define I_Flag_Bit	2		/* 6502 Interrupt disable  */
+#define D_Flag_Bit	3		/* 6502 Decimal mode	   */
+#define B_Flag_Bit	4		/* 6502 Break		   */
+#define X_Flag_Bit	5		/* 6502 Xtra		   */
+#define V_Flag_Bit	6		/* 6502 Overflow	   */
+#define N_Flag_Bit	7		/* 6502 Neg		   */
+
+#define REFER_NMIB			0xFFFA
+#define REFER_RESET			0xFFFC
+#define REFER_IRQ			0xFFFE
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -17,155 +52,6 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
-#ifdef _DEBUG
-#define TRACE_ADDR  m_trace[(m_current++)&0xFF] = ( m_regPC - 1 ) & 0xFFFF;
-#else
-#define TRACE_ADDR
-#endif
-
-
-#define WRITEMEM(addr, data)	( g_pBoard->m_cIOU.WriteMem8( addr, data ) )
-#define READMEM(addr)			( g_pBoard->m_cIOU.ReadMem8( addr ) )
-#define READMEMW(addr)			( g_pBoard->m_cIOU.ReadMem16( addr ) )
-#define READOPCODE()			( READMEM( m_regPC++ ) )
-#define READOPCODEW()			( READOPCODE() | ( READOPCODE() << 8 ) )
-#define	PUSH(data)				( WRITEMEM( ( m_regS-- ) | 0x100, data ) )
-#define POP()					( READMEM( ( ++m_regS ) | 0x100 ) )
-
-#ifdef _DEBUG
-int g_breakpoint = -1;
-#endif
-
-WORD C65c02::getAbs()		// Absolute
-{
-	return ( READOPCODEW() );
-}
-
-
-WORD C65c02::getAbsX()		// Absolute, X
-{
-	WORD addr = READOPCODEW();
-	checkCross(addr, m_regX);
-	return ( addr+m_regX );
-}
-
-WORD C65c02::getAbsY()		// Absolute, Y
-{
-	WORD addr = READOPCODEW();
-	checkCross(addr, m_regY);
-	return ( addr+m_regY );
-}
-
-// for INC
-WORD C65c02::getAbsXINC()		// Absolute, X
-{
-	WORD addr = READOPCODEW();
-	return ( addr+m_regX );
-}
-
-WORD C65c02::getZp()			// Zero Page
-{
-	return ( (WORD)READOPCODE() );
-}
-
-WORD C65c02::getZpX()		// Zero Page, X
-{
-	return ( ( READOPCODE()+m_regX )&0xFF );
-}
-
-WORD C65c02::getZpY()		// Zero Page, Y
-{
-	return ( ( READOPCODE()+m_regY )&0xFF );
-}
-
-WORD C65c02::getIndX()		// (Indirect, X)
-{
-	BYTE addr = READOPCODE()+m_regX;
-	return ( READMEMW( (WORD)addr ) );
-}
-
-WORD C65c02::getIndX16()		// (Indirect16, X)
-{
-	WORD addr = READOPCODEW();
-	checkCross( addr, m_regX );
-	return ( READMEMW( addr + m_regX ) );
-}
-
-WORD C65c02::getIndY()		// (Indirect), Y
-{
-	WORD addr = READMEMW( (WORD)READOPCODE() );
-	checkCross( addr, m_regY );
-	return ( addr + m_regY );
-}
-
-WORD C65c02::getInd16()		// (Indirect16)
-{
-	WORD addr = READOPCODEW();
-	return ( READMEMW( addr ) );
-}
-
-WORD C65c02::getInd()		// (Indirect)
-{
-	BYTE addr = READOPCODE();
-	return ( READMEMW( (WORD)addr ) );
-}
-
-	// Set Flags
-void C65c02::updateFlagNZ(WORD result)
-{
-	m_regF &= ~NZ_Flag;
-	
-	if(result&0x280)
-		m_regF |= N_Flag;
-	
-	if(!(result&0xFF))
-		m_regF |= Z_Flag;
-}
-
-	// Set Flags
-void C65c02::updateFlagNZC(WORD result)
-{
-	m_regF &= ~NZC_Flag;
-	
-	if(result&0x280)
-		m_regF |= N_Flag;
-	
-	if(!(result&0xFF))
-		m_regF |= Z_Flag;
-	
-	if(result&0x100)
-		m_regF |= C_Flag;
-}
-
-void C65c02::updateFlag(BYTE result, BYTE flag)
-{
-	if(result)
-		m_regF |= flag;
-	else
-		m_regF &= ~flag;
-}
-
-void C65c02::branch(BYTE offset)
-{
-	WORD off;
-	TRACE_ADDR
-	// extends BYTE to WORD with sign
-	if ( offset &0x80 )
-		off = offset - 0x100;
-	else
-		off = offset;
-	
-	checkCross(m_regPC, off);
-	
-	m_regPC += off;
-	m_nClock++;
-}
-
-void C65c02::checkCross(WORD addr, WORD offset)
-{
-	if ( ( ( addr + offset ) ^ addr ) & 0xFF00 )
-		m_nClock++;
-}
 
 C65c02::C65c02()
 {
@@ -174,7 +60,7 @@ C65c02::C65c02()
 #ifdef _DEBUG
 	m_current=0;
 #endif
-//	init_6502();
+	init_6502();
 }
 
 C65c02::~C65c02()
@@ -184,21 +70,30 @@ C65c02::~C65c02()
 
 int C65c02::Process()
 {
-	m_nClock = 0;
+	register BYTE data;
+	register WORD addr;
+	register WORD result;
+	BYTE offset;
+	BYTE opcode;
+	int clock = 0;
+#ifdef _DEBUG
+	WORD opcode_addr = m_regPC;
+#endif
+
 	if ( ( m_uException_Register & SIG_CPU_IRQ ) )
 	{
 		m_uException_Register &= ~SIG_CPU_IRQ;
 		m_uException_Register &= ~SIG_CPU_WAIT;
 		if ( !( m_regF & I_Flag ) && !( m_regF & B_Flag ) )
 		{
-			TRACE_ADDR
+			TRACE_CALL;
 			PUSH( m_regPC >> 8 );
 			PUSH( m_regPC & 0xFF );
 			PUSH( m_regF );
-			m_regPC = READMEMW( 0xFFFE );
-			m_nClock += 7;
+			m_regPC = READMEM16( 0xFFFE );
+			clock += 7;
 			m_regF |= I_Flag;
-			return m_nClock;
+			return clock;
 		}
 		else
 		{
@@ -209,1570 +104,657 @@ int C65c02::Process()
 	if ( ( m_uException_Register & SIG_CPU_SHUTDOWN )
 		|| ( m_uException_Register & SIG_CPU_WAIT ) )
 	{
-		m_nClock += 3;
-		return m_nClock;
+		clock += 3;
+		return clock;
 	}
-	BYTE opcode = READOPCODE();
-	WORD addr;
-	BYTE data;
-	WORD result;
-	switch(opcode){
-//--------------------------------
-// 65c02 operators
-//--------------------------------
-		// ADC Immediate
+
+	opcode = READOPCODE8;
+
+	switch (opcode)
+	{
+		/* ADC Immediate */
 	case 0x69:
-		data = READOPCODE();
-		result = (WORD)data + m_regA + (m_regF&C_Flag);
-		updateFlag(!((data^m_regA)&0x80) && ((result^m_regA)&0x80), V_Flag);	// over flow
-
-		if(m_regF&D_Flag)		// BCD Adjust
-			result = m_BCD_Table1[result];
-		updateFlagNZC(result);
-		m_regA = result&0xFF;
-		m_nClock += 2;
-		break;
-
-		// ADC Zero page
+		IMM; ADC; WACC; CLOCK(2); break;
+		/* ADC ZeroPage */
 	case 0x65:
-		data = READMEM( getZp() );
-		result = data + m_regA + (m_regF&C_Flag);
-		updateFlag(!((data^m_regA)&0x80) && ((result^m_regA)&0x80), V_Flag);	// over flow
-
-		if(m_regF&D_Flag)		// BCD Adjust
-			result = m_BCD_Table1[result];
-		updateFlagNZC(result);
-		m_regA = result&0xFF;
-		m_nClock += 3;
-		break;
-
-		// ADC Zero page, X
+		ZP; MEM; ADC; WACC; CLOCK(3); break;
+		/* ADC ZeroPage, X */
 	case 0x75:
-		data = READMEM( getZpX() );
-		result = data + m_regA + (m_regF&C_Flag);
-		updateFlag(!((data^m_regA)&0x80) && ((result^m_regA)&0x80), V_Flag);	// over flow
-
-		if(m_regF&D_Flag)		// BCD Adjust
-			result = m_BCD_Table1[result];
-		updateFlagNZC(result);
-		m_regA = result&0xFF;
-		m_nClock += 4;
-		break;
-
-		// ADC Absolute
-	case 0x6D:
-		data = READMEM( getAbs() );
-		result = data + m_regA + (m_regF&C_Flag);
-		updateFlag(!((data^m_regA)&0x80) && ((result^m_regA)&0x80), V_Flag);	// over flow
-
-		if(m_regF&D_Flag)		// BCD Adjust
-			result = m_BCD_Table1[result];
-		updateFlagNZC(result);
-		m_regA = result&0xFF;
-		m_nClock += 4;
-		break;
-
-		// ADC Absolute, X
-	case 0x7D:
-		data = READMEM( getAbsX() );
-		result = data + m_regA + (m_regF&C_Flag);
-		updateFlag(!((data^m_regA)&0x80) && ((result^m_regA)&0x80), V_Flag);	// over flow
-
-		if(m_regF&D_Flag)		// BCD Adjust
-			result = m_BCD_Table1[result];
-		updateFlagNZC(result);
-		m_regA = result&0xFF;
-		m_nClock += 4;
-		break;
-
-		// ADC Absolute, Y
+		ZP_X; MEM; ADC; WACC; CLOCK(4); break;
+		/* ADC Absolute */
+	case 0x6d:
+		ABS; MEM; ADC; WACC; CLOCK(4); break;
+		/* ADC Absolute, X */
+	case 0x7d:
+		ABS_X; MEM; ADC; WACC; CLOCK(4); break;
+		/* ADC Absolute, Y */
 	case 0x79:
-		data = READMEM( getAbsY() );
-		result = data + m_regA + (m_regF&C_Flag);
-		updateFlag(!((data^m_regA)&0x80) && ((result^m_regA)&0x80), V_Flag);	// over flow
-
-		if(m_regF&D_Flag)		// BCD Adjust
-			result = m_BCD_Table1[result];
-		updateFlagNZC(result);
-		m_regA = result&0xFF;
-		m_nClock += 4;
-		break;
-
-		// ADC (Indirect, X)
+		ABS_Y; MEM; ADC; WACC; CLOCK(4); break;
+		/* ADC (Indirect, X) */
 	case 0x61:
-		data = READMEM( getIndX() );
-		result = data + m_regA + (m_regF&C_Flag);
-		updateFlag(!((data^m_regA)&0x80) && ((result^m_regA)&0x80), V_Flag);	// over flow
-
-		if(m_regF&D_Flag)		// BCD Adjust
-			result = m_BCD_Table1[result];
-		updateFlagNZC(result);
-		m_regA = result&0xFF;
-		m_nClock += 6;
-		break;
-
-		// ADC (Indirect), Y
+		IND_X; MEM; ADC; WACC; CLOCK(6); break;
+		/* ADC (Indirect), Y */
 	case 0x71:
-		data = READMEM( getIndY() );
-		result = data + m_regA + (m_regF&C_Flag);
-		updateFlag(!((data^m_regA)&0x80) && ((result^m_regA)&0x80), V_Flag);	// over flow
-
-		if(m_regF&D_Flag)		// BCD Adjust
-			result = m_BCD_Table1[result];
-		updateFlagNZC(result);
-		m_regA = result&0xFF;
-		m_nClock += 5;
-		break;
-
-		// AND Immediate
+		IND_Y; MEM; ADC; WACC; CLOCK(5); break;
+		/* AND Immediate */
 	case 0x29:
-		m_regA &= READOPCODE();
-		updateFlagNZ(m_regA);
-		m_nClock += 2;
-		break;
-
-		// AND Zero Page
+		IMM; AND; WACC; CLOCK(2); break;
+		/* AND ZeroPage */
 	case 0x25:
-		m_regA &= READMEM( getZp() );
-		updateFlagNZ(m_regA);
-		m_nClock += 3;
-		break;
-
-		// AND Zero Page, X
+		ZP; MEM; AND; WACC; CLOCK(3); break;
+		/* AND ZeroPage, X */
 	case 0x35:
-		m_regA &= READMEM( getZpX() );
-		updateFlagNZ(m_regA);
-		m_nClock += 4;
-		break;
-
-		// AND Absolute
-	case 0x2D:
-		m_regA &= READMEM( getAbs() );
-		updateFlagNZ(m_regA);
-		m_nClock += 4;
-		break;
-
-		// AND Absolute, X
-	case 0x3D:
-		m_regA &= READMEM( getAbsX() );
-		updateFlagNZ(m_regA);
-		m_nClock += 4;
-		break;
-
-		// AND Absolute, Y
+		ZP_X; MEM; AND; WACC; CLOCK(4); break;
+		/* AND Absolute */
+	case 0x2d:
+		ABS; MEM; AND; WACC; CLOCK(4); break;
+		/* AND Absolute, X */
+	case 0x3d:
+		ABS_X; MEM; AND; WACC; CLOCK(4); break;
+		/* AND Absolute, Y */
 	case 0x39:
-		m_regA &= READMEM( getAbsY() );
-		updateFlagNZ(m_regA);
-		m_nClock += 4;
-		break;
-
-		// AND (Indirect, X)
+		ABS_Y; MEM; AND; WACC; CLOCK(4); break;
+		/* AND (Indirect, X) */
 	case 0x21:
-		m_regA &= READMEM( getIndX() );
-		updateFlagNZ(m_regA);
-		m_nClock += 6;
-		break;
-
-		// AND (Indirect), Y
+		IND_X; MEM; AND; WACC; CLOCK(6); break;
+		/* AND (Indirect), Y */
 	case 0x31:
-		m_regA &= READMEM( getIndY() );
-		updateFlagNZ(m_regA);
-		m_nClock += 5;
-		break;
-
-		// ASL Accumulator
-	case 0x0A:
-		result = m_regA << 1;
-		updateFlagNZC(result);
-		m_regA = result&0xFF;
-		m_nClock += 2;
-		break;
-
-		// ASL Zero page
+		IND_Y; MEM; AND; WACC; CLOCK(5); break;
+		/* ASL Accumulator */
+	case 0x0a:
+		ACC; ASL; WACC; CLOCK(2); break;
+		/* ASL ZeroPage */
 	case 0x06:
-		addr = getZp();
-		result = READMEM( addr );
-		result <<= 1;
-		updateFlagNZC(result);
-		WRITEMEM(addr, result&0xFF);
-		m_nClock += 5;
-		break;
-
-		// ASL Zero page, X
+		ZP; MEM; ASL; WMEM; CLOCK(5); break;
+		/* ASL ZeroPage, X */
 	case 0x16:
-		addr = getZpX();
-		result = READMEM( addr );
-		result <<= 1;
-		updateFlagNZC(result);
-		WRITEMEM(addr, result&0xFF);
-		m_nClock += 6;
-		break;
-
-		// ASL Absolute
-	case 0x0E:
-		addr = getAbs();
-		result = READMEM( addr );
-		result <<= 1;
-		updateFlagNZC(result);
-		WRITEMEM(addr, result&0xFF);
-		m_nClock += 6;
-		break;
-
-		// ASL Absolute, X
-	case 0x1E:
-		addr = getAbsX();
-		result = READMEM( addr );
-		result <<= 1;
-		updateFlagNZC(result);
-		WRITEMEM(addr, result&0xFF);
-		m_nClock += 7;
-		break;
-
-		// BCC rr
+		ZP_X; MEM; ASL; WMEM; CLOCK(6); break;
+		/* ASL Absolute */
+	case 0x0e:
+		ABS; MEM; ASL; WMEM; CLOCK(6); break;
+		/* ASL Absolute, X */
+	case 0x1e:
+		ABS_X; MEM; ASL; WMEM; CLOCK(7); break;
+		/* BCC rr */
 	case 0x90:
-		data = READOPCODE();
-		if(!(m_regF&C_Flag))
-			branch(data);
-		m_nClock += 2;
-		break;
-
-		// BCS rr
-	case 0xB0:
-		data = READOPCODE();
-		if(m_regF&C_Flag)
-			branch(data);
-		m_nClock += 2;
-		break;
-
-		// BEQ rr
-	case 0xF0:
-		data = READOPCODE();
-		if(m_regF&Z_Flag)
-			branch(data);
-		m_nClock += 2;
-		break;
-
-		// BIT Zero page
+		BRA_NCOND(C_Flag); CLOCK(2); break;
+		/* BCS rr */
+	case 0xb0:
+		BRA_COND(C_Flag); CLOCK(2); break;
+		/* BEQ rr */
+	case 0xf0:
+		BRA_COND(Z_Flag); CLOCK(2); break;
+		/* BIT ZeroPage */
 	case 0x24:
-		data = READMEM( getZp() );
-		updateFlag(data&0x40, V_Flag);
-		updateFlagNZ(((data&0x80)<<2)|(data&m_regA));
-		m_nClock += 3;
-		break;
-
-		// BIT Absolute
-	case 0x2C:
-		data = READMEM( getAbs() );
-		updateFlag(data&0x40, V_Flag);
-		updateFlagNZ(((data&0x80)<<2)|(data&m_regA));
-		m_nClock += 3;
-		break;
-
-		// BMI rr
+		ZP; MEM; BIT; CLOCK(3); break;
+		/* BIT Absolute */
+	case 0x2c:
+		ABS; MEM; BIT; CLOCK(3); break;
+		/* BMI rr */
 	case 0x30:
-		data = READOPCODE();
-		if(m_regF&N_Flag)
-			branch(data);
-		m_nClock += 2;
-		break;
-
-		// BNE rr
-	case 0xD0:
-		data = READOPCODE();
-		if(!(m_regF&Z_Flag))
-			branch(data);
-		m_nClock += 2;
-		break;
-
-		// BPL rr
+		BRA_COND(N_Flag); CLOCK(2); break;
+		/* BNE rr */
+	case 0xd0:
+		BRA_NCOND(Z_Flag); CLOCK(2); break;
+		/* BPL rr */
 	case 0x10:
-		data = READOPCODE();
-		if(!(m_regF&N_Flag))
-			branch(data);
-		m_nClock += 2;
-		break;
-
-		// BRK
+		BRA_NCOND(N_Flag); CLOCK(2); break;
+		/* BRK */
 	case 0x00:
-		TRACE_ADDR
+		TRACE_CALL;
 #ifdef _DEBUG
-		TRACE( "BRK at $%04X\n", m_regPC - 1 );
+			TRACE("BRK at $%04X\n", m_regPC - 1);
 		{
 			int d_i, d_current;
 			d_current = m_current;
-			TRACE( "Trace PC register\n" );
-			for( d_i = 0; d_i < 10; d_i++ )
+			TRACE("Trace PC register\n");
+			for (d_i = 0; d_i < 10; d_i++)
 			{
-				TRACE( "    jmp at $%04X\n", m_trace[(--d_current)&0xFF] );
+				TRACE("    jmp at $%04X\n", m_trace[(--d_current) & 0xFF]);
 			}
-			TRACE( "Stack : $%02X\n    ", m_regS );
-			for( d_i = 0; d_i < 10; d_i++ )
+			TRACE("Stack : $%02X\n    ", m_regS);
+			for (d_i = 0; d_i < 10; d_i++)
 			{
-				TRACE( "%02X ", READMEM( ( (m_regS+d_i)&0xFF ) +0x100) );
+				TRACE("%02X ", READMEM8(((m_regS + d_i) & 0xFF) + 0x100));
 			}
-			TRACE( "\n" );
+			TRACE("\n");
 		}
 #endif
-		m_regPC++;
-		PUSH((m_regPC>>8)&0xFF);
-		PUSH(m_regPC&0xFF);
-		m_regF |= B_Flag | X_Flag;
-		PUSH(m_regF);
-		m_regF |= I_Flag;
-
-		m_regPC = READMEMW( (WORD)0xFFFE );
-		m_nClock += 7;
-		break;
-
-		// BVC rr
+		BRK; CLOCK(7); break;
+		/* BVC rr */
 	case 0x50:
-		data = READOPCODE();
-		if(!(m_regF&V_Flag))
-			branch(data);
-		m_nClock += 2;
-		break;
-
-		// BVS rr
+		BRA_NCOND(V_Flag); CLOCK(2); break;
+		/* BVS rr */
 	case 0x70:
-		data = READOPCODE();
-		if(m_regF&V_Flag)
-			branch(data);
-		m_nClock += 2;
-		break;
-
-		// CLC
+		BRA_COND(V_Flag); CLOCK(2); break;
+		/* CLC */
 	case 0x18:
-		m_regF &= ~C_Flag;
-		m_nClock += 2;
-		break;
-
-		// CLD
-	case 0xD8:
-		m_regF &= ~D_Flag;
-		m_nClock += 2;
-		break;
-
-		// CLI
+		CLEAR_FLAG(C_Flag); CLOCK(2); break;
+		/* CLD */
+	case 0xd8:
+		CLEAR_FLAG(D_Flag); CLOCK(2); break;
+		/* CLI */
 	case 0x58:
-		m_regF &= ~I_Flag;
-		m_nClock += 2;
-		if(PendingIRQ){
-			PendingIRQ--;
-			Assert_IRQ();
-		}
-		break;
-		
-		// CLV
-	case 0xB8:
-		m_regF &= ~V_Flag;
-		m_nClock += 2;
-		break;
-		
-		// CMP Immediate
-	case 0xC9:
-		updateFlagNZC(0x100 + m_regA - READOPCODE());
-		m_nClock += 2;
-		break;
-
-		// CMP Zero page
-	case 0xC5:
-		updateFlagNZC( 0x100 + m_regA - READMEM( getZp() ) );
-		m_nClock += 3;
-		break;
-
-		// CMP Zero page, X
-	case 0xD5:
-		updateFlagNZC( 0x100 + m_regA - READMEM( getZpX() ) );
-		m_nClock += 4;
-		break;
-
-		// CMP Absolute
-	case 0xCD:
-		updateFlagNZC( 0x100 + m_regA - READMEM( getAbs() ) );
-		m_nClock += 4;
-		break;
-
-		// CMP Absolute, X
-	case 0xDD:
-		updateFlagNZC( 0x100 + m_regA - READMEM( getAbsX() ) );
-		m_nClock += 4;
-		break;
-		
-		// CMP Absolute, Y
-	case 0xD9:
-		updateFlagNZC( 0x100 + m_regA - READMEM( getAbsY() ) );
-		m_nClock += 4;
-		break;
-		
-		// CMP (Indirect, X)
-	case 0xC1:
-		updateFlagNZC( 0x100 + m_regA - READMEM( getIndX() ) );
-		m_nClock += 6;
-		break;
-
-		// CMP (Indirect), Y
-	case 0xD1:
-		updateFlagNZC( 0x100 + m_regA - READMEM( getIndY() ) );
-		m_nClock += 5;
-		break;
-
-		// CPX Immediate
-	case 0xE0:
-		updateFlagNZC( 0x100 + m_regX - READOPCODE());
-		m_nClock += 2;
-		break;
-
-		// CPX Zero page
-	case 0xE4:
-		updateFlagNZC( 0x100 + m_regX - READMEM( getZp() ) );
-		m_nClock += 3;
-		break;
-
-		// CPX Absolute
-	case 0xEC:
-		updateFlagNZC( 0x100 + m_regX - READMEM( getAbs() ) );
-		m_nClock += 4;
-		break;
-
-		// CPY Immediate
-	case 0xC0:
-		updateFlagNZC( 0x100 + m_regY - READOPCODE());
-		m_nClock += 2;
-		break;
-
-		// CPY Zero page
-	case 0xC4:
-		updateFlagNZC( 0x100 + m_regY - READMEM( getZp() ) );
-		m_nClock += 3;
-		break;
-
-		// CPY Absolute
-	case 0xCC:
-		updateFlagNZC( 0x100 + m_regY - READMEM(getAbs() ) );
-		m_nClock += 4;
-		break;
-
-		// DEC Zero page
-	case 0xC6:
-		addr = getZp();
-		result = READMEM( addr ) + 0xFF;
-		updateFlagNZ(result);
-		WRITEMEM(addr, (BYTE)result);
-		m_nClock += 5;
-		break;
-
-		// DEC Zero page, X
-	case 0xD6:
-		addr = getZpX();
-		result = READMEM( addr )+0xFF;
-		updateFlagNZ(result);
-		WRITEMEM(addr, (BYTE)result);
-		m_nClock += 6;
-		break;
-
-		// DEC Absolute
-	case 0xCE:
-		addr = getAbs();
-		result = READMEM( addr )+0xFF;
-		updateFlagNZ(result);
-		WRITEMEM(addr, (BYTE)result);
-		m_nClock += 6;
-		break;
-
-		// DEC Absolute, X
-	case 0xDE:
-		addr = getAbsX();
-		result = READMEM(addr)+0xFF;
-		updateFlagNZ(result);
-		WRITEMEM(addr, (BYTE)result);
-		m_nClock += 7;
-		break;
-
-		// DEX
-	case 0xCA:
-		result = m_regX + 0xFF;
-		updateFlagNZ(result);
-		m_regX = (BYTE)result;
-		m_nClock += 2;
-		break;
-
-		// DEY
+		CLEAR_FLAG(I_Flag); CHECK_IRQ; CLOCK(2); break;
+		/* CLV */
+	case 0xb8:
+		CLEAR_FLAG(V_Flag); CLOCK(2); break;
+		/* CMP Immediate */
+	case 0xc9:
+		IMM; CMP; CLOCK(2); break;
+		/* CMP ZeroPage */
+	case 0xc5:
+		ZP; MEM; CMP; CLOCK(3); break;
+		/* CMP ZeroPage, X */
+	case 0xd5:
+		ZP_X; MEM; CMP; CLOCK(4); break;
+		/* CMP Absolute */
+	case 0xcd:
+		ABS; MEM; CMP; CLOCK(4); break;
+		/* CMP Absolute, X */
+	case 0xdd:
+		ABS_X; MEM; CMP; CLOCK(4); break;
+		/* CMP Absolute, Y */
+	case 0xd9:
+		ABS_Y; MEM; CMP; CLOCK(4); break;
+		/* CMP (Indirect, X) */
+	case 0xc1:
+		IND_X; MEM; CMP; CLOCK(6); break;
+		/* CMP (Indirect), Y */
+	case 0xd1:
+		IND_Y; MEM; CMP; CLOCK(5); break;
+		/* CPX Immediate */
+	case 0xe0:
+		IMM; CPX; CLOCK(2); break;
+		/* CPX ZeroPage */
+	case 0xe4:
+		ZP; MEM; CPX; CLOCK(3); break;
+		/* CPX Absolute */
+	case 0xec:
+		ABS; MEM; CPX; CLOCK(4); break;
+		/* CPY Immediate */
+	case 0xc0:
+		IMM; CPY; CLOCK(2); break;
+		/* CPY ZeroPage */
+	case 0xc4:
+		ZP; MEM; CPY; CLOCK(3); break;
+		/* CPY Absolute */
+	case 0xcc:
+		ABS; MEM; CPY; CLOCK(4); break;
+		/* DEC ZeroPage */
+	case 0xc6:
+		ZP; MEM; DEC; WMEM; CLOCK(5); break;
+		/* DEC ZeroPage, X */
+	case 0xd6:
+		ZP_X; MEM; DEC; WMEM; CLOCK(6); break;
+		/* DEC Absolute */
+	case 0xce:
+		ABS; MEM; DEC; WMEM; CLOCK(6); break;
+		/* DEC Absolute, X */
+	case 0xde:
+		ABS_X; MEM; DEC; WMEM; CLOCK(7); break;
+		/* DEX */
+	case 0xca:
+		XREG; DEC; WXREG; CLOCK(2); break;
+		/* DEY */
 	case 0x88:
-		result = m_regY + 0xFF;
-		updateFlagNZ(result);
-		m_regY = (BYTE)result;
-		m_nClock += 2;
-		break;
-
-		// EOR Immediate
+		YREG; DEC; WYREG; CLOCK(2); break;
+		/* EOR Immediate */
 	case 0x49:
-		m_regA ^= READOPCODE();
-		updateFlagNZ(m_regA);
-		m_nClock += 2;
-		break;
-
-		// EOR Zero page
+		IMM; EOR; WACC; CLOCK(2); break;
+		/* EOR ZeroPage */
 	case 0x45:
-		m_regA ^= READMEM(getZp());
-		updateFlagNZ(m_regA);
-		m_nClock += 3;
-		break;
-
-		// EOR Zero page, X
+		ZP; MEM; EOR; WACC; CLOCK(3); break;
+		/* EOR ZeroPage, X */
 	case 0x55:
-		m_regA ^= READMEM(getZpX());
-		updateFlagNZ(m_regA);
-		m_nClock += 4;
-		break;
-
-		// EOR Absolute
-	case 0x4D:
-		m_regA ^= READMEM(getAbs());
-		updateFlagNZ(m_regA);
-		m_nClock += 4;
-		break;
-
-		// EOR Absolute, X
-	case 0x5D:
-		m_regA ^= READMEM(getAbsX());
-		updateFlagNZ(m_regA);
-		m_nClock += 4;
-		break;
-
-		// EOR Absolute, Y
+		ZP_X; MEM; EOR; WACC; CLOCK(4); break;
+		/* EOR Absolute */
+	case 0x4d:
+		ABS; MEM; EOR; WACC; CLOCK(4); break;
+		/* EOR Absolute, X */
+	case 0x5d:
+		ABS_X; MEM; EOR; WACC; CLOCK(4); break;
+		/* EOR Absolute, Y */
 	case 0x59:
-		m_regA ^= READMEM(getAbsY());
-		updateFlagNZ(m_regA);
-		m_nClock += 4;
-		break;
-
-		// EOR (Indirect, X)
+		ABS_Y; MEM; EOR; WACC; CLOCK(4); break;
+		/* EOR (Indirect, X) */
 	case 0x41:
-		m_regA ^= READMEM(getIndX());
-		updateFlagNZ(m_regA);
-		m_nClock += 6;
-		break;
-
-		// EOR (Indirect), Y
+		IND_X; MEM; EOR; WACC; CLOCK(6); break;
+		/* EOR (Indirect), Y */
 	case 0x51:
-		m_regA ^= READMEM(getIndY());
-		updateFlagNZ(m_regA);
-		m_nClock += 5;
-		break;
-
-		// INC Zero page
-	case 0xE6:
-		addr = getZp();
-		result = READMEM(addr) + 1;
-		updateFlagNZ(result);
-		WRITEMEM(addr, (BYTE)result);
-		m_nClock += 5;
-		break;
-
-		// INC Zero page, X
-	case 0xF6:
-		addr = getZpX();
-		result = READMEM(addr) + 1;
-		updateFlagNZ(result);
-		WRITEMEM(addr, (BYTE)result);
-		m_nClock += 6;
-		break;
-
-		// INC Absolute
-	case 0xEE:
-		addr = getAbs();
-		result = READMEM(addr) + 1;
-		updateFlagNZ(result);
-		WRITEMEM(addr, (BYTE)result);
-		m_nClock += 6;
-		break;
-
-		// INC Absolute, X
-	case 0xFE:
-		addr = getAbsXINC();
-		result = READMEM(addr) + 1;
-		updateFlagNZ(result);
-		WRITEMEM(addr, (BYTE)result);
-		m_nClock += 7;
-		break;
-
-		// INX
-	case 0xE8:
-		result = m_regX+1;
-		updateFlagNZ(result);
-		m_regX = (BYTE)result;
-		m_nClock += 2;
-		break;
-
-		// INY
-	case 0xC8:
-		result = m_regY+1;
-		updateFlagNZ(result);
-		m_regY = (BYTE)result;
-		m_nClock += 2;
-		break;
-
-		// JMP Absolute
-	case 0x4C:
-		TRACE_ADDR
-		m_regPC = getAbs();
-		m_nClock += 3;
-		break;
-
-		// JMP (Indirect16)
-	case 0x6C:
-		TRACE_ADDR
-		m_regPC = getInd16();
+		IND_Y; MEM; EOR; WACC; CLOCK(5); break;
+		/* INC ZeroPage */
+	case 0xe6:
+		ZP; MEM; INC; WMEM; CLOCK(5); break;
+		/* INC ZeroPage, X */
+	case 0xf6:
+		ZP_X; MEM; INC; WMEM; CLOCK(6); break;
+		/* INC Absolute */
+	case 0xee:
+		ABS; MEM; INC; WMEM; CLOCK(6); break;
+		/* INC Absolute, X */
+	case 0xfe:
+		ABS_X; MEM; INC; WMEM; CLOCK(7); break;
+		/* INX */
+	case 0xe8:
+		XREG; INC; WXREG; CLOCK(2); break;
+		/* INY */
+	case 0xc8:
+		YREG; INC; WYREG; CLOCK(2); break;
+		/* JMP Absolute */
+	case 0x4c:
+		ABS; JMP; CLOCK(3); break;
+		/* JMP (Indirect16) */
+	case 0x6c:
 		// 65c02 : 6 cycle
 		// 6502 : 5 cycle
-		m_nClock += 6;
-		break;
-
-		// JSR Absolute
-	case 0x20:
-		TRACE_ADDR
-		addr = getAbs();
-		m_regPC--;
-		PUSH((BYTE)((m_regPC)>>8));
-		PUSH((BYTE)(m_regPC));
-		m_regPC = addr;
-		m_nClock += 6;
-		break;
-
-		// LDA Immediate
-	case 0xA9:
-		m_regA = READOPCODE();
-		updateFlagNZ(m_regA);
-		m_nClock += 2;
-		break;
-
-
-		// LDA Zero page
-	case 0xA5:
-		m_regA = READMEM(getZp());
-		updateFlagNZ(m_regA);
-		m_nClock += 3;
-		break;
-
-		// LDA Zero page, X
-	case 0xB5:
-		m_regA = READMEM(getZpX());
-		updateFlagNZ(m_regA);
-		m_nClock += 4;
-		break;
-
-		// LDA Absolute
-	case 0xAD:
-		m_regA = READMEM(getAbs());
-		updateFlagNZ(m_regA);
-		m_nClock += 4;
-		break;
-
-		// LDA Absolute, X
-	case 0xBD:
-		m_regA = READMEM(getAbsX());
-		updateFlagNZ(m_regA);
-		m_nClock += 4;
-		break;
-
-		// LDA Absolute, Y
-	case 0xB9:
-		m_regA = READMEM(getAbsY());
-		updateFlagNZ(m_regA);
-		m_nClock += 4;
-		break;
-
-		// LDA (Indirect, X)
-	case 0xA1:
-		m_regA = READMEM(getIndX());
-		updateFlagNZ(m_regA);
-		m_nClock += 6;
-		break;
-
-		// LDA (Indirect), Y
-	case 0xB1:
-		m_regA = READMEM(getIndY());
-		updateFlagNZ(m_regA);
-		m_nClock += 5;
-		break;
-
-		// LDX Immediate
-	case 0xA2:
-		m_regX = READOPCODE();
-		updateFlagNZ(m_regX);
-		m_nClock += 2;
-		break;
-
-		// LDX Zero page
-	case 0xA6:
-		m_regX = READMEM(getZp());
-		updateFlagNZ(m_regX);
-		m_nClock += 3;
-		break;
-
-		// LDX Zero page, Y
-	case 0xB6:
-		m_regX = READMEM(getZpY());
-		updateFlagNZ(m_regX);
-		m_nClock += 4;
-		break;
-
-		// LDX Absolute
-	case 0xAE:
-		m_regX = READMEM(getAbs());
-		updateFlagNZ(m_regX);
-		m_nClock += 4;
-		break;
-
-		// LDX Absolute, Y
-	case 0xBE:
-		m_regX = READMEM(getAbsY());
-		updateFlagNZ(m_regX);
-		m_nClock += 4;
-		break;
-
-		// LDY Immediate
-	case 0xA0:
-		m_regY = READOPCODE();
-		updateFlagNZ(m_regY);
-		m_nClock += 2;
-		break;
-
-		// LDY Zero page
-	case 0xA4:
-		m_regY = READMEM(getZp());
-		updateFlagNZ(m_regY);
-		m_nClock += 3;
-		break;
-
-		// LDY Zero page, X
-	case 0xB4:
-		m_regY = READMEM(getZpX());
-		updateFlagNZ(m_regY);
-		m_nClock += 4;
-		break;
-
-		// LDY Absolute
-	case 0xAC:
-		m_regY = READMEM(getAbs());
-		updateFlagNZ(m_regY);
-		m_nClock += 4;
-		break;
-
-		// LDY Absolute, X
-	case 0xBC:
-		m_regY = READMEM(getAbsX());
-		updateFlagNZ(m_regY);
-		m_nClock += 4;
-		break;
-
-		// LSR Accmulator
-	case 0x4A:
-		result = ((m_regA&0x01)<<8) | (m_regA>>1);
-		updateFlagNZC(result);
-		m_regA = (BYTE)result;
-		m_nClock += 2;
-		break;
-
-		// LSR Zero page
-	case 0x46:
-		addr = getZp();
-		result = READMEM(addr);
-		result = ((result&0x01)<<8) | (result>>1);
-		updateFlagNZC(result);
-		WRITEMEM(addr, (BYTE)result);
-		m_nClock += 5;
-		break;
-
-		// LSR Zero page, X
-	case 0x56:
-		addr = getZpX();
-		result = READMEM(addr);
-		result = ((result&0x01)<<8) | (result>>1);
-		updateFlagNZC(result);
-		WRITEMEM(addr, (BYTE)result);
-		m_nClock += 6;
-		break;
-
-		// LSR Absolute
-	case 0x4E:
-		addr = getAbs();
-		result = READMEM(addr);
-		result = ((result&0x01)<<8) | (result>>1);
-		updateFlagNZC(result);
-		WRITEMEM(addr, (BYTE)result);
-		m_nClock += 6;
-		break;
-
-		// LSR Absolute, X
-	case 0x5E:
-		addr = getAbsX();
-		result = READMEM(addr);
-		result = ((result&0x01)<<8) | (result>>1);
-		updateFlagNZC(result);
-		WRITEMEM(addr, (BYTE)result);
-		m_nClock += 7;
-		break;
-
-		// NOP
-	case 0xEA:
-		m_nClock += 2;
-		break;
-
-		// ORA Immediate
-	case 0x09:
-		m_regA |= READOPCODE();
-		updateFlagNZ(m_regA);
-		m_nClock += 2;
-		break;
-
-		// ORA Zero page
-	case 0x05:
-		data = READMEM(getZp());
-
-		m_regA |= data;
-		updateFlagNZ(m_regA);
-		m_nClock += 3;
-		break;
-
-		// ORA Zero page, X
-	case 0x15:
-		m_regA |= READMEM(getZpX());
-		updateFlagNZ(m_regA);
-		m_nClock += 4;
-		break;
-
-		// ORA Absolute
-	case 0x0D:
-		m_regA |= READMEM(getAbs());
-		updateFlagNZ(m_regA);
-		m_nClock += 4;
-		break;
-
-		// ORA Absolute, X
-
-	case 0x1D:
-		m_regA |= READMEM(getAbsX());
-		updateFlagNZ(m_regA);
-		m_nClock += 4;
-		break;
-
-		// ORA Absolute, Y
-	case 0x19:
-		m_regA |= READMEM(getAbsY());
-		updateFlagNZ(m_regA);
-		m_nClock += 4;
-		break;
-
-		// ORA (Indirect, X)
-	case 0x01:
-		m_regA |= READMEM(getIndX());
-		updateFlagNZ(m_regA);
-		m_nClock += 6;
-		break;
-
-		// ORA (Indirect),Y
-	case 0x11:
-		m_regA |= READMEM(getIndY());
-		updateFlagNZ(m_regA);
-		m_nClock += 5;
-		break;
-
-		// PHA
-	case 0x48:
-		PUSH(m_regA);
-		m_nClock += 3;
-		break;
-
-		// PHP
-	case 0x08:
-		PUSH(m_regF);
-		m_nClock += 3;
-		break;
-
-		// PLA
-	case 0x68:
-		m_regA = POP();
-		updateFlagNZ(m_regA);
-		m_nClock += 4;
-		break;
-
-		// PLP
-	case 0x28:
-		m_regF = POP();
-		m_nClock += 4;
-		if( PendingIRQ && !(m_regF&I_Flag)){
-			PendingIRQ--;
-			Assert_IRQ();
-		}
-		break;
-
-		// ROL Accumulator
-	case 0x2A:
-		result = (m_regA << 1) | (m_regF&C_Flag);
-		updateFlagNZC(result);
-		m_regA = (BYTE)result;
-		m_nClock += 2;
-		break;
-
-		// ROL Zero page
-	case 0x26:
-		addr = getZp();
-		result = READMEM(addr);
-		result = (result << 1) | (m_regF&C_Flag);
-		updateFlagNZC(result);
-		WRITEMEM(addr, (BYTE)result);
-		m_nClock += 5;
-		break;
-
-		// ROL Zero page, X
-	case 0x36:
-		addr = getZpX();
-		result = READMEM(addr);
-		result = (result << 1) | (m_regF&C_Flag);
-		updateFlagNZC(result);
-		WRITEMEM(addr, (BYTE)result);
-		m_nClock += 6;
-		break;
-
-		// ROL Absolute
-	case 0x2E:
-		addr = getAbs();
-		result = READMEM(addr);
-		result = (result << 1) | (m_regF&C_Flag);
-		updateFlagNZC(result);
-		WRITEMEM(addr, (BYTE)result);
-		m_nClock += 6;
-		break;
-
-		// ROL Absolute, X
-	case 0x3E:
-		addr = getAbsX();
-		result = READMEM(addr);
-		result = (result << 1) | (m_regF&C_Flag);
-		updateFlagNZC(result);
-		WRITEMEM(addr, (BYTE)result);
-		m_nClock += 7;
-		break;
-
-		// ROR Accumulator
-	case 0x6A:
-		result = ((m_regA&0x01)<<8) | ((m_regF&C_Flag)<<7) | (m_regA >> 1);
-		updateFlagNZC(result);
-		m_regA = (BYTE)result;
-		m_nClock += 2;
-		break;
-
-		// ROR Zero page
-	case 0x66:
-		addr = getZp();
-		result = READMEM(addr);
-		result = ((result&0x01)<<8) | ((m_regF&C_Flag)<<7) | (result >> 1);
-		updateFlagNZC(result);
-		WRITEMEM(addr, (BYTE)result);
-		m_nClock += 5;
-		break;
-
-		// ROR Zero page, X
-	case 0x76:
-		addr = getZpX();
-		result = READMEM(addr);
-		result = ((result&0x01)<<8) | ((m_regF&C_Flag)<<7) | (result >> 1);
-		updateFlagNZC(result);
-		WRITEMEM(addr, (BYTE)result);
-		m_nClock += 6;
-		break;
-
-		// ROR Absolute
-	case 0x6E:
-		addr = getAbs();
-		result = READMEM(addr);
-		result = ((result&0x01)<<8) | ((m_regF&C_Flag)<<7) | (result >> 1);
-		updateFlagNZC(result);
-		WRITEMEM(addr, (BYTE)result);
-		m_nClock += 6;
-		break;
-
-		// ROR Absolute, X
-	case 0x7E:
-		addr = getAbsX();
-		result = READMEM(addr);
-		result = ((result&0x01)<<8) | ((m_regF&C_Flag)<<7) | (result >> 1);
-		updateFlagNZC(result);
-		WRITEMEM(addr, (BYTE)result);
-		m_nClock += 7;
-		break;
-
-		// RTI
-	case 0x40:
-		TRACE_ADDR
-		m_regF = POP() | 0x20; /* bit 5 bug of 6502 */
-		m_regPC = POP();
-		m_regPC += POP()<<8;
-		m_nClock += 6;
-		if( PendingIRQ && !(m_regF&I_Flag)){
-			PendingIRQ--;
-			Assert_IRQ();
-		}
-		break;
-
-		// RTS
-	case 0x60:
-		TRACE_ADDR
-		m_regPC = POP();
-		m_regPC += POP()<<8;
-		m_regPC++;
-		m_nClock += 6;
-		break;
-
-		// SBC Immediate
-	case 0xE9:
-		data = 0xFF - READOPCODE();
-		result = data + m_regA + (m_regF & C_Flag);
-		updateFlag( !((data^m_regA)&0x80) && ((result^m_regA)&0x80), V_Flag);
-		// bcd adjust
-		if(m_regF&D_Flag)
-			result = m_BCD_Table2[result];
-		updateFlagNZC(result);
-		m_regA = result & 0xFF;
-		m_nClock += 2;
-		break;
-
-		// SBC Zero page
-	case 0xE5:
-		data = 0xFF - READMEM(getZp());
-		result = data + m_regA + (m_regF & C_Flag);
-		updateFlag( !((data^m_regA)&0x80) && ((result^m_regA)&0x80), V_Flag);
-		// bcd adjust
-		if(m_regF&D_Flag)
-			result = m_BCD_Table2[result];
-		updateFlagNZC(result);
-		m_regA = result & 0xFF;
-		m_nClock += 3;
-		break;
-
-		// SBC Zero page, X
-	case 0xF5:
-		data = 0xFF - READMEM(getZpX());
-		result = data + m_regA + (m_regF & C_Flag);
-		updateFlag( !((data^m_regA)&0x80) && ((result^m_regA)&0x80), V_Flag);
-		// bcd adjust
-		if(m_regF&D_Flag)
-			result = m_BCD_Table2[result];
-		updateFlagNZC(result);
-		m_regA = result & 0xFF;
-		m_nClock += 4;
-		break;
-
-		// SBC Absolute
-	case 0xED:
-		data = 0xFF - READMEM(getAbs());
-		result = data + m_regA + (m_regF & C_Flag);
-		updateFlag( !((data^m_regA)&0x80) && ((result^m_regA)&0x80), V_Flag);
-		// bcd adjust
-		if(m_regF&D_Flag)
-			result = m_BCD_Table2[result];
-		updateFlagNZC(result);
-		m_regA = result & 0xFF;
-		m_nClock += 4;
-		break;
-
-		// SBC Absolute, X
-	case 0xFD:
-		data = 0xFF - READMEM(getAbsX());
-		result = data + m_regA + (m_regF & C_Flag);
-		updateFlag( !((data^m_regA)&0x80) && ((result^m_regA)&0x80), V_Flag);
-		// bcd adjust
-		if(m_regF&D_Flag)
-			result = m_BCD_Table2[result];
-		updateFlagNZC(result);
-		m_regA = result & 0xFF;
-		m_nClock += 4;
-		break;
-
-		// SBC Absolute, Y
-	case 0xF9:
-		data = 0xFF - READMEM(getAbsY());
-		result = data + m_regA + (m_regF & C_Flag);
-		updateFlag( !((data^m_regA)&0x80) && ((result^m_regA)&0x80), V_Flag);
-		// bcd adjust
-		if(m_regF&D_Flag)
-			result = m_BCD_Table2[result];
-		updateFlagNZC(result);
-		m_regA = result & 0xFF;
-		m_nClock += 4;
-		break;
-
-		// SBC (Indirect, X)
-	case 0xE1:
-		data = 0xFF - READMEM(getIndX());
-		result = data + m_regA + (m_regF & C_Flag);
-		updateFlag( !((data^m_regA)&0x80) && ((result^m_regA)&0x80), V_Flag);
-		// bcd adjust
-		if(m_regF&D_Flag)
-			result = m_BCD_Table2[result];
-		updateFlagNZC(result);
-		m_regA = result & 0xFF;
-		m_nClock += 6;
-		break;
-
-		// SBC (Indirect), Y
-	case 0xF1:
-		data = 0xFF - READMEM(getIndY());
-		result = data + m_regA + (m_regF & C_Flag);
-		updateFlag( !((data^m_regA)&0x80) && ((result^m_regA)&0x80), V_Flag);
-		// bcd adjust
-		if(m_regF&D_Flag)
-			result = m_BCD_Table2[result];
-		updateFlagNZC(result);
-		m_regA = result & 0xFF;
-		m_nClock += 5;
-		break;
-
-		// SEC
-	case 0x38:
-		m_regF |= C_Flag;
-		m_nClock += 2;
-		break;
-
-		// SED
-	case 0xF8:
-		m_regF |= D_Flag;
-		m_nClock += 2;
-		break;
-
-		// SEI
-	case 0x78:
-		m_regF |= I_Flag;
-		m_nClock += 2;
-		break;
-
-		// STA Zero page
-	case 0x85:
-		WRITEMEM(getZp(), m_regA);
-		m_nClock += 3;
-		break;
-
-		// STA Zero page, X
-	case 0x95:
-		WRITEMEM(getZpX(), m_regA);
-		m_nClock += 4;
-		break;
-
-		// STA Absolute
-	case 0x8D:
-		WRITEMEM(getAbs(), m_regA);
-		m_nClock += 4;
-		break;
-
-		// STA Absolute, X
-	case 0x9D:
-		WRITEMEM(getAbsX(), m_regA);
-		m_nClock += 5;
-		break;
-
-		// STA Absolute, Y
-	case 0x99:
-		WRITEMEM(getAbsY(), m_regA);
-		m_nClock += 5;
-		break;
-
-		// STA (Indirect, X)
-	case 0x81:
-		WRITEMEM(getIndX(), m_regA);
-		m_nClock += 6;
-		break;
-
-		// STA (Indirect), Y
-	case 0x91:
-		WRITEMEM(getIndY(), m_regA);
-		m_nClock += 6;
-		break;
-
-		// STX Zero page
-	case 0x86:
-		WRITEMEM(getZp(), m_regX);
-		m_nClock += 3;
-		break;
-
-		// STX Zero page, Y
-	case 0x96:
-		WRITEMEM(getZpY(), m_regX);
-		m_nClock += 4;
-		break;
-
-		// STX Absolute
-	case 0x8E:
-		WRITEMEM(getAbs(), m_regX);
-		m_nClock += 4;
-		break;
-
-		// STY Zero page
-	case 0x84:
-		WRITEMEM(getZp(), m_regY);
-		m_nClock += 3;
-		break;
-
-		// STY Zero page, X
-	case 0x94:
-		WRITEMEM(getZpX(), m_regY);
-		m_nClock += 4;
-		break;
-
-		// STY Absolute
-	case 0x8C:
-		WRITEMEM(getAbs(), m_regY);
-		m_nClock += 4;
-		break;
-
-		// TAX
-	case 0xAA:
-		m_regX = m_regA;
-		updateFlagNZ(m_regX);
-		m_nClock += 2;
-		break;
-
-		// TAY
-	case 0xA8:
-		m_regY = m_regA;
-		updateFlagNZ(m_regY);
-		m_nClock += 2;
-		break;
-
-		// TSX
-	case 0xBA:
-		m_regX = m_regS;
-		updateFlagNZ(m_regX);
-		m_nClock += 2;
-		break;
-
-		// TXA
-	case 0x8A:
-		m_regA = m_regX;
-		updateFlagNZ(m_regX);
-		m_nClock += 2;
-		break;
-
-		// TXS
-	case 0x9A:
-		m_regS = m_regX;
-		updateFlagNZ(m_regS);
-		m_nClock += 2;
-		break;
-
-		// TYA
-	case 0x98:
-		m_regA = m_regY;
-		updateFlagNZ(m_regA);
-		m_nClock += 2;
-		break;
-
-
-
-	default:
-		switch( opcode )
-		{
-			//--------------------------------
-			// 65c02 operators
-			//--------------------------------
-			// ADC (Indirect)
-		case 0x72:
-			data = READMEM(getInd());
-			result = data + m_regA + (m_regF&C_Flag);
-			updateFlag(!((data^m_regA)&0x80) && ((result^m_regA)&0x80), V_Flag);	// over flow
-			
-			if(m_regF&D_Flag)		// BCD Adjust
-				result = m_BCD_Table1[result];
-			updateFlagNZC(result);
-			m_regA = result&0xFF;
-			m_nClock += 5;
-			break;
-			
-			// AND (Indirect)
-		case 0x32:
-			m_regA &= READMEM(getInd());
-			updateFlagNZ(m_regA);
-			m_nClock += 5;
-			break;
-			
-			// BBR Zero rr
-#define BBR(bit)	\
-	data = READMEM( getZp() );	\
-	addr = READOPCODE();		\
-	if ( !( data & bit ) )		\
-		branch( (BYTE)addr );	\
-	m_nClock += 5;
-
-#define BBS(bit)	\
-	data = READMEM( getZp() );	\
-	addr = READOPCODE();		\
-	if ( ( data & bit ) )		\
-		branch( (BYTE)addr );	\
-	m_nClock += 5;
-
-		case 0x0F:	BBR(0x01);	break;
-		case 0x1F:	BBR(0x02);	break;
-		case 0x2F:	BBR(0x04);	break;
-		case 0x3F:	BBR(0x08);	break;
-		case 0x4F:	BBR(0x10);	break;
-		case 0x5F:	BBR(0x20);	break;
-		case 0x6F:	BBR(0x40);	break;
-		case 0x7F:	BBR(0x80);	break;
-		case 0x8F:	BBS(0x01);	break;
-		case 0x9F:	BBS(0x02);	break;
-		case 0xAF:	BBS(0x04);	break;
-		case 0xBF:	BBS(0x08);	break;
-		case 0xCF:	BBS(0x10);	break;
-		case 0xDF:	BBS(0x20);	break;
-		case 0xEF:	BBS(0x40);	break;
-		case 0xFF:	BBS(0x80);	break;
-		
-		// RMB zp
-#define RMB(bit)		\
-	addr = getZp();		\
-	data = READMEM( addr );		\
-	data &= ~bit;				\
-	WRITEMEM( addr, data );		\
-	m_nClock += 5;
-
-#define SMB(bit)		\
-	addr = getZp();		\
-	data = READMEM( addr );		\
-	data |= bit;				\
-	WRITEMEM( addr, data );		\
-	m_nClock += 5;
-
-		case 0x07:	RMB(0x01);	break;
-		case 0x17:	RMB(0x02);	break;
-		case 0x27:	RMB(0x04);	break;
-		case 0x37:	RMB(0x08);	break;
-		case 0x47:	RMB(0x10);	break;
-		case 0x57:	RMB(0x20);	break;
-		case 0x67:	RMB(0x40);	break;
-		case 0x77:	RMB(0x80);	break;
-		case 0x87:	SMB(0x01);	break;
-		case 0x97:	SMB(0x02);	break;
-		case 0xA7:	SMB(0x04);	break;
-		case 0xB7:	SMB(0x08);	break;
-		case 0xC7:	SMB(0x10);	break;
-		case 0xD7:	SMB(0x20);	break;
-		case 0xE7:	SMB(0x40);	break;
-		case 0xF7:	SMB(0x80);	break;
-
-			// BIT Immediate
-		case 0x89:
-			data = READOPCODE();
-			updateFlag(data&0x40, V_Flag);
-			updateFlagNZ(((data&0x80)<<2)|(data&m_regA));
-			m_nClock += 2;
-			break;
-			
-			// BIT Zero page, X
-		case 0x34:
-			data = READMEM(getZpX());
-			updateFlag(data&0x40, V_Flag);
-			updateFlagNZ(((data&0x80)<<2)|(data&m_regA));
-			m_nClock += 2;
-			break;
-			
-			// BIT Absolute, X
-		case 0x3C:
-			data = READMEM(getAbsX());
-			updateFlag(data&0x40, V_Flag);
-			updateFlagNZ(((data&0x80)<<2)|(data&m_regA));
-			m_nClock += 4;
-			break;
-			
-			// BRA	rr
-		case 0x80:
-			data = READOPCODE();
-			m_nClock += 2;
-			branch(data);
-			break;
-			
-			// CMP (Indirect8)
-		case 0xD2:
-			updateFlagNZC(0x100 + m_regA - READMEM(getInd()));
-			m_nClock += 5;
-			break;
-			
-			// DEA Accumulator
-		case 0x3A:
-			result = m_regA+0xFF;
-			updateFlagNZ(result);
-			m_regA = (BYTE)result;
-			m_nClock += 2;
-			break;
-			
-			// EOR (Indirect8)
-		case 0x52:
-			m_regA ^= READMEM(getInd());
-			updateFlagNZ(m_regA);
-			m_nClock += 5;
-			break;
-			
-			// INA Accumulator
-		case 0x1A:
-			result = m_regA + 1;
-			updateFlagNZ(result);
-			m_regA = (BYTE)result;
-			m_nClock += 2;
-			break;
-			
-			// JMP (Absolute, X)
-		case 0x7C:
-			TRACE_ADDR
-			m_regPC = this->getIndX16();
-			m_nClock += 6;
-			break;
-			
-			// LDA (Indirect8)
-		case 0xB2:
-			m_regA = READMEM(getInd());
-			updateFlagNZ(m_regA);
-			m_nClock += 5;
-			break;
-			
-			// ORA (Indirect8)
-		case 0x12:
-			m_regA |= READMEM(getInd());
-			updateFlagNZ(m_regA);
-			m_nClock += 5;
-			break;
-			
-			// PHX
-		case 0xDA:
-			PUSH(m_regX);
-			m_nClock += 3;
-			break;
-			
-			// PLX
-		case 0xFA:
-			m_regX = POP();
-			updateFlagNZ(m_regX);
-			m_nClock += 4;
-			break;
-			
-			// PHY
-		case 0x5A:
-			PUSH(m_regY);
-			m_nClock += 3;
-			break;
-			
-			// PLY
-		case 0x7A:
-			m_regY = POP();
-			updateFlagNZ(m_regY);
-			m_nClock += 4;
-			break;
-			
-			// SBC (Indirect8)
-		case 0xF2:
-			data = 0xFF - READMEM(getInd());
-			result = data + m_regA + (m_regF & C_Flag);
-			updateFlag( !((data^m_regA)&0x80) && ((result^m_regA)&0x80), V_Flag);
-			// bcd adjust
-			if(m_regF&D_Flag)
-				result = m_BCD_Table2[result];
-			updateFlagNZC(result);
-			m_regA = result & 0xFF;
-			m_nClock += 5;
-			break;
-			
-			// STA (Indirect8)
-		case 0x92:
-			WRITEMEM(getInd(), m_regA);
-			m_nClock += 6;
-			break;
-			
-			// STP
-		case 0xDB:
-			Shutdown();
-			m_nClock += 3;
-			break;
-
-			// STZ Zero page
-		case 0x64:
-			WRITEMEM(getZp(), 0);
-			m_nClock += 3;
-			break;
-			
-			// STZ Zero page, X
-		case 0x74:
-			WRITEMEM(getZpX(), 0);
-			m_nClock += 3;
-			break;
-			
-			// STZ Absolute
-		case 0x9C:
-			WRITEMEM(getAbs(), 0);
-			m_nClock += 4;
-			break;
-			
-			// STZ Absolute, X
-		case 0x9E:
-			WRITEMEM(getAbsX(), 0);
-			m_nClock += 4;
-			break;
-			
-			// TRB Zero page
-		case 0x14:
-			addr = getZp();
-			data = READMEM(addr);
-			updateFlag(data&0x40, V_Flag);
-			updateFlagNZ( ((data&0x80)<<2) | ( data&m_regA) );
-			WRITEMEM(addr, data & ~m_regA);
-			m_nClock += 5;
-			break;
-			
-			// TRB Absolute
-		case 0x1C:
-			addr = getAbs();
-			data = READMEM(addr);
-			updateFlag(data&0x40, V_Flag);
-			updateFlagNZ( ((data&0x80)<<2) | ( data&m_regA) );
-			WRITEMEM(addr, data & ~m_regA);
-			m_nClock += 6;
-			break;
-			
-			// TSB Zero page
-		case 0x04:
-			addr = getZp();
-			data = READMEM(addr);
-			updateFlag(data&0x40, V_Flag);
-			updateFlagNZ( ((data&0x80)<<2) | ( data&m_regA) );
-			WRITEMEM(addr, data | m_regA);
-			break;
-			
-			// TSB Absolute
-		case 0x0C:
-			addr = getAbs();
-			data = READMEM(addr);
-			updateFlag(data&0x40, V_Flag);
-			updateFlagNZ( ((data&0x80)<<2) | ( data&m_regA) );
-			WRITEMEM(addr, data|m_regA);
-			m_nClock += 6;
-			break;
-
-			// WAI
-		case 0xCB:
-			Wait();
-			m_nClock += 3;
-			break;
-
-		default:
-			m_nClock += 2;
-			break;
-		}
-	}
-#ifdef _DEBUG
-	if ( m_regPC == g_breakpoint )
-	{
-		g_pBoard->OnDebug();
-		m_nClock = 0;		// break loop
-	}
+#ifdef MC65C02
+		IND16; JMP; CLOCK(6); break;
+#else
+		IND16; JMP; CLOCK(5); break;
 #endif
-	return m_nClock;
+		/* JSR Absolute */
+	case 0x20:
+		ABS; JSR; CLOCK(6); break;
+		/* LDA Immediate */
+	case 0xa9:
+		IMM; LOAD; WACC; CLOCK(2); break;
+		/* LDA ZeroPage */
+	case 0xa5:
+		ZP; MEM; LOAD; WACC; CLOCK(3); break;
+		/* LDA ZeroPage, X */
+	case 0xb5:
+		ZP_X; MEM; LOAD; WACC; CLOCK(4); break;
+		/* LDA Absolute */
+	case 0xad:
+		ABS; MEM; LOAD; WACC; CLOCK(4); break;
+		/* LDA Absolute, X */
+	case 0xbd:
+		ABS_X; MEM; LOAD; WACC; CLOCK(4); break;
+		/* LDA Absolute, Y */
+	case 0xb9:
+		ABS_Y; MEM; LOAD; WACC; CLOCK(4); break;
+		/* LDA (Indirect, X) */
+	case 0xa1:
+		IND_X; MEM; LOAD; WACC; CLOCK(6); break;
+		/* LDA (Indirect), Y */
+	case 0xb1:
+		IND_Y; MEM; LOAD; WACC; CLOCK(5); break;
+		/* LDX Immediate */
+	case 0xa2:
+		IMM; LOAD; WXREG; CLOCK(2); break;
+		/* LDX ZeroPage */
+	case 0xa6:
+		ZP; MEM; LOAD; WXREG; CLOCK(3); break;
+		/* LDX ZeroPage, Y */
+	case 0xb6:
+		ZP_Y; MEM; LOAD; WXREG; CLOCK(4); break;
+		/* LDX Absolute */
+	case 0xae:
+		ABS; MEM; LOAD; WXREG; CLOCK(4); break;
+		/* LDX Absolute, Y */
+	case 0xbe:
+		ABS_Y; MEM; LOAD; WXREG; CLOCK(4); break;
+		/* LDY Immediate */
+	case 0xa0:
+		IMM; LOAD; WYREG; CLOCK(2); break;
+		/* LDY ZeroPage */
+	case 0xa4:
+		ZP; MEM; LOAD; WYREG; CLOCK(3); break;
+		/* LDY ZeroPage, X */
+	case 0xb4:
+		ZP_X; MEM; LOAD; WYREG; CLOCK(4); break;
+		/* LDY Absolute */
+	case 0xac:
+		ABS; MEM; LOAD; WYREG; CLOCK(4); break;
+		/* LDY Absolute, X */
+	case 0xbc:
+		ABS_X; MEM; LOAD; WYREG; CLOCK(4); break;
+		/* LSR Accmulator */
+	case 0x4a:
+		ACC; LSR; WACC; CLOCK(2); break;
+		/* LSR ZeroPage */
+	case 0x46:
+		ZP; MEM; LSR; WMEM; CLOCK(5); break;
+		/* LSR ZeroPage, X */
+	case 0x56:
+		ZP_X; MEM; LSR; WMEM; CLOCK(6); break;
+		/* LSR Absolute */
+	case 0x4e:
+		ABS; MEM; LSR; WMEM; CLOCK(6); break;
+		/* LSR Absolute, X */
+	case 0x5e:
+		ABS_X; MEM; LSR; WMEM; CLOCK(7); break;
+		/* NOP */
+	case 0xea:
+		CLOCK(2); break;
+		/* ORA Immediate */
+	case 0x09:
+		IMM; ORA; WACC; CLOCK(2); break;
+		/* ORA ZeroPage */
+	case 0x05:
+		ZP; MEM; ORA; WACC; CLOCK(3); break;
+		/* ORA ZeroPage, X */
+	case 0x15:
+		ZP_X; MEM; ORA; WACC; CLOCK(4); break;
+		/* ORA Absolute */
+	case 0x0d:
+		ABS; MEM; ORA; WACC; CLOCK(4); break;
+		/* ORA Absolute, X */
+	case 0x1d:
+		ABS_X; MEM; ORA; WACC; CLOCK(4); break;
+		/* ORA Absolute, Y */
+	case 0x19:
+		ABS_Y; MEM; ORA; WACC; CLOCK(4); break;
+		/* ORA (Indirect, X) */
+	case 0x01:
+		IND_X; MEM; ORA; WACC; CLOCK(6); break;
+		/* ORA (Indirect), Y */
+	case 0x11:
+		IND_Y; MEM; ORA; WACC; CLOCK(5); break;
+		/* PHA */
+	case 0x48:
+		PUSH(this->m_regA); CLOCK(3); break;
+		/* PHP */
+	case 0x08:
+		PUSH(this->m_regF); CLOCK(3); break;
+		/* PLA */
+	case 0x68:
+		POPR; WACC; CLOCK(4); break;
+		/* PLP */
+	case 0x28:
+		POPF; CLOCK(4); break;
+		/* ROL Accumulator */
+	case 0x2a:
+		ACC; ROL; WACC; CLOCK(2); break;
+		/* ROL ZeroPage */
+	case 0x26:
+		ZP; MEM; ROL; WMEM; CLOCK(5); break;
+		/* ROL ZeroPage, X */
+	case 0x36:
+		ZP_X; MEM; ROL; WMEM; CLOCK(6); break;
+		/* ROL Absolute */
+	case 0x2e:
+		ABS; MEM; ROL; WMEM; CLOCK(6); break;
+		/* ROL Absolute, X */
+	case 0x3e:
+		ABS_X; MEM; ROL; WMEM; CLOCK(7); break;
+		/* ROR Accumulator */
+	case 0x6a:
+		ACC; ROR; WACC; CLOCK(2); break;
+		/* ROR ZeroPage */
+	case 0x66:
+		ZP; MEM; ROR; WMEM; CLOCK(5); break;
+		/* ROR ZeroPage, X */
+	case 0x76:
+		ZP_X; MEM; ROR; WMEM; CLOCK(6); break;
+		/* ROR Absolute */
+	case 0x6e:
+		ABS; MEM; ROR; WMEM; CLOCK(6); break;
+		/* ROR Absolute, X */
+	case 0x7e:
+		ABS_X; MEM; ROR; WMEM; CLOCK(7); break;
+		/* RTI */
+	case 0x40:
+		RTI; CHECK_IRQ; CLOCK(6); break;
+		/* RTS */
+	case 0x60:
+		RTS; CLOCK(6); break;
+		/* SBC Immediate */
+	case 0xe9:
+		IMM; SBC; WACC; CLOCK(2); break;
+		/* SBC ZeroPage */
+	case 0xe5:
+		ZP; MEM; SBC; WACC; CLOCK(3); break;
+		/* SBC ZeroPage, X */
+	case 0xf5:
+		ZP_X; MEM; SBC; WACC; CLOCK(4); break;
+		/* SBC Absolute */
+	case 0xed:
+		ABS; MEM; SBC; WACC; CLOCK(4); break;
+		/* SBC Absolute, X */
+	case 0xfd:
+		ABS_X; MEM; SBC; WACC; CLOCK(4); break;
+		/* SBC Absolute, Y */
+	case 0xf9:
+		ABS_Y; MEM; SBC; WACC; CLOCK(4); break;
+		/* SBC (Indirect, X) */
+	case 0xe1:
+		IND_X; MEM; SBC; WACC; CLOCK(6); break;
+		/* SBC (Indirect), Y */
+	case 0xf1:
+		IND_Y; MEM; SBC; WACC; CLOCK(5); break;
+		/* SEC */
+	case 0x38:
+		SET_FLAG(C_Flag); CLOCK(2); break;
+		/* SED */
+	case 0xf8:
+		SET_FLAG(D_Flag); CLOCK(2); break;
+		/* SEI */
+	case 0x78:
+		SET_FLAG(I_Flag); CLOCK(2); break;
+		/* STA ZeroPage */
+	case 0x85:
+		ZP; STA; CLOCK(3); break;
+		/* STA ZeroPage, X */
+	case 0x95:
+		ZP_X; STA; CLOCK(4); break;
+		/* STA Absolute */
+	case 0x8d:
+		ABS; STA; CLOCK(4); break;
+		/* STA Absolute, X */
+	case 0x9d:
+		ABS_X; STA; CLOCK(5); break;
+		/* STA Absolute, Y */
+	case 0x99:
+		ABS_Y; STA; CLOCK(5); break;
+		/* STA (Indirect, X) */
+	case 0x81:
+		IND_X; STA; CLOCK(6); break;
+		/* STA (Indirect), Y */
+	case 0x91:
+		IND_Y; STA; CLOCK(6); break;
+		/* STX ZeroPage */
+	case 0x86:
+		ZP; STX; CLOCK(3); break;
+		/* STX ZeroPage, Y */
+	case 0x96:
+		ZP_Y; STX; CLOCK(4); break;
+		/* STX Absolute */
+	case 0x8e:
+		ABS; STX; CLOCK(4); break;
+		/* STY ZeroPage */
+	case 0x84:
+		ZP; STY; CLOCK(3); break;
+		/* STY ZeroPage, X */
+	case 0x94:
+		ZP_X; STY; CLOCK(4); break;
+		/* STY Absolute */
+	case 0x8c:
+		ABS; STY; CLOCK(4); break;
+		/* TAX */
+	case 0xaa:
+		TAX; CLOCK(2); break;
+		/* TAY */
+	case 0xa8:
+		TAY; CLOCK(2); break;
+		/* TSX */
+	case 0xba:
+		TSX; CLOCK(2); break;
+		/* TXA */
+	case 0x8a:
+		TXA; CLOCK(2); break;
+		/* TXS */
+	case 0x9a:
+		TXS; CLOCK(2); break;
+		/* TYA */
+	case 0x98:
+		TYA; CLOCK(2); break;
+
+#ifdef MC65C02
+		/* ADC (Indirect) */
+	case 0x72:
+		IND; MEM; ADC; WACC; CLOCK(5); break;
+		/* AND (Indirect) */
+	case 0x32:
+		IND; MEM; AND; WACC; CLOCK(5); break;
+		/* BBR(bit) ZeroPage rr */
+	case 0x0f:
+		ZP; MEM; BBR(0x01); CLOCK(5); break;
+	case 0x1f:
+		ZP; MEM; BBR(0x02); CLOCK(5); break;
+	case 0x2f:
+		ZP; MEM; BBR(0x04); CLOCK(5); break;
+	case 0x3f:
+		ZP; MEM; BBR(0x08); CLOCK(5); break;
+	case 0x4f:
+		ZP; MEM; BBR(0x10); CLOCK(5); break;
+	case 0x5f:
+		ZP; MEM; BBR(0x20); CLOCK(5); break;
+	case 0x6f:
+		ZP; MEM; BBR(0x40); CLOCK(5); break;
+	case 0x7f:
+		ZP; MEM; BBR(0x80); CLOCK(5); break;
+		/* BBS(bit) ZeroPage rr */
+	case 0x8f:
+		ZP; MEM; BBS(0x01); CLOCK(5); break;
+	case 0x9f:
+		ZP; MEM; BBS(0x02); CLOCK(5); break;
+	case 0xaf:
+		ZP; MEM; BBS(0x04); CLOCK(5); break;
+	case 0xbf:
+		ZP; MEM; BBS(0x08); CLOCK(5); break;
+	case 0xcf:
+		ZP; MEM; BBS(0x10); CLOCK(5); break;
+	case 0xdf:
+		ZP; MEM; BBS(0x20); CLOCK(5); break;
+	case 0xef:
+		ZP; MEM; BBS(0x40); CLOCK(5); break;
+	case 0xff:
+		ZP; MEM; BBS(0x80); CLOCK(5); break;
+		/* RMB(bit) ZeroPage */
+	case 0x07:
+		ZP; MEM; RMB(0x01); WMEM; CLOCK(5); break;
+	case 0x17:
+		ZP; MEM; RMB(0x02); WMEM; CLOCK(5); break;
+	case 0x27:
+		ZP; MEM; RMB(0x04); WMEM; CLOCK(5); break;
+	case 0x37:
+		ZP; MEM; RMB(0x08); WMEM; CLOCK(5); break;
+	case 0x47:
+		ZP; MEM; RMB(0x10); WMEM; CLOCK(5); break;
+	case 0x57:
+		ZP; MEM; RMB(0x20); WMEM; CLOCK(5); break;
+	case 0x67:
+		ZP; MEM; RMB(0x40); WMEM; CLOCK(5); break;
+	case 0x77:
+		ZP; MEM; RMB(0x80); WMEM; CLOCK(5); break;
+		/* SMB(bit) ZeroPage */
+	case 0x87:
+		ZP; MEM; SMB(0x01); WMEM; CLOCK(5); break;
+	case 0x97:
+		ZP; MEM; SMB(0x02); WMEM; CLOCK(5); break;
+	case 0xa7:
+		ZP; MEM; SMB(0x04); WMEM; CLOCK(5); break;
+	case 0xb7:
+		ZP; MEM; SMB(0x08); WMEM; CLOCK(5); break;
+	case 0xc7:
+		ZP; MEM; SMB(0x10); WMEM; CLOCK(5); break;
+	case 0xd7:
+		ZP; MEM; SMB(0x20); WMEM; CLOCK(5); break;
+	case 0xe7:
+		ZP; MEM; SMB(0x40); WMEM; CLOCK(5); break;
+	case 0xf7:
+		ZP; MEM; SMB(0x80); WMEM; CLOCK(5); break;
+		/* BIT Immediate */
+	case 0x89:
+		IMM; BIT; CLOCK(2); break;
+		/* BIT ZeroPage, X */
+	case 0x34:
+		ZP_X; MEM; BIT; CLOCK(2); break;
+		/* BIT Absolute, X */
+	case 0x3c:
+		ABS_X; MEM; BIT; CLOCK(4); break;
+		/* BRA rr */
+	case 0x80:
+		BRA; CLOCK(2); break;
+		/* CMP (Indirect) */
+	case 0xd2:
+		IND; MEM; CMP; CLOCK(5); break;
+		/* DEA */
+	case 0x3a:
+		ACC; DEC; WACC; CLOCK(2); break;
+		/* EOR (Indirect) */
+	case 0x52:
+		IND; MEM; EOR; WACC; CLOCK(5); break;
+		/* INA */
+	case 0x1a:
+		ACC; INC; WACC; CLOCK(2); break;
+		/* JMP (Absolute, X) */
+	case 0x7c:
+		IND16_X; JMP; CLOCK(6); break;
+		/* LDA (Indirect) */
+	case 0xb2:
+		IND; MEM; LOAD; WACC; CLOCK(5); break;
+		/* ORA (Indirect) */
+	case 0x12:
+		IND; MEM; ORA; WACC; CLOCK(5); break;
+		/* PHX */
+	case 0xda:
+		PUSH(this->m_regX); CLOCK(3); break;
+		/* PHY */
+	case 0x5a:
+		PUSH(this->m_regY); CLOCK(3); break;
+		/* PLX */
+	case 0xfa:
+		POPR; WXREG; CLOCK(4); break;
+		/* PLY */
+	case 0x7a:
+		POPR; WYREG; CLOCK(4); break;
+		/* SBC (Indirect) */
+	case 0xf2:
+		IND; MEM; SBC; WACC; CLOCK(5); break;
+		/* STA (Indirect) */
+	case 0x92:
+		IND; STA; CLOCK(6); break;
+		/* STP */
+	case 0xdb:
+		STOP; CLOCK(3); break;
+		/* STZ ZeroPage */
+	case 0x64:
+		ZP; STZ; CLOCK(3); break;
+		/* STZ ZeroPage, X */
+	case 0x74:
+		ZP_X; STZ; CLOCK(3); break;
+		/* STZ Absolute */
+	case 0x9c:
+		ABS; STZ; CLOCK(3); break;
+		/* STZ Absolute, X */
+	case 0x9e:
+		ABS_X; STZ; CLOCK(4); break;
+		/* TRB ZeroPage */
+	case 0x14:
+		ZP; MEM; TRB; WMEM; CLOCK(5); break;
+		/* TRB Absolute */
+	case 0x1c:
+		ABS; MEM; TRB; WMEM; CLOCK(6); break;
+		/* TSB ZeroPage */
+	case 0x04:
+		ZP; MEM; TSB; WMEM; CLOCK(5); break;
+		/* TSB Absolute */
+	case 0x0c:
+		ABS; MEM; TSB; WMEM; CLOCK(6); break;
+		/* WAI */
+	case 0xcb:
+		WAIT; CLOCK(3); break;
+#else
+
+#endif
+	default:
+		CLOCK(2); break;
+	}
+
+	return clock;
 }
 
 
@@ -1802,6 +784,9 @@ void C65c02::init_6502()
 	m_regPC = 0;
 	m_uException_Register = 0;
 	PendingIRQ = 0;
+#ifdef _DEBUG
+	ZeroMemory(m_trace, sizeof(m_trace));
+#endif
 }
 
 void C65c02::init_optable()
@@ -1822,15 +807,10 @@ void C65c02::Reset()
 	m_regY = 0;
 	m_regF = 0x24;
 	m_regS = 0xFF;
-	m_regPC = READMEMW((WORD)0xFFFC);
+	m_regPC = READMEM16((WORD)0xFFFC);
 	m_nClock = 0;
-	READMEM(0xC081);
+	READMEM8(0xC081);
 	m_uException_Register = 0;
-}
-
-BYTE C65c02::GetRegF()
-{
-	return( m_regF );
 }
 
 void C65c02::Serialize(CArchive &ar)

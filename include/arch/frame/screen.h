@@ -13,6 +13,8 @@
 
 #include <ddraw.h>
 #include "arch/directx/ddutil.h"
+#include "arch/customthread.h"
+
 #include "lockmgr.h"
 
 #define CLR80VID	0xC00C
@@ -119,7 +121,10 @@ typedef struct
     int q;
 } sYIQ;
 
-class CScreen : public CWnd
+#define FRAME_CHECK_COUNT	10
+#define FRAME_CHECK_POINT	30
+
+class CScreen : public CWnd, public CCustomThread
 {
 public:
 	DECLARE_SERIAL(CScreen);
@@ -143,6 +148,8 @@ public:
 	DWORD m_dwClock;
 	int m_nLine;
 	int m_nColumn;
+	DWORD m_adwFrameCheck[FRAME_CHECK_COUNT];
+	double m_dFrameRate;
 
 	void Serialize(CArchive &ar);
 
@@ -160,6 +167,10 @@ public:
 	void SetDefaultColors();
 	void Draw( int nLine, int nColumn );
 	void Clock( DWORD clock );
+	void PowerOn();
+	void PowerOff();
+	void SetMouseCapture(BOOL bCapture);
+
 	BOOL IsVBL();
 
 protected:
@@ -187,12 +198,16 @@ protected:
 
 	BYTE m_nVideoMode;
 	BOOL m_nMsgVisiable;
+	BOOL m_bTextMode;
+	BOOL m_bTextModeCheck;
+	BOOL m_bMouseCapture;
 
 	TCHAR* m_szMessage;
 	HFONT m_hFont;
 //functions
 protected:
 	BOOL InitDirectX();
+	void CaptureInput(BOOL bMouseCapture);
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -205,7 +220,6 @@ protected:
 
 	int m_iColorDepth;
 	DWORD m_nTime;
-	unsigned int m_iFrameCount;
 	BOOL m_bPowerOn;
 	BOOL m_bScanline;
 
@@ -260,6 +274,8 @@ public:
 
 	void writeMemory(WORD addr, BYTE data, BOOL aux);
 	void ClearBuffer();
+	void Render();
+	void Run();
 };
 
 /////////////////////////////////////////////////////////////////////////////

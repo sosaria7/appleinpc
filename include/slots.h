@@ -38,6 +38,7 @@ public:
 	void ConfigureHardDisk();
 	BOOL HasDiskInterface();
 	BOOL HasHardDiskInterface();
+	BOOL HasMouseInterface();
 
 	void Serialize( CArchive &ar );
 
@@ -45,6 +46,8 @@ protected:
 	CCard	*m_slots[MAX_SLOTS];	// slots
 	int	m_nDiskSlotNum;
 	int m_nHardDiskSlotNum;
+	int m_nMouseSlotNum;
+	int m_nLastSlotNum;
 };
 
 #endif // !defined(AFX_SLOTS_H__3A324547_6F9B_457B_8806_63D948497F5F__INCLUDED_)

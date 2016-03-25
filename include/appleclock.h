@@ -28,7 +28,7 @@ class CAppleClock : public CCustomThread, public CObject
 {
 // Attributes
 public:
-	C65c02		m_cpu;
+	CCpu*		m_pCpu;
 	CAppleIOU	m_cIOU;
 	CKeyboard	m_keyboard;
 	CJoystick	m_joystick;
@@ -39,6 +39,9 @@ public:
 	CSpeaker	m_cSpeaker;
 
 	CEvent	m_cMessage;
+	BOOL m_bPALMode;
+	int m_nMachineType;
+
 protected:
 	CMessageQue m_queSignal;
 
@@ -51,9 +54,6 @@ public:
 	BOOL OnBeforeActivate();
 	void Exit();
 	DWORD GetClock();
-	DWORD GetCpuClock();
-	int GetScanFreq();
-	void SetScanFreq(int freq);
 	BOOL Initialize();
 	void Resume();
 	void Suspend(BOOL bWait=TRUE);
@@ -70,27 +70,26 @@ public:
 
 	void SpeedUp();
 	void SpeedStable();
-	void ClockInc(DWORD dwClockInc);
 
 	void OnDebug();
 
 	virtual void Run();
 
 	void Serialize( CArchive &archive );
-
+	void SetMachineType(int nMachineType, BOOL bPalMode);
 
 // Implementation
 protected:
-	BOOL m_bRedraw;
-	DWORD m_dwScanCount;
-	DWORD m_dwScanFreq;
-	DWORD m_dwLastCPUClock;
+	DWORD m_dwClock;
 	int m_nBoost;
 	int m_nAppleStatus;
 };
 
 extern CAppleClock *g_pBoard;
 extern int g_nSerializeVer;
+extern DWORD g_dwCPS;
+extern DWORD g_dwVBLClock;
+extern DWORD g_dwFrameClock;
 
 /////////////////////////////////////////////////////////////////////////////
 

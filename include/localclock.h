@@ -2,7 +2,6 @@
 #define __LOCALCLOCK__INCLUDED_
 
 
-extern DWORD g_localClock;
 extern BYTE MemReturnRandomData(BYTE highbit);
 
 #endif

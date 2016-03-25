@@ -17,11 +17,6 @@ CColorButton::CColorButton()
 {
 }
 
-CColorButton::~CColorButton()
-{
-}
-
-
 BEGIN_MESSAGE_MAP(CColorButton, CButton)
 	//{{AFX_MSG_MAP(CColorButton)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
