@@ -1,6 +1,17 @@
-// 6821.cpp: implementation of the C6821 class.
-//
-//////////////////////////////////////////////////////////////////////
+/***************************************************************************
+  Port of 6821pia.c from mame
+  The original source is licenses/src/6821pia.c
+  MAME license file is licenses/MAME.txt
+***************************************************************************/
+
+/**********************************************************************
+
+  Motorola 6821 PIA interface and emulation
+
+  This function emulates all the functionality of up to 8 M6821
+  peripheral interface adapters.
+
+**********************************************************************/
 
 #include "arch/frame/stdafx.h"
 #include "6821.h"
