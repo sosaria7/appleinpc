@@ -81,7 +81,7 @@
     <Image Include="res\disk_wri.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\disk1.bmp">
+    <Image Include="res\hdd.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
