@@ -67,22 +67,26 @@ BYTE CJoystick::GetStatus(BYTE num)
 		case 4:
 			if ( KEYDOWN( DIK_NUMPAD1 )
 				|| KEYDOWN( DIK_NUMPAD4 )
-				|| KEYDOWN( DIK_NUMPAD7 ) )
+				|| KEYDOWN( DIK_NUMPAD7 ) 
+				|| KEYDOWN( DIK_LEFT ) )
 				retval -= 0x7f;
 			if ( KEYDOWN( DIK_NUMPAD3 )
 				|| KEYDOWN( DIK_NUMPAD6 )
-				|| KEYDOWN( DIK_NUMPAD9 ) )
+				|| KEYDOWN( DIK_NUMPAD9 )
+				|| KEYDOWN( DIK_RIGHT ) )
 				retval += 0x80;
 			break;
 			// paddel 1
 		case 5:
 			if ( KEYDOWN( DIK_NUMPAD7 )
 				|| KEYDOWN( DIK_NUMPAD8 )
-				|| KEYDOWN( DIK_NUMPAD9 ) )
+				|| KEYDOWN( DIK_NUMPAD9 ) 
+				|| KEYDOWN( DIK_DOWN ) )
 				retval -= 0x7f;
 			if ( KEYDOWN( DIK_NUMPAD1 )
 				|| KEYDOWN( DIK_NUMPAD2 )
-				|| KEYDOWN( DIK_NUMPAD3 ) )
+				|| KEYDOWN( DIK_NUMPAD3 ) 
+				|| KEYDOWN( DIK_UP) )
 				retval += 0x80;
 			break;
 			// paddel 2
