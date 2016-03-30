@@ -2,10 +2,13 @@ AIPC is open source under GPL and free to use.
 
 Folloing codes are also licensed under MAME License(2007)
   - src/8913.cpp
+  - src/6821.cpp
   
-The original source codes of 8913.cpp are follows:
+The original source codes are follows:
   - licenses/src/ay8910.c
   - licenses/src/ay8910.h
+  - licenses/src/6821pia.c
+  - licenses/src/6821pia.h
 
 ================================================================================
 GNU GENERAL PUBLIC LICENSE version 3

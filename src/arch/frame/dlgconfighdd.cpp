@@ -62,7 +62,7 @@ BOOL CDlgConfigHDD::OnInitDialog()
 
 void CDlgConfigHDD::OnBtnBrowse1() 
 {
-	CFileDialog dlgFile(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, "DSK Files (*.hdv;*.2mg)|*.hdv;*.2mg|All Files (*.*)|*.*||");
+	CFileDialog dlgFile(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, "DSK Files (*.hdv;*.2mg;*.2img)|*.hdv;*.2mg;*.2img|All Files (*.*)|*.*||");
 
 	if (dlgFile.DoModal() == IDOK)
 	{

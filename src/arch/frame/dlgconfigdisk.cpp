@@ -96,7 +96,7 @@ BOOL CDlgConfigDisk::OnInitDialog()
 
 void CDlgConfigDisk::OnBtnBrowse1() 
 {
-	CFileDialog dlgFile(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, "DSK Files (*.dsk;*.do;*.po;*.nib;*.2mg)|*.dsk;*.do;*.po;*.nib;*.2mg|All Files (*.*)|*.*||");
+	CFileDialog dlgFile(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, "DSK Files (*.dsk;*.do;*.po;*.nib;*.2mg;*.2img)|*.dsk;*.do;*.po;*.nib;*.2mg;*.2img|All Files (*.*)|*.*||");
 
 	if (dlgFile.DoModal() == IDOK)
 	{
@@ -108,7 +108,7 @@ void CDlgConfigDisk::OnBtnBrowse1()
 
 void CDlgConfigDisk::OnBtnBrowse2() 
 {
-	CFileDialog dlgFile(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, "DSK Files (*.dsk;*.do;*.po;*.nib;*.2mg)|*.dsk;*.do;*.po;*.nib;*.2mg|All Files (*.*)|*.*||");
+	CFileDialog dlgFile(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, "DSK Files (*.dsk;*.do;*.po;*.nib;*.2mg;*.2img)|*.dsk;*.do;*.po;*.nib;*.2mg;*.2img|All Files (*.*)|*.*||");
 
 	if (dlgFile.DoModal() == IDOK)
 	{
