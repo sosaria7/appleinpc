@@ -50,8 +50,10 @@ BYTE CJoystick::GetStatus(BYTE num)
 	DWORD retval = 0x7f;
 	CKeyboard *keybd;
 	DIJOYSTATE2 *stJState;
-
+	BOOL bScroll;
 	keybd = &g_pBoard->m_keyboard;
+	bScroll = keybd->GetScrollLock();
+
 	switch( m_nJoystickMode )
 	{
 	case JM_KEYPAD:
@@ -68,12 +70,12 @@ BYTE CJoystick::GetStatus(BYTE num)
 			if ( KEYDOWN( DIK_NUMPAD1 )
 				|| KEYDOWN( DIK_NUMPAD4 )
 				|| KEYDOWN( DIK_NUMPAD7 ) 
-				|| KEYDOWN( DIK_LEFT ) )
+				|| (bScroll && KEYDOWN( DIK_LEFT )) )
 				retval -= 0x7f;
 			if ( KEYDOWN( DIK_NUMPAD3 )
 				|| KEYDOWN( DIK_NUMPAD6 )
 				|| KEYDOWN( DIK_NUMPAD9 )
-				|| KEYDOWN( DIK_RIGHT ) )
+				|| (bScroll && KEYDOWN( DIK_RIGHT )) )
 				retval += 0x80;
 			break;
 			// paddel 1
@@ -81,12 +83,12 @@ BYTE CJoystick::GetStatus(BYTE num)
 			if ( KEYDOWN( DIK_NUMPAD7 )
 				|| KEYDOWN( DIK_NUMPAD8 )
 				|| KEYDOWN( DIK_NUMPAD9 ) 
-				|| KEYDOWN( DIK_UP ) )
+				|| (bScroll && KEYDOWN( DIK_UP )) )
 				retval -= 0x7f;
 			if ( KEYDOWN( DIK_NUMPAD1 )
 				|| KEYDOWN( DIK_NUMPAD2 )
 				|| KEYDOWN( DIK_NUMPAD3 ) 
-				|| KEYDOWN( DIK_DOWN ) )
+				|| (bScroll && KEYDOWN( DIK_DOWN )) )
 				retval += 0x80;
 			break;
 			// paddel 2

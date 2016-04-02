@@ -19,10 +19,14 @@ public:
 	BYTE AppleKeyRead(BYTE addr);
 	void AppleKeyWrite(BYTE addr, BYTE data);
 	void OnKeyDown(WPARAM wParam, LPARAM lParam);
+	void SetCapsLock(BOOL bCaps);
+	void SetScrollLock(BOOL bScroll);
+	BOOL GetScrollLock();
 	CKeyboard();
 	virtual ~CKeyboard();
 protected:
 	BOOL m_bCaps;
+	BOOL m_bScroll;
 	BYTE m_keyStrobe;
 	BYTE m_lastKey;
 	BYTE m_last;

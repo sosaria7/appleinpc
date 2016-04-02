@@ -35,6 +35,7 @@ CKeyboard::CKeyboard()
 {
 	m_lastKey=0;
 	m_bCaps = FALSE;
+	m_bScroll = FALSE;
 }
 
 CKeyboard::~CKeyboard()
@@ -59,6 +60,9 @@ void CKeyboard::OnKeyDown(WPARAM wParam, LPARAM lParam)
 		case DIK_CAPITAL:
 			m_bCaps = !m_bCaps;
 			return;
+		case DIK_SCROLL:
+			m_bScroll = !m_bScroll;
+			break;
 		case 0xC6:			// control+pause : break
 			g_pBoard->Reset();
 			return;
@@ -122,9 +126,26 @@ void CKeyboard::OnKeyDown(WPARAM wParam, LPARAM lParam)
 				return;
 			}
 			break;
+
+		default:
+			break;
 		}
 	}
 
+	switch (wParam)
+	{
+	case DIK_LEFT:
+	case DIK_RIGHT:
+	case DIK_DOWN:
+	case DIK_UP:
+		if (m_bScroll == TRUE && akm_shift[DIK_NUMPAD2] == 0)
+		{
+			return;
+		}
+		break;
+	default:
+		break;
+	}
 
 	if ( shift && !ctrl )
 		key = akm_shift[wParam];
@@ -217,3 +238,17 @@ void CKeyboard::EnableNumKey(BOOL enable)
 }
 
 
+void CKeyboard::SetCapsLock(BOOL bCaps)
+{
+	m_bCaps = bCaps;
+}
+
+void CKeyboard::SetScrollLock(BOOL bScroll)
+{
+	m_bScroll = bScroll;
+}
+
+BOOL CKeyboard::GetScrollLock()
+{
+	return m_bScroll;
+}
