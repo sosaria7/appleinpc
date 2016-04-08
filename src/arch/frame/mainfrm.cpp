@@ -810,7 +810,9 @@ void CMainFrame::OnUpdateResume(CCmdUI* pCmdUI)
 }
 
 
-#include <ntddkbd.h>
+//#include <ntddkbd.h>
+#define KEY_MAKE                          0
+#define KEY_BREAK                         1
 
 void CMainFrame::OnRawInput(UINT nInputcode, HRAWINPUT hRawInput)
 {
@@ -855,7 +857,8 @@ void CMainFrame::OnRawInput(UINT nInputcode, HRAWINPUT hRawInput)
 		{
 			wCode |= 0x80;
 		}
-			if (dwCheck == KEY_MAKE)
+
+		if (dwCheck == KEY_MAKE)
 		{
 			g_cDIKeyboard.KeyDown(wCode);
 		}
