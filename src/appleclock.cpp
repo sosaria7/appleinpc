@@ -45,7 +45,7 @@ static int g_breakpoint = -1;
 
 
 #define LINE_CLOCK			65
-#define DRAW_CLOCK			(LINE_CLOCK*192)
+#define DRAW_CLOCK			(LINE_CLOCK*192)	// 12480
 
 // 1MHz
 //#define CLOCK	1024000
@@ -62,7 +62,7 @@ static int g_breakpoint = -1;
 // PAL
 // 14.25045*65/(65*14+2) = 1.015657
 #define CLOCK_PAL			1015657
-// 65c * 312line = 7800
+// 65c * 312line = 20280
 #define SCREEN_CLOCK_PAL	20280
 #define VBL_CLOCK_PAL		(SCREEN_CLOCK_PAL-DRAW_CLOCK)
 

@@ -249,7 +249,7 @@ void CScreen::Draw( int nLine, int nColumn )
 	else
 	{
 		data = m_apbScanAT[mode][nLine][nColumn];
-		m_dataLatch = (BYTE)data;
+		m_dataLatch = (m_dataLatch << 8) | (BYTE)data;
 
 		if ( bDHIRES == TRUE )
 		{
@@ -973,7 +973,7 @@ HRESULT CScreen::Present()
 				return E_FAIL;
 			}
 			m_pDisplay->Clear();
-            m_pDisplay->StretchBlt( &this->m_stMainRect, lpdds );
+            m_pDisplay->StretchBlt( &this->m_stMainRect, lpdds, NULL, DDBLT_WAIT, NULL );
 			m_pDisplay->Blt( m_stMainRect.left, m_stMainRect.bottom + 4, m_pSurfaceMsg, NULL );
 			m_pDisplay->Blt( m_stMainRect.right - 70, m_stMainRect.bottom + 4, m_pSurfaceDisk, NULL );
 
