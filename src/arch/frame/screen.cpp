@@ -56,14 +56,7 @@ CScreen::CScreen()
 	m_bScanline = FALSE;
 	m_dFrameRate = 0;
 
-	int i, j;
-	
-	for(i=0; i < 192; i++)
-	{
-		for(j=0; j < WIN_WIDTH; j++){
-			m_pixelInfo[i][j]=0;
-		}
-	}
+	memset(m_pixelInfo, 0, sizeof(m_pixelInfo));
 	m_pixelCarry = 0;
 	m_dwClock = 0;
 	m_dataLatch = 0;
@@ -297,19 +290,20 @@ void CScreen::Draw( int nLine, int nColumn )
 		x = nColumn * 14 + 10;
 	}
 
+	BYTE *pixelInfo = m_pixelInfo[y] + 2;
 	if (nColumn == 0)
 	{
-		memset( m_pixelInfo[y], 0, x );
+		memset(pixelInfo, 0, x );
 	}
 	for( index = 0; index < 14; index++ )
 	{
 		if ( ( data & 1 ) != 0 )
 		{
-			m_pixelInfo[y][x] = color;
+			pixelInfo[x] = color;
 		}
 		else
 		{
-			m_pixelInfo[y][x] = 0;
+			pixelInfo[x] = 0;
 		}
 		x++;
 		data >>= 1;
@@ -321,7 +315,7 @@ void CScreen::Draw( int nLine, int nColumn )
 	}
 	if (nColumn == 39)
 	{
-		memset(m_pixelInfo[y] + x, 0, WIN_WIDTH - x);
+		memset(pixelInfo + x, 0, WIN_WIDTH - x);
 	}
 }
 
@@ -430,11 +424,6 @@ void CScreen::Render()
     RECT rect={0, 0, WIN_WIDTH, WIN_HEIGHT};
 
     ddsd.dwSize=sizeof(ddsd);
-	BOOL bScreenDirty = FALSE;
-	BOOL bScanline = m_bScanline;
-	int colorDepth;
-
-	int y;
 	
 	HRESULT result;
 	LPDIRECTDRAWSURFACE7 lpddsBack;
@@ -455,7 +444,7 @@ void CScreen::Render()
 			result=lpddsBack->Lock(&rect,&ddsd,DDLOCK_NOSYSLOCK|DDLOCK_WAIT,NULL);
 			if FAILED( result )
 				return;
-			RedrawAll();		// 모두 다시 그리도록 설정.
+			RedrawAll();		// redraw all
         }
 		else
 		{
@@ -479,67 +468,43 @@ void CScreen::Render()
 		return;
 	}
 
-
-
-	colorDepth = m_iColorDepth >> 3;
-	
-	int mode = m_iScrMode & 0x07;
-	
-	if(!(m_iScrMode&SS_HIRES))
-		mode |= SS_TEXT;
-
-	BOOL b80COL = ( m_iScrMode & SS_80COL );
-	BOOL bDHIRES = b80COL && ( m_iScrMode & SS_DHIRES );
-
-	if ( m_iScrMode & SS_80STORE )		// display page 2 only if 80STORE is off
-		mode &= ~SS_PAGE2;
-
-	// for assembly
 	BYTE *pixelInfo;
-
-	_int64* _fontData;
-	BOOL bAltChar = m_iScrMode & SS_ALTCHAR;
-	if ( bAltChar )
-		_fontData = fontData2;
-	else
-		_fontData = fontData;
-
-	unsigned int* appleColor = NULL;
-	unsigned int* appleColorDark = NULL;
-	unsigned int* appleColorScanLine = NULL;
+	int colorDepth = m_iColorDepth >> 3;
+	int x, y;
+	unsigned int* colorTable = NULL;
+	unsigned int* colorTableDark = NULL;
+	unsigned int* colorTableScanLine = NULL;
 	//	_int64 color;
 	int color = 0;
 	int colorScanLine = 0;
-	
+
 	//------------------
 	switch( m_nVideoMode )
 	{
 	case SM_COLOR:
 		if (m_bTextMode == FALSE )
 		{
-			color = 0;
-			appleColor = m_auColorByHSB;
-			appleColorDark = m_auColorByHSBDark;
-			appleColorScanLine = m_auColorByHSBScanLine;
+			colorTable = m_auColorTableByHSB;
+			colorTableDark = m_auColorTableByHSBDark;
+			colorTableScanLine = m_auColorTableByHSBScanLine;
 		}
 		else
 		{
-			color = m_auColorByHSB[15];
-			colorScanLine = m_auColorByHSBScanLine[15];
+			color = m_auColorTableByHSB[15];
+			colorScanLine = m_auColorTableByHSBScanLine[15];
 		}
 		break;
 	case SM_COLOR2:
 		if (m_bTextMode == FALSE )
 		{
-			color = 0;
-			appleColor = m_auColor;
-			appleColorDark = m_auColorDark;
-			appleColorScanLine = m_auColorScanLine;
+			colorTable = m_auColorTable;
+			colorTableDark = m_auColorTableDark;
+			colorTableScanLine = m_auColorTableScanLine;
 		}
 		else
 		{
-			color = m_auColor[15];
-			colorScanLine = m_auColorScanLine[15];
+			color = m_auColorTable[15];
+			colorScanLine = m_auColorTableScanLine[15];
 		}
 		break;
 	case SM_WHITE:
@@ -547,21 +512,10 @@ void CScreen::Render()
 		colorScanLine = m_uWhiteScanLine;
 		break;
 	case SM_GREEN:
+	default:
 		color = m_uGreen;
 		colorScanLine = m_uGreenScanLine;
 		break;
-	}
-
-	if ( appleColor == NULL )
-	{
-		if ( color == 0 )
-		{
-			color = 1;
-		}
-		if ( colorScanLine == 0 )
-		{
-			colorScanLine = 1;
-		}
 	}
 
 	for( y = 0; y < 192; y++ )
@@ -573,83 +527,51 @@ void CScreen::Render()
 		//else
 		//	surface = pSurface+(y*2+(int)(FULL_HEIGHT-WIN_HEIGHT)/2)*lPitch
 			/* + (int)((FULL_WIDTH-WIN_WIDTH)*FULL_BPP/16 )*/;
-		pixelInfo = m_pixelInfo[y];
+		pixelInfo = m_pixelInfo[y] + 2;
 		
-		__asm{
-				mov		ebx, pixelInfo
-				mov		esi, appleColor
-				mov		edi, surface
+		BYTE colorIndex = 0;
+		UINT* curColorTable;
+		UINT curColor, curColor2;
+		colorIndex = pixelInfo[0];
+		
+		for (x = 0; x < WIN_WIDTH; x++)
+		{
+			if (colorTable != NULL)
+			{
+				if (pixelInfo[x] == 0)
+					curColorTable = colorTableDark;
+				else
+					curColorTable = colorTable;
+				colorIndex = pixelInfo[x - 2];
+				colorIndex += pixelInfo[x - 1];
+				colorIndex += pixelInfo[x];
+				colorIndex += pixelInfo[x + 1];
+				colorIndex &= 0x0f;
+				curColor = curColorTable[colorIndex];
+				curColor2 = colorTableScanLine[colorIndex];
+			}
+			else
+			{
+				if (pixelInfo[x] == 0)
+				{
+					curColor = 0;
+					curColor2 = 0;
+				}
+				else
+				{
+					curColor = color;
+					curColor2 = colorScanLine;
+				}
+			}
+			if (m_bScanline == FALSE)
+			{
+				curColor2 = curColor;
+			}
 
-				mov		ecx, 0
-NextPixel1:
-				xor		eax, eax;
-				mov		al, [ebx]			// get PixelInfo
-				mov		edx, color
-				cmp		edx, 0				// color mode 1
-				jz		_GetColorCode
-				test	al, 0x0F
-				jnz		_DrawPixel
-				xor		edx, edx
-				jmp		_DrawPixel
-				
-_GetColorCode:
-				test	al, 0x0F
-				mov		esi, appleColor
-				jnz		_Bright
-				mov		esi, appleColorDark
-_Bright:
-				cmp		ecx, 0
-				jle		NotAddLeft
-				or		al, [ebx-1]			// apply left pixel
-				cmp		ecx, 1
-				jle		NotAddLeft
-				or		al, [ebx-2]			// apply left pixel
-NotAddLeft:
-				cmp		ecx, WIN_WIDTH-1
-				jge		NotAddRight
-				test	byte ptr [ebx+1], 0x0F
-				jz		NotAddRight
-				or		al, [ebx+1]			// apply right pixel
-NotAddRight:
-				and		eax, 0x0000000F
-				shl		eax, 2				// eax *= 4
-				mov		edx, [esi+eax]
+			*(DWORD*)surface = curColor;
+			*(DWORD*)(surface + lPitch) = curColor2;
 
-_DrawPixel:
-				mov		[edi], edx
-
-				cmp		bScanline, 0
-				jz		_DrawNextLine			// no scanline
-				mov		edx, colorScanLine
-				cmp		edx, 0
-				jz		_GetDarkColor
-
-				test	byte ptr [ebx], 0x0F
-				jnz		_DrawNextLine			// draw dark mono color
-				xor		edx, edx
-				jmp		_DrawNextLine			// draw black color
-
-_GetDarkColor:
-				mov		esi, appleColorScanLine;
-				mov		edx, [esi+eax];
-_DrawNextLine:
-				mov		eax, lPitch
-				mov		[edi+eax], edx			// nextLine
-				inc		ebx
-				add		edi, colorDepth			// depth in byte
-
-				inc		ecx
-				cmp		ecx, WIN_WIDTH
-				jl		NextPixel1
-				// NextPixel end
-				mov		eax, WIN_WIDTH
-				mov		ecx, colorDepth
-				mul		ecx
-				sub		edi, eax			// return to start position
-
-				add		edi, lPitch			// next line( line += 2 )
-				add		edi, lPitch			// next line( line += 2 )
-
+			surface += colorDepth;
 		}
 	}
 	
@@ -665,13 +587,6 @@ _DrawNextLine:
 		::Sleep(0);
 	}
 
-/*	
-	if(result!=DD_OK){
-		KillTimer(1);
-		AfxMessageBox(DDErrorString(result));
-		return;
-	}
-*/	
 }
 
 
@@ -1167,12 +1082,12 @@ void CScreen::ApplyColors()
 	
 	for( i = 0; i < 16; i++ )
 	{
-		m_auColorByHSB[i] = ApplyRGBFormat( m_auRGBColorByHSB[i], &DDpf );
-		m_auColorByHSBDark[i] = ApplyDarkRGBFormat( m_auRGBColorByHSB[i], &DDpf, .8 );
-		m_auColorByHSBScanLine[i] = ApplyDarkRGBFormat( m_auRGBColorByHSB[i], &DDpf, .5 );
-		m_auColor[i] = ApplyRGBFormat( m_auRGBColor[i], &DDpf );
-		m_auColorDark[i] = ApplyDarkRGBFormat( m_auRGBColor[i], &DDpf, .8 );
-		m_auColorScanLine[i] = ApplyDarkRGBFormat( m_auRGBColor[i], &DDpf, .5 );
+		m_auColorTableByHSB[i] = ApplyRGBFormat( m_auRGBColorByHSB[i], &DDpf );
+		m_auColorTableByHSBDark[i] = ApplyDarkRGBFormat( m_auRGBColorByHSB[i], &DDpf, .8 );
+		m_auColorTableByHSBScanLine[i] = ApplyDarkRGBFormat( m_auRGBColorByHSB[i], &DDpf, .5 );
+		m_auColorTable[i] = ApplyRGBFormat( m_auRGBColor[i], &DDpf );
+		m_auColorTableDark[i] = ApplyDarkRGBFormat( m_auRGBColor[i], &DDpf, .8 );
+		m_auColorTableScanLine[i] = ApplyDarkRGBFormat( m_auRGBColor[i], &DDpf, .5 );
 	}
 
 	m_uWhite = ApplyRGBFormat( m_uRGBMono, &DDpf );

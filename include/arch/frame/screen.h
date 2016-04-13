@@ -140,7 +140,7 @@ public:
 	BYTE* m_apbScanAT[8][192];
 	int m_iScrMode;
 	int m_aScanLine[192];
-	BYTE m_pixelInfo[192][WIN_WIDTH];
+	BYTE m_pixelInfo[192][WIN_WIDTH+3];
 	CCSWrapper m_Lock;
 	BOOL m_bPreview;		// for color config dialog
 	BYTE m_pixelCarry;
@@ -187,12 +187,12 @@ protected:
 	// actual colors by system color depth
 	unsigned int m_uGreen;
 	unsigned int m_uWhite;
-	unsigned int m_auColor[16];
-	unsigned int m_auColorDark[16];
-	unsigned int m_auColorScanLine[16];
-	unsigned int m_auColorByHSB[16];		// by HSB
-	unsigned int m_auColorByHSBDark[16];		// by HSB
-	unsigned int m_auColorByHSBScanLine[16];		// by HSB
+	unsigned int m_auColorTable[16];
+	unsigned int m_auColorTableDark[16];
+	unsigned int m_auColorTableScanLine[16];
+	unsigned int m_auColorTableByHSB[16];		// by HSB
+	unsigned int m_auColorTableByHSBDark[16];		// by HSB
+	unsigned int m_auColorTableByHSBScanLine[16];		// by HSB
 	unsigned int m_uGreenScanLine;
 	unsigned int m_uWhiteScanLine;
 
