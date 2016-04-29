@@ -23,13 +23,14 @@
 class CDiskImage
 {
 public:
+	CDiskImage();
+	virtual ~CDiskImage();
 
 	LPCTSTR GetImagePath();
 	virtual int GetId(){ return 0; }
 	BOOL IsWriteProtected();
 	BOOL IsMounted();
-	CDiskImage();
-	virtual ~CDiskImage();
+	void Flush();
 
 	inline BYTE Read(UINT nOffset)
 	{

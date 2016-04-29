@@ -58,11 +58,12 @@ static int g_aiStepperMovementTable[16][NO_OF_PHASES] =
 CDiskDrive::CDiskDrive()
 {
 	m_wDiskStatus = 0;
-	Reset();
 	m_bEnhanced = TRUE;
 	m_dwLastAppleClock = 0;
 	m_pDiskImage = NULL;
 	m_bReadFlag = TRUE;
+
+	Reset();
 }
 
 CDiskDrive::~CDiskDrive()
@@ -113,6 +114,11 @@ void CDiskDrive::Reset()
 	m_iTrackNo = 0;
 	m_iPosition = 0;
 	m_dwLastAppleClock = 0;
+
+	if (m_pDiskImage != NULL)
+	{
+		m_pDiskImage->Flush();
+	}
 }
 
 int CDiskDrive::Mount( const char* pszImageName )

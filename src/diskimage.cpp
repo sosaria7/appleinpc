@@ -142,6 +142,15 @@ void CDiskImage::Umount()
 	}
 }
 
+void CDiskImage::Flush()
+{
+	if (m_hFile != -1)
+	{
+		if (m_nStatus & DIS_BUFFER_DIRTY)
+			SaveBuffer();
+	}
+}
+
 int CDiskImage::Get2mgFormat(int hFile)
 {
 	int nRead;

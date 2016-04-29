@@ -314,6 +314,9 @@ void CMainFrame::OnClose()
 	if ( file.Open( strStatusFile, CFile::modeCreate | CFile::modeWrite ) )
 	{
 		CArchive ar(&file, CArchive::store);
+
+		g_pBoard->Suspend(TRUE);
+
 		int nVal, nVal2;
 		try
 		{
