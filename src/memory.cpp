@@ -577,7 +577,10 @@ void CAppleIOU::WriteMem8(int nAddr, BYTE byData)
 		break;
 
 	default:
-		m_pWriteMap[page][offset] = byData;
+		if (m_pWriteMap[page] != NULL)
+		{
+			m_pWriteMap[page][offset] = byData;
+		}
 		break;
 	}
 }
