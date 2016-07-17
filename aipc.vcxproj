@@ -183,7 +183,6 @@
     <ClInclude Include="include\arch\frame\dlgconfigdisk.h" />
     <ClInclude Include="include\arch\frame\dlgconfighdd.h" />
     <ClInclude Include="include\arch\frame\dlgconfigmockingboard.h" />
-    <ClInclude Include="include\arch\frame\dlgconfigure.h" />
     <ClInclude Include="include\arch\frame\dlgdebug.h" />
     <ClInclude Include="include\arch\frame\mainfrm.h" />
     <ClInclude Include="include\arch\frame\screen.h" />
@@ -217,6 +216,13 @@
     <ClInclude Include="include\scanline.h" />
     <ClInclude Include="include\slots.h" />
     <ClInclude Include="include\speaker.h" />
+    <ClInclude Include="src\arch\frame\dlgsettings.h" />
+    <ClInclude Include="src\arch\frame\dlgsettingscolor.h" />
+    <ClInclude Include="src\arch\frame\dlgsettingsinput.h" />
+    <ClInclude Include="src\arch\frame\dlgsettingsmachine.h" />
+    <ClInclude Include="src\arch\frame\dlgsettingsslot.h" />
+    <ClInclude Include="src\arch\frame\dlgsettingssound.h" />
+    <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\6502.cpp" />
@@ -236,15 +242,16 @@
     <ClCompile Include="src\arch\frame\apple2.cpp" />
     <ClCompile Include="src\arch\frame\applestatusbar.cpp" />
     <ClCompile Include="src\arch\frame\colorbutton.cpp" />
-    <ClCompile Include="src\arch\frame\dlgcolor.cpp" />
     <ClCompile Include="src\arch\frame\dlgconfigdisk.cpp" />
     <ClCompile Include="src\arch\frame\dlgconfighdd.cpp" />
     <ClCompile Include="src\arch\frame\dlgConfigmockingboard.cpp" />
-    <ClCompile Include="src\arch\frame\dlgconfigure.cpp">
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
     <ClCompile Include="src\arch\frame\dlgdebug.cpp" />
+    <ClCompile Include="src\arch\frame\dlgsettings.cpp" />
+    <ClCompile Include="src\arch\frame\dlgsettingscolor.cpp" />
+    <ClCompile Include="src\arch\frame\dlgsettingsinput.cpp" />
+    <ClCompile Include="src\arch\frame\dlgsettingsmachine.cpp" />
+    <ClCompile Include="src\arch\frame\dlgsettingsslot.cpp" />
+    <ClCompile Include="src\arch\frame\dlgsettingssound.cpp" />
     <ClCompile Include="src\arch\frame\mainfrm.cpp" />
     <ClCompile Include="src\arch\frame\screen.cpp" />
     <ClCompile Include="src\arch\frame\stdafx.cpp" />

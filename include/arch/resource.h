@@ -34,6 +34,12 @@
 #define IDD_CONFIGURE_HDD               158
 #define IDI_ICON1                       162
 #define IDI_ICON2                       163
+#define IDD_SETTINGS                    166
+#define IDD_SETTINGS_SLOT               168
+#define IDD_SETTINGS_SOUND              171
+#define IDD_SETTINGS_INPUT              173
+#define IDD_SETTINGS_MACHINE            175
+#define IDD_SETTINGS_COLOR              177
 #define IDC_LIST_PROCESS                1000
 #define IDC_EDIT_FILENAME2              1001
 #define IDC_BTN_SLOT1                   1002
@@ -153,6 +159,7 @@
 #define IDC_SCANLINE                    1124
 #define IDC_MACHINE_NTSC                1126
 #define IDC_MACHINE_PAL                 1127
+#define IDC_SETTINGS_TAB                1128
 #define ID_DEBUG                        32771
 #define ID_CONFIGURE_SLOTS              32772
 #define ID_REBOOT                       32773
@@ -200,9 +207,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        166
+#define _APS_NEXT_RESOURCE_VALUE        183
 #define _APS_NEXT_COMMAND_VALUE         32797
-#define _APS_NEXT_CONTROL_VALUE         1128
+#define _APS_NEXT_CONTROL_VALUE         1129
 #define _APS_NEXT_SYMED_VALUE           111
 #endif
 #endif

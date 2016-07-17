@@ -127,9 +127,6 @@
     <ClInclude Include="include\arch\frame\dlgconfigmockingboard.h">
       <Filter>Header\arch.h\frame.h</Filter>
     </ClInclude>
-    <ClInclude Include="include\arch\frame\dlgconfigure.h">
-      <Filter>Header\arch.h\frame.h</Filter>
-    </ClInclude>
     <ClInclude Include="include\arch\frame\dlgdebug.h">
       <Filter>Header\arch.h\frame.h</Filter>
     </ClInclude>
@@ -256,6 +253,25 @@
     <ClInclude Include="include\arch\frame\dlgconfighdd.h">
       <Filter>Header\arch.h\frame.h</Filter>
     </ClInclude>
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="src\arch\frame\dlgsettingsinput.h">
+      <Filter>Header\arch.h\frame.h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\frame\dlgsettingsmachine.h">
+      <Filter>Header\arch.h\frame.h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\frame\dlgsettingsslot.h">
+      <Filter>Header\arch.h\frame.h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\frame\dlgsettingssound.h">
+      <Filter>Header\arch.h\frame.h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\frame\dlgsettings.h">
+      <Filter>Header\arch.h\frame.h</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\frame\dlgsettingscolor.h">
+      <Filter>Header\arch.h\frame.h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\arch\directx\ddutil.cpp">
@@ -289,9 +305,6 @@
       <Filter>Source\arch\frame</Filter>
     </ClCompile>
     <ClCompile Include="src\arch\frame\dlgConfigmockingboard.cpp">
-      <Filter>Source\arch\frame</Filter>
-    </ClCompile>
-    <ClCompile Include="src\arch\frame\dlgconfigure.cpp">
       <Filter>Source\arch\frame</Filter>
     </ClCompile>
     <ClCompile Include="src\arch\frame\dlgdebug.cpp">
@@ -387,9 +400,6 @@
     <ClCompile Include="src\arch\frame\colorbutton.cpp">
       <Filter>Source\arch\frame</Filter>
     </ClCompile>
-    <ClCompile Include="src\arch\frame\dlgcolor.cpp">
-      <Filter>Source\arch\frame</Filter>
-    </ClCompile>
     <ClCompile Include="src\6502.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -400,6 +410,24 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="src\arch\frame\dlgconfighdd.cpp">
+      <Filter>Source\arch\frame</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\frame\dlgsettingssound.cpp">
+      <Filter>Source\arch\frame</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\frame\dlgsettings.cpp">
+      <Filter>Source\arch\frame</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\frame\dlgsettingscolor.cpp">
+      <Filter>Source\arch\frame</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\frame\dlgsettingsinput.cpp">
+      <Filter>Source\arch\frame</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\frame\dlgsettingsmachine.cpp">
+      <Filter>Source\arch\frame</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\frame\dlgsettingsslot.cpp">
       <Filter>Source\arch\frame</Filter>
     </ClCompile>
   </ItemGroup>

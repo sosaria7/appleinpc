@@ -17,7 +17,7 @@
 
 #include "arch/frame/stdafx.h"
 #include "arch/frame/dlgdebug.h"
-#include "arch/frame/dlgconfigure.h"
+#include "arch/frame/dlgsettings.h"
 #include "arch/frame/mainfrm.h"
 #include "arch/directx/dxsound.h"
 
@@ -99,6 +99,7 @@ CAppleClock::~CAppleClock()
 {
 	// safly exit the thread
 	Exit();
+	delete m_pCpu;
 /*
 	DWORD dwExitCode;
 	::GetExitCodeThread( m_hThread, &dwExitCode );
@@ -275,8 +276,8 @@ void CAppleClock::OnConfigureSlots()
 	int stat = m_nAppleStatus;
 	if ( GetIsActive() )
 		Suspend(TRUE);
-	CDlgConfigure dlgConfigure;
-	dlgConfigure.DoModal();
+	CDlgSettings dlgSettings;
+	dlgSettings.DoModal();
 	if ( GetIsActive() )
 		Resume();
 }

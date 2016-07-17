@@ -144,7 +144,7 @@ void wcSliderButton::DrawButton(int nButtonState)
 		 dwStyle |= DFCS_PUSHED;
 	if ( nButtonState == BTN_DISABLED )
 		 dwStyle |=DFCS_INACTIVE;
-	DC.DrawFrameControl(&m_rcButtonRect,DFC_SCROLL,dwStyle);
+	DC.DrawFrameControl(&m_rcButtonRect,DFC_SCROLL,dwStyle|DFCS_FLAT);
 	// update m_nButtonState
 	m_nButtonState = nButtonState;
 }
