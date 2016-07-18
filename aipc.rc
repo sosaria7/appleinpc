@@ -97,20 +97,20 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                       ID_APP_EXIT
     END
-    POPUP "&Debug"
+    POPUP "&Edit"
     BEGIN
-        MENUITEM "&Debug..",                    ID_DEBUG
-    END
-    POPUP "&Setting"
-    BEGIN
-        MENUITEM "&Control Panel..\tF10",       ID_CONFIGURE_SLOTS
-        MENUITEM "&Diskette\tF9",               ID_DISKETTE
-        MENUITEM "&Hard Disk\tCtrl-F9",         ID_HARDDISK
+        MENUITEM "&Settings..\tF10",            ID_CONFIGURE_SLOTS
+        MENUITEM "&Diskette..\tF9",             ID_DISKETTE
+        MENUITEM "&Hard Disk..\tCtrl-F9",       ID_HARDDISK
         MENUITEM SEPARATOR
         MENUITEM "Change &Monitor\tF8",         ID_MONITOR
         MENUITEM "&2x Screen Mode",             ID_2XSCREEN
-        MENUITEM "&Scan line",                  ID_SCANLINE
+        MENUITEM "Scan &line",                  ID_SCANLINE
         MENUITEM "&Full Screen\tCtrl-F8",       ID_FULL_SCREEN
+    END
+    POPUP "&Debug"
+    BEGIN
+        MENUITEM "&Debug..",                    ID_DEBUG
     END
     POPUP "&Help"
     BEGIN
@@ -156,7 +156,7 @@ BEGIN
             VALUE "FileDescription", "Apple in PC"
             VALUE "FileVersion", "0.1.39.1"
             VALUE "InternalName", "aipc"
-            VALUE "LegalCopyright", "Copyright (C) 2016"
+            VALUE "LegalCopyright", "Copyright © 2002-2016"
             VALUE "OriginalFilename", "aipc.exe"
             VALUE "ProductName", "Apple in PC"
             VALUE "ProductVersion", "0.1.39.1"
@@ -330,7 +330,7 @@ BEGIN
     CONTROL         "",IDC_COLOR13,"Button",BS_OWNERDRAW | WS_TABSTOP,106,68,20,9,WS_EX_STATICEDGE
     CONTROL         "",IDC_COLOR14,"Button",BS_OWNERDRAW | WS_TABSTOP,106,78,20,9,WS_EX_STATICEDGE
     CONTROL         "",IDC_COLOR15,"Button",BS_OWNERDRAW | WS_TABSTOP,106,88,20,9,WS_EX_STATICEDGE
-    LTEXT           "00.black",IDC_COLOR_NAME0,43,18,31,8
+    LTEXT           "00.black",IDC_COLOR_NAME0,41,18,31,8
     LTEXT           "01.magenta",IDC_STATIC,41,28,43,8
     LTEXT           "02.dark blue",IDC_STATIC,41,38,45,8
     LTEXT           "03.purple",IDC_COLOR_NAME3,41,48,35,8
@@ -369,13 +369,12 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Apple in PC"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
+    ICON            IDR_MAINFRAME,IDC_STATIC,7,7,18,23
     LTEXT           "Apple in PC v0.1.39.1",IDC_STATIC,40,10,119,8,SS_NOPREFIX
     LTEXT           "Copyright (C) 2002-2016",IDC_STATIC,40,62,79,8
     DEFPUSHBUTTON   "&OK",IDOK,125,56,50,14,WS_GROUP
-    LTEXT           "Keonwoo Kim",IDC_STATIC,65,22,86,8
-    LTEXT           "",IDC_STATIC,40,46,92,8
-    LTEXT           "sosaria7@gmail.com",IDC_STATIC,65,33,94,8
+    LTEXT           "https://github.com/sosaria7/appleinpc",IDC_STATIC,40,38,129,8
+    LTEXT           "sosaria7@gmail.com",IDC_STATIC,40,24,94,8
 END
 
 IDD_DEBUG DIALOG 0, 0, 235, 230
@@ -436,35 +435,6 @@ BEGIN
     GROUPBOX        "Volume",IDC_STATIC,7,7,53,112
     LTEXT           "Volume:",IDC_STATIC,14,44,27,8
     GROUPBOX        "Emulate",IDC_STATIC,65,14,79,57
-END
-
-IDD_CONFIGURE DIALOGEX 0, 0, 276, 236
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Configure"
-FONT 8, "MS Sans Serif", 0, 0, 0x0
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,197,214,34,15
-    PUSHBUTTON      "Cancel",IDCANCEL,233,214,35,15
-    PUSHBUTTON      "Color Setting",IDC_COLOR_SETTING,218,7,50,14
-    GROUPBOX        "Slots",IDC_STATIC,7,7,147,125
-    LTEXT           "Some settings can be changed",IDC_STATIC,167,188,102,8
-    LTEXT           "only when the power is off.",IDC_STATIC,162,199,89,8
-END
-
-IDD_CONFIGURE_COLOR DIALOGEX 0, 0, 235, 187
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Color Setting"
-FONT 8, "MS Sans Serif", 0, 0, 0x1
-BEGIN
-    DEFPUSHBUTTON   "&OK",IDOK,124,166,50,14
-    PUSHBUTTON      "&Cancel",IDCANCEL,176,166,50,14
-    EDITTEXT        IDC_VIDEO_H,32,140,23,12,ES_AUTOHSCROLL | WS_GROUP
-    EDITTEXT        IDC_VIDEO_S,71,140,23,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_VIDEO_B,112,140,23,12,ES_AUTOHSCROLL
-    LTEXT           "H",IDC_STATIC,24,145,8,8
-    LTEXT           "S",IDC_STATIC,63,145,8,8
-    LTEXT           "B",IDC_STATIC,103,145,8,8
-    GROUPBOX        "HSB",IDC_STATIC,7,129,148,32
 END
 
 IDD_CONFIGURE_HDD DIALOGEX 0, 0, 225, 96
@@ -551,6 +521,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 193
         VERTGUIDE, 18
+        VERTGUIDE, 41
         VERTGUIDE, 54
         VERTGUIDE, 58
         VERTGUIDE, 94
@@ -566,6 +537,7 @@ BEGIN
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 184
+        VERTGUIDE, 40
         TOPMARGIN, 7
         BOTTOMMARGIN, 70
     END
@@ -594,31 +566,6 @@ BEGIN
         RIGHTMARGIN, 144
         TOPMARGIN, 7
         BOTTOMMARGIN, 120
-    END
-
-    IDD_CONFIGURE, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 269
-        VERTGUIDE, 14
-        VERTGUIDE, 59
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 229
-        HORZGUIDE, 53
-        HORZGUIDE, 109
-        HORZGUIDE, 125
-        HORZGUIDE, 132
-        HORZGUIDE, 173
-        HORZGUIDE, 221
-        HORZGUIDE, 229
-    END
-
-    IDD_CONFIGURE_COLOR, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 226
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 180
     END
 
     IDD_CONFIGURE_HDD, DIALOG
@@ -765,22 +712,12 @@ BEGIN
     0
 END
 
-IDD_CONFIGURE AFX_DIALOG_LAYOUT
-BEGIN
-    0
-END
-
 IDD_CONFIGURE_HDD AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
 
 IDD_CONFIGURE_DISK AFX_DIALOG_LAYOUT
-BEGIN
-    0
-END
-
-IDD_CONFIGURE_COLOR AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -801,6 +738,7 @@ BEGIN
     SEPARATOR
     BUTTON      ID_DISKETTE
     BUTTON      ID_HARDDISK
+    BUTTON      ID_CONFIGURE_SLOTS
     SEPARATOR
     BUTTON      ID_FULL_SCREEN
 END
@@ -848,6 +786,7 @@ END
 
 STRINGTABLE
 BEGIN
+    ID_CONFIGURE_SLOTS      "Settings\nSettings"
     ID_POWERON              "Power On\nPower On"
     ID_POWEROFF             "Power Off\nPower Off"
     ID_RESET                "Reset\nReset"

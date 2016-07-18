@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by F:\night_project\appleinpc\aipc.rc
+// Used by C:\Project\night\appleinpc\aipc.rc
 //
 #define IDC_DEFAULT                     3
 #define IDD_ABOUTBOX                    100
@@ -15,7 +15,6 @@
 #define IDD_CONFIGURE_DISK              132
 #define IDR_CONFIG_SLOT                 133
 #define IDD_CONFIGURE_MONITOR           135
-#define IDD_CONFIGURE_COLOR             135
 #define IDR_TOOLBAR                     138
 #define IDB_DISK                        140
 #define IDB_DISK_OFF                    146
@@ -30,7 +29,6 @@
 #define IDD_CONFIGURE_MOCKINGBOARD      152
 #define IDB_HDD                         152
 #define IDR_ACCELERATOR                 154
-#define IDD_CONFIGURE                   157
 #define IDD_CONFIGURE_HDD               158
 #define IDI_ICON1                       162
 #define IDI_ICON2                       163
@@ -139,7 +137,6 @@
 #define IDC_COLOR13                     1103
 #define IDC_COLOR14                     1104
 #define IDC_COLOR15                     1105
-#define IDC_COLOR_SETTING               1109
 #define IDC_COLOR_MODE0                 1110
 #define IDC_COLOR_MODE1                 1111
 #define IDC_COLOR_MODE2                 1112
@@ -208,7 +205,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        183
-#define _APS_NEXT_COMMAND_VALUE         32797
+#define _APS_NEXT_COMMAND_VALUE         32801
 #define _APS_NEXT_CONTROL_VALUE         1129
 #define _APS_NEXT_SYMED_VALUE           111
 #endif

@@ -134,10 +134,10 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 //	EnableDocking(CBRS_ALIGN_ANY);
 //	DockControlBar(&m_wndToolBar);
 
-	m_wndToolBar.SetHeight( 32 );
+	//m_wndToolBar.SetHeight( 32 );
 	// create a view to occupy the client area of the frame
-	if (!m_wndView.Create(NULL, NULL, AFX_WS_DEFAULT_VIEW,
-		CRect(0, 0, 0, 0), this, AFX_IDW_PANE_FIRST, NULL))
+	if (!m_wndView.Create(NULL, NULL, WS_CHILD| WS_VISIBLE,
+	CRect(0, 0, 0, 0), this, AFX_IDW_PANE_FIRST, NULL))
 	{
 		TRACE0("Failed to create view window\n");
 		return -1;
