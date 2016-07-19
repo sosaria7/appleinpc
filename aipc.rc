@@ -137,8 +137,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,1,39,1
- PRODUCTVERSION 0,1,39,1
+ FILEVERSION 0,1,39,2
+ PRODUCTVERSION 0,1,39,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -154,12 +154,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "FileDescription", "Apple in PC"
-            VALUE "FileVersion", "0.1.39.1"
+            VALUE "FileVersion", "0.1.39.2"
             VALUE "InternalName", "aipc"
             VALUE "LegalCopyright", "Copyright © 2002-2016"
             VALUE "OriginalFilename", "aipc.exe"
             VALUE "ProductName", "Apple in PC"
-            VALUE "ProductVersion", "0.1.39.1"
+            VALUE "ProductVersion", "0.1.39.2"
         END
     END
     BLOCK "VarFileInfo"
@@ -369,8 +369,8 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Apple in PC"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    ICON            IDR_MAINFRAME,IDC_STATIC,7,7,18,23
-    LTEXT           "Apple in PC v0.1.39.1",IDC_STATIC,40,10,119,8,SS_NOPREFIX
+    ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
+    LTEXT           "Apple in PC v0.1.39.2",IDC_STATIC,40,10,119,8,SS_NOPREFIX
     LTEXT           "Copyright (C) 2002-2016",IDC_STATIC,40,62,79,8
     DEFPUSHBUTTON   "&OK",IDOK,125,56,50,14,WS_GROUP
     LTEXT           "https://github.com/sosaria7/appleinpc",IDC_STATIC,40,38,129,8

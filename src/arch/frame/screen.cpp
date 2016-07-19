@@ -248,6 +248,10 @@ void CScreen::Draw( int nLine, int nColumn )
 		{
 			data = ( data << 7 ) | ( m_apbScanAT[mode][nLine][nColumn+0x10000] & 0x7f );
 		}
+		else
+		{
+			b80COL = FALSE;
+		}
 	}
 
 	if ( nColumn == 0 )
