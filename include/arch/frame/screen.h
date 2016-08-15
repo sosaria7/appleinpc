@@ -187,12 +187,10 @@ protected:
 	// actual colors by system color depth
 	unsigned int m_uGreen;
 	unsigned int m_uWhite;
-	unsigned int m_auColorTable[16];
-	unsigned int m_auColorTableDark[16];
-	unsigned int m_auColorTableScanLine[16];
-	unsigned int m_auColorTableByHSB[16];		// by HSB
-	unsigned int m_auColorTableByHSBDark[16];		// by HSB
-	unsigned int m_auColorTableByHSBScanLine[16];		// by HSB
+	unsigned int m_auColorTable[16][16];
+	unsigned int m_auColorTableScanLine[16][16];
+	unsigned int m_auColorTableByHSB[16][16];	// by HSB
+	unsigned int m_auColorTableByHSBScanLine[16][16];		// by HSB
 	unsigned int m_uGreenScanLine;
 	unsigned int m_uWhiteScanLine;
 

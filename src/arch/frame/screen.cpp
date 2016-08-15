@@ -475,9 +475,9 @@ void CScreen::Render()
 	BYTE *pixelInfo;
 	int colorDepth = m_iColorDepth >> 3;
 	int x, y;
-	unsigned int* colorTable = NULL;
-	unsigned int* colorTableDark = NULL;
-	unsigned int* colorTableScanLine = NULL;
+	typedef unsigned int TColorArr[16];		// color with 16 grade brightness
+	TColorArr* colorTable = NULL;
+	TColorArr* colorTableScanLine = NULL;
 	//	_int64 color;
 	int color = 0;
 	int colorScanLine = 0;
@@ -489,26 +489,24 @@ void CScreen::Render()
 		if (m_bTextMode == FALSE )
 		{
 			colorTable = m_auColorTableByHSB;
-			colorTableDark = m_auColorTableByHSBDark;
 			colorTableScanLine = m_auColorTableByHSBScanLine;
 		}
 		else
 		{
-			color = m_auColorTableByHSB[15];
-			colorScanLine = m_auColorTableByHSBScanLine[15];
+			color = m_auColorTableByHSB[15][15];
+			colorScanLine = m_auColorTableByHSBScanLine[15][15];
 		}
 		break;
 	case SM_COLOR2:
 		if (m_bTextMode == FALSE )
 		{
 			colorTable = m_auColorTable;
-			colorTableDark = m_auColorTableDark;
 			colorTableScanLine = m_auColorTableScanLine;
 		}
 		else
 		{
-			color = m_auColorTable[15];
-			colorScanLine = m_auColorTableScanLine[15];
+			color = m_auColorTable[15][15];
+			colorScanLine = m_auColorTableScanLine[15][15];
 		}
 		break;
 	case SM_WHITE:
@@ -534,25 +532,27 @@ void CScreen::Render()
 		pixelInfo = m_pixelInfo[y] + 2;
 		
 		BYTE colorIndex = 0;
-		UINT* curColorTable;
+
 		UINT curColor, curColor2;
+		unsigned int brightness;
 		colorIndex = pixelInfo[0];
-		
+
+		brightness = !!(pixelInfo[0] & 0x0f);
+
 		for (x = 0; x < WIN_WIDTH; x++)
 		{
 			if (colorTable != NULL)
 			{
-				if (pixelInfo[x] == 0)
-					curColorTable = colorTableDark;
-				else
-					curColorTable = colorTable;
+				brightness = ((brightness << 1) | !!(pixelInfo[x + 1] & 0x0f)) & 0x0f;
+
 				colorIndex = pixelInfo[x - 2];
 				colorIndex += pixelInfo[x - 1];
 				colorIndex += pixelInfo[x];
 				colorIndex += pixelInfo[x + 1];
 				colorIndex &= 0x0f;
-				curColor = curColorTable[colorIndex];
-				curColor2 = colorTableScanLine[colorIndex];
+
+				curColor = colorTable[colorIndex][brightness];
+				curColor2 = colorTableScanLine[colorIndex][brightness];
 			}
 			else
 			{
@@ -1074,11 +1074,16 @@ sYIQ CScreen::ComposeYIQ( sYIQ* yiq1, sYIQ* yiq2 )
 
 void CScreen::ApplyColors()
 {
-	int i;
+	int i, j;
 	
 	CLockMgr<CCSWrapper> guard( m_Lock, TRUE );	
-
+	
 	DDPIXELFORMAT DDpf;
+	// .73 + (.04|.07|.09|.07)
+	double bright[16] = {
+		.00, .80, .82, .89, .80, .87, .89, .96,
+		.77, .84, .86, .93, .84, .91, .93, 1.0
+	};
 	DDpf.dwSize = sizeof(DDPIXELFORMAT);
 	m_pDisplay->GetFrontBuffer()->GetPixelFormat(&DDpf);
 	
@@ -1086,12 +1091,13 @@ void CScreen::ApplyColors()
 	
 	for( i = 0; i < 16; i++ )
 	{
-		m_auColorTableByHSB[i] = ApplyRGBFormat( m_auRGBColorByHSB[i], &DDpf );
-		m_auColorTableByHSBDark[i] = ApplyDarkRGBFormat( m_auRGBColorByHSB[i], &DDpf, .8 );
-		m_auColorTableByHSBScanLine[i] = ApplyDarkRGBFormat( m_auRGBColorByHSB[i], &DDpf, .5 );
-		m_auColorTable[i] = ApplyRGBFormat( m_auRGBColor[i], &DDpf );
-		m_auColorTableDark[i] = ApplyDarkRGBFormat( m_auRGBColor[i], &DDpf, .8 );
-		m_auColorTableScanLine[i] = ApplyDarkRGBFormat( m_auRGBColor[i], &DDpf, .5 );
+		for(j = 0; j < 16; j++)
+		{
+			m_auColorTableByHSB[i][j] = ApplyDarkRGBFormat(m_auRGBColorByHSB[i], &DDpf, bright[j]);
+			m_auColorTable[i][j] = ApplyDarkRGBFormat(m_auRGBColor[i], &DDpf, bright[j]);
+			m_auColorTableByHSBScanLine[i][j] = ApplyDarkRGBFormat(m_auRGBColorByHSB[i], &DDpf, bright[j] * .7);
+			m_auColorTableScanLine[i][j] = ApplyDarkRGBFormat(m_auRGBColor[i], &DDpf, bright[j] * .7);
+		}
 	}
 
 	m_uWhite = ApplyRGBFormat( m_uRGBMono, &DDpf );
