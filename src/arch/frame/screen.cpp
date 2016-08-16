@@ -415,8 +415,8 @@ void CScreen::Run()
 			}
 		}
 		dwElasped = GetTickCount() - dwTickStart;
-		if ( dwElasped < 1000/70 )		// max 70 frame
-			Sleep(1000/70 - dwElasped);
+		if ( dwElasped < 1000/100 )
+			Sleep(1000/100 - dwElasped);
 	}
 	m_bPowerOn = FALSE;
 	Render();
@@ -543,13 +543,13 @@ void CScreen::Render()
 		{
 			if (colorTable != NULL)
 			{
-				brightness = ((brightness << 1) | !!(pixelInfo[x + 1] & 0x0f)) & 0x0f;
-
-				colorIndex = pixelInfo[x - 2];
-				colorIndex += pixelInfo[x - 1];
-				colorIndex += pixelInfo[x];
-				colorIndex += pixelInfo[x + 1];
-				colorIndex &= 0x0f;
+				brightness = ( brightness << 1 ) & 0x0f;
+				if (pixelInfo[x + 1] & 0x0f)
+					brightness |= 1;
+				colorIndex = ( pixelInfo[x - 2]
+							+ pixelInfo[x - 1]
+							+ pixelInfo[x]
+							+ pixelInfo[x + 1] ) & 0x0f;
 
 				curColor = colorTable[colorIndex][brightness];
 				curColor2 = colorTableScanLine[colorIndex][brightness];
