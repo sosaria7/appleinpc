@@ -1074,7 +1074,7 @@ sYIQ CScreen::ComposeYIQ( sYIQ* yiq1, sYIQ* yiq2 )
 
 // bright affection by pixel distance
 #define BRIGHT_BASE		(1.0/((1+BRIGHT_8)*(1+BRIGHT_4)*(1+BRIGHT_2)*(1+BRIGHT_1)))
-#define BRIGHT_8		.02		// 2 left pixel
+#define BRIGHT_8		.03		// 2 left pixel
 #define BRIGHT_4		.05		// left pixel
 #define BRIGHT_2		.15		// target pixel
 #define BRIGHT_1		.07		// right pixel
