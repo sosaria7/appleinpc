@@ -1072,6 +1072,13 @@ sYIQ CScreen::ComposeYIQ( sYIQ* yiq1, sYIQ* yiq2 )
 	return yiq;
 }
 
+// bright affection by pixel distance
+#define BRIGHT_BASE		(1.0/((1+BRIGHT_8)*(1+BRIGHT_4)*(1+BRIGHT_2)*(1+BRIGHT_1)))
+#define BRIGHT_8		.02		// 2 left pixel
+#define BRIGHT_4		.05		// left pixel
+#define BRIGHT_2		.15		// target pixel
+#define BRIGHT_1		.07		// right pixel
+#define BRIGHT(a,b,c,d)	(BRIGHT_BASE*(1+BRIGHT_8*a)*(1+BRIGHT_4*b)*(1+BRIGHT_2*c)*(1+BRIGHT_1*d))
 void CScreen::ApplyColors()
 {
 	int i, j;
@@ -1079,10 +1086,24 @@ void CScreen::ApplyColors()
 	CLockMgr<CCSWrapper> guard( m_Lock, TRUE );	
 	
 	DDPIXELFORMAT DDpf;
-	// .73 + (.04|.07|.09|.07)
-	double bright[16] = {
-		.00, .80, .82, .89, .80, .87, .89, .96,
-		.77, .84, .86, .93, .84, .91, .93, 1.0
+
+	static const double bright[16] = {
+		.00,
+		BRIGHT(0,0,0,1),
+		BRIGHT(0,0,1,0),
+		BRIGHT(0,0,1,1),
+		BRIGHT(0,1,0,0),
+		BRIGHT(0,1,0,1),
+		BRIGHT(0,1,1,0),
+		BRIGHT(0,1,1,1),
+		BRIGHT(1,0,0,0),
+		BRIGHT(1,0,0,1),
+		BRIGHT(1,0,1,0),
+		BRIGHT(1,0,1,1),
+		BRIGHT(1,1,0,0),
+		BRIGHT(1,1,0,1),
+		BRIGHT(1,1,1,0),
+		BRIGHT(1,1,1,1)
 	};
 	DDpf.dwSize = sizeof(DDPIXELFORMAT);
 	m_pDisplay->GetFrontBuffer()->GetPixelFormat(&DDpf);
