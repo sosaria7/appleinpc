@@ -240,6 +240,15 @@ void CJoystick::Poll()
 	}
 }
 
+void CJoystick::InitPCJoystick()
+{
+	if (m_bHasPCJoystick == FALSE)
+	{
+		if (g_cDIJoystick.InitJoystick())
+			g_pBoard->m_joystick.m_bHasPCJoystick = TRUE;
+	}
+}
+
 void CJoystick::Serialize( CArchive &ar )
 {
 	CObject::Serialize( ar );

@@ -35,6 +35,7 @@ public:
 	int GetDeadZone();
 	int GetSaturation();
 	void Initialize();
+	void InitPCJoystick();
 
 	BOOL m_bHasPCJoystick;
 

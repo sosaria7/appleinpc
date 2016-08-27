@@ -147,8 +147,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	// Initialise Joystick
 	g_cDIJoystick.SetHWND(m_hWnd);
-	if ( g_cDIJoystick.InitJoystick() )
-		g_pBoard->m_joystick.m_bHasPCJoystick = TRUE;
+	g_pBoard->m_joystick.InitPCJoystick();
 
 	// Initialise Keyboard
 	g_cDIKeyboard.SetHWND(m_hWnd);

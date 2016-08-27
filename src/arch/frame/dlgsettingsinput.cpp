@@ -97,6 +97,7 @@ BOOL CDlgSettingsInput::OnInitDialog()
 	m_cKeyDelay.SetRange(nKeyDelay, 250, 1000);
 
 	// Joystick
+	g_pBoard->m_joystick.InitPCJoystick();
 	i = g_pBoard->m_joystick.GetDevice();
 	if (!g_pBoard->m_joystick.m_bHasPCJoystick)
 	{
