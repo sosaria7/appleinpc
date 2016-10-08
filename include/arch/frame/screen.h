@@ -197,7 +197,6 @@ protected:
 	BYTE m_nVideoMode;
 	BOOL m_nMsgVisiable;
 	BOOL m_bTextMode;
-	BOOL m_bTextModeCheck;
 	BOOL m_bMouseCapture;
 
 	TCHAR* m_szMessage;

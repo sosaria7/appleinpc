@@ -127,6 +127,10 @@ void CKeyboard::OnKeyDown(WPARAM wParam, LPARAM lParam)
 			}
 			break;
 
+		case DIK_F5:
+			::PostMessage(g_pBoard->m_lpwndMainFrame->m_hWnd, WM_COMMAND, ID_SUSPENDRESUME, 0);
+			break;
+
 		default:
 			break;
 		}

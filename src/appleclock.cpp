@@ -122,7 +122,7 @@ void CAppleClock::Run()
 	DWORD lastAppleClock=m_dwClock;
 	DWORD dwClockInc;
 	DWORD dwCurTickCount, dwLastTickCount;
-	DWORD dwCPMS = g_dwCPS / 1000;
+	double CPMS = (double)g_dwCPS / 1000;
 
 	int sig;
 	BOOL slept;
@@ -225,7 +225,7 @@ void CAppleClock::Run()
 		else
 			host_interval = 0;
 
-		apple_interval = (dwCurClock - lastAppleClock) / dwCPMS;
+		apple_interval = (int)( (dwCurClock - lastAppleClock) / CPMS );
 
 		if ( (int)(apple_interval - host_interval ) > 0
 			|| host_interval > 500 )
@@ -246,7 +246,7 @@ void CAppleClock::Run()
 				}
 				dwLastTickCount += apple_interval;
 			}
-			lastAppleClock += apple_interval * dwCPMS;
+			lastAppleClock += (int)( apple_interval * CPMS );
 		}
 	}
 	m_pScreen->ClearBuffer();
@@ -405,6 +405,11 @@ void CAppleClock::SpeedUp()
 void CAppleClock::SpeedStable()
 {
 	m_nBoost = 0;
+}
+
+bool CAppleClock::IsBoosting()
+{
+	return (m_nBoost != 0);
 }
 
 void CAppleClock::SetMachineType(int nMachineType, BOOL bPalMode)

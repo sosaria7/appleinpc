@@ -81,7 +81,6 @@ CScreen::CScreen()
 							ANTIALIASED_QUALITY, FF_DONTCARE, "Arial Narrow" );
 	m_bPreview = FALSE;
 	m_bTextMode = TRUE;
-	m_bTextModeCheck = TRUE;
 	SetDefaultColors();
 }
 
@@ -157,18 +156,10 @@ void CScreen::Draw( int nLine, int nColumn )
 	
 	if ( m_iScrMode & SS_80STORE )		// display page 2 only if 80STORE is off
 		mode &= ~SS_PAGE2;
-	
-	if (nLine == 0 && nColumn == 0)
-	{
-		m_bTextModeCheck = ((m_iScrMode & SS_TEXT) != 0);
-	}
-	else if ((m_iScrMode & SS_TEXT) == 0)
-	{
-		m_bTextModeCheck = FALSE;
-	}
+
 	if (nLine == 191 && nColumn == 39)
 	{
-		m_bTextMode = m_bTextModeCheck;
+		m_bTextMode = ((m_iScrMode & SS_TEXT) != 0);
 	}
 
 	y = nLine;
@@ -415,8 +406,8 @@ void CScreen::Run()
 			}
 		}
 		dwElasped = GetTickCount() - dwTickStart;
-		if ( dwElasped < 1000/100 )
-			Sleep(1000/100 - dwElasped);
+		if ( g_pBoard->IsBoosting() && dwElasped < 1000/70 )
+			Sleep(1000/70 - dwElasped);
 	}
 	m_bPowerOn = FALSE;
 	Render();
@@ -1075,9 +1066,9 @@ sYIQ CScreen::ComposeYIQ( sYIQ* yiq1, sYIQ* yiq2 )
 // bright affection by pixel distance
 #define BRIGHT_BASE		(1.0/((1+BRIGHT_8)*(1+BRIGHT_4)*(1+BRIGHT_2)*(1+BRIGHT_1)))
 #define BRIGHT_8		.00		// 2 left pixel
-#define BRIGHT_4		.04		// left pixel
-#define BRIGHT_2		.12		// target pixel
-#define BRIGHT_1		.04		// right pixel
+#define BRIGHT_4		.05		// left pixel
+#define BRIGHT_2		.15		// target pixel
+#define BRIGHT_1		.05		// right pixel
 #define BRIGHT(a,b,c,d)	(BRIGHT_BASE*(1+BRIGHT_8*a)*(1+BRIGHT_4*b)*(1+BRIGHT_2*c)*(1+BRIGHT_1*d))
 void CScreen::ApplyColors()
 {

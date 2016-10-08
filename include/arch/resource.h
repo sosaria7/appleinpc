@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by F:\night_project\appleinpc\aipc.rc
+// Used by C:\Project\night\appleinpc\aipc.rc
 //
 #define IDC_DEFAULT                     3
 #define IDD_ABOUTBOX                    100
@@ -175,6 +175,7 @@
 #define ID_SCANLINE                     32794
 #define ID_SUSPEND                      32795
 #define ID_RESUME                       32796
+#define ID_SUSPENDRESUME                32804
 #define ID_SLOT_NONE                    33000
 #define ID_SLOT_DISK                    33001
 #define ID_SLOT_MOCKINGBOARD            33002
@@ -205,7 +206,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        183
-#define _APS_NEXT_COMMAND_VALUE         32801
+#define _APS_NEXT_COMMAND_VALUE         32806
 #define _APS_NEXT_CONTROL_VALUE         1129
 #define _APS_NEXT_SYMED_VALUE           111
 #endif

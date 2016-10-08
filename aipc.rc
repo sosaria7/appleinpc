@@ -210,14 +210,15 @@ IDC_CURSOR2             CURSOR                  "res\\cursor2.cur"
 
 IDR_ACCELERATOR ACCELERATORS
 BEGIN
-    VK_CANCEL,      ID_RESET,               VIRTKEY, CONTROL, NOINVERT
     VK_F10,         ID_CONFIGURE_SLOTS,     VIRTKEY, NOINVERT
+    VK_F9,          ID_DISKETTE,            VIRTKEY, NOINVERT
+    VK_F8,          ID_FULL_SCREEN,         VIRTKEY, CONTROL, NOINVERT
+    VK_F9,          ID_HARDDISK,            VIRTKEY, CONTROL, NOINVERT
+    VK_F8,          ID_MONITOR,             VIRTKEY, NOINVERT
     VK_F11,         ID_POWER,               VIRTKEY, CONTROL, NOINVERT
     VK_F11,         ID_REBOOT,              VIRTKEY, SHIFT, CONTROL, NOINVERT
-    VK_F8,          ID_MONITOR,             VIRTKEY, NOINVERT
-    VK_F8,          ID_FULL_SCREEN,         VIRTKEY, CONTROL, NOINVERT
-    VK_F9,          ID_DISKETTE,            VIRTKEY, NOINVERT
-    VK_F9,          ID_HARDDISK,            VIRTKEY, CONTROL, NOINVERT
+    VK_CANCEL,      ID_RESET,               VIRTKEY, CONTROL, NOINVERT
+    VK_F5,          ID_SUSPENDRESUME,       VIRTKEY, NOINVERT
 END
 
 

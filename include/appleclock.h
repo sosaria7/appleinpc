@@ -70,6 +70,7 @@ public:
 
 	void SpeedUp();
 	void SpeedStable();
+	bool IsBoosting();
 
 	void OnDebug();
 

@@ -96,12 +96,12 @@ protected:
 	afx_msg void OnUpdateResume(CCmdUI* pCmdUI);
 	afx_msg void OnScanline();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
-public:
 	afx_msg void OnSuspend();
 	afx_msg void OnResume();
+	afx_msg void OnSuspendResume();
 	afx_msg void OnRawInput(UINT nInputcode, HRAWINPUT hRawInput);
+	//}}AFX_MSG
+	DECLARE_MESSAGE_MAP()
 };
 
 /////////////////////////////////////////////////////////////////////////////

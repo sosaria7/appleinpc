@@ -80,6 +80,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	//}}AFX_MSG_MAP
 	ON_COMMAND(ID_SUSPEND, &CMainFrame::OnSuspend)
 	ON_COMMAND(ID_RESUME, &CMainFrame::OnResume)
+	ON_COMMAND(ID_SUSPENDRESUME, &CMainFrame::OnSuspendResume)
 	ON_WM_INPUT()
 END_MESSAGE_MAP()
 
@@ -770,6 +771,15 @@ void CMainFrame::OnResume()
 	g_pBoard->Resume();
 }
 
+void CMainFrame::OnSuspendResume()
+{
+	// TODO: Add your command handler code here
+	if (g_pBoard->GetIsSuspended())
+		OnResume();
+	else
+		OnSuspend();
+}
+
 void CMainFrame::OnUpdateSuspend(CCmdUI* pCmdUI)
 {
 	// TODO: Add your command update UI handler code here
@@ -777,13 +787,6 @@ void CMainFrame::OnUpdateSuspend(CCmdUI* pCmdUI)
 		pCmdUI->Enable(TRUE);
 	else
 		pCmdUI->Enable(FALSE);
-
-	const int nSuspendIndex = m_wndToolBar.CommandToIndex(ID_SUSPEND);
-	const int nResumeIndex = m_wndToolBar.CommandToIndex(ID_RESUME);
-	if (nSuspendIndex == -1 || nResumeIndex == -1)
-	{
-		return;
-	}
 	if (g_pBoard->GetIsSuspended())
 	{
 		m_wndToolBar.GetToolBarCtrl().HideButton(ID_SUSPEND, TRUE);
