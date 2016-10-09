@@ -150,7 +150,7 @@ public:
 	int m_nColumn;
 	DWORD m_adwFrameCheck[FRAME_CHECK_COUNT];
 	double m_dFrameRate;
-
+	bool m_bBoost;
 	void Serialize(CArchive &ar);
 
 public:
@@ -273,6 +273,7 @@ public:
 	void ClearBuffer();
 	void Render();
 	void Run();
+	void Boost();
 };
 
 /////////////////////////////////////////////////////////////////////////////

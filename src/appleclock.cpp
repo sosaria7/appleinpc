@@ -227,10 +227,9 @@ void CAppleClock::Run()
 
 		apple_interval = (int)( (dwCurClock - lastAppleClock) / CPMS );
 
-		if ( (int)(apple_interval - host_interval ) > 0
-			|| host_interval > 500 )
+		if ( (int)(apple_interval - host_interval ) > 0 )
 		{
-			if ( host_interval > 500 || (int)( apple_interval - host_interval ) > 1000 )
+			if ( (int)( apple_interval - host_interval ) > 1000 )
 			{
 				Sleep(1);
 				dwLastTickCount = dwCurTickCount;
@@ -400,16 +399,12 @@ void CAppleClock::OnAfterDeactivate()
 void CAppleClock::SpeedUp()
 {
 	m_nBoost = BOOST_CLOCK_INTERVAL;
+	m_pScreen->Boost();
 }
 
 void CAppleClock::SpeedStable()
 {
 	m_nBoost = 0;
-}
-
-bool CAppleClock::IsBoosting()
-{
-	return (m_nBoost != 0);
 }
 
 void CAppleClock::SetMachineType(int nMachineType, BOOL bPalMode)
