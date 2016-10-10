@@ -81,7 +81,7 @@ CScreen::CScreen()
 							ANTIALIASED_QUALITY, FF_DONTCARE, "Arial Narrow" );
 	m_bPreview = FALSE;
 	m_bTextMode = TRUE;
-	m_bBoost = false;
+	m_bRelax = false;
 	SetDefaultColors();
 }
 
@@ -351,7 +351,7 @@ BOOL CScreen::IsVBL()
 void CScreen::Redraw()
 {
 	this->WakeUp();
-	Sleep(1);
+	Sleep(0);
 }
 
 void CScreen::Run()
@@ -376,7 +376,7 @@ void CScreen::Run()
 
 	while (TRUE)
 	{
-		m_bBoost = false;
+		m_bRelax = false;
 		dwTickStart = GetTickCount();
 		SuspendHere();
 		if (ShutdownHere())
@@ -408,7 +408,7 @@ void CScreen::Run()
 			}
 		}
 		dwElasped = GetTickCount() - dwTickStart;
-		if (m_bBoost == true && dwElasped < 1000/30 )
+		if (m_bRelax == true && dwElasped < 1000/30 )
 			Sleep(1000/30 - dwElasped);
 	}
 	m_bPowerOn = FALSE;
@@ -1656,7 +1656,7 @@ void CScreen::SetMouseCapture(BOOL bCapture)
 	m_bMouseCapture = bCapture;
 }
 
-void CScreen::Boost()
+void CScreen::Relax()
 {
-	m_bBoost = true;
+	m_bRelax = true;
 }

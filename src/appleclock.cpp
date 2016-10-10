@@ -73,7 +73,7 @@ DWORD g_dwVBLClock = VBL_CLOCK;
 DWORD g_dwFrameClock = SCREEN_CLOCK;
 
 // 0.005 sec
-#define BOOST_CLOCK_INTERVAL	( CLOCK/200 )
+#define DRIFT_CLOCK_INTERVAL	( CLOCK/200 )
 
 #undef SEED
 #define SEED	0x10
@@ -111,30 +111,39 @@ CAppleClock::~CAppleClock()
 */
 }
 
-
 /////////////////////////////////////////////////////////////////////////////
 // CAppleClock message handlers
 void CAppleClock::Run() 
 {
 	// TODO: Add your specialized code here and/or call the base class
-	DWORD measure1, measure2 = 0;
-	DWORD host_interval, apple_interval;
 	DWORD lastAppleClock=m_dwClock;
+	DWORD measure2 = m_dwClock;
 	DWORD dwClockInc;
-	DWORD dwCurTickCount, dwLastTickCount;
-	double CPMS = (double)g_dwCPS / 1000;
+	DWORD dwDriftAppleClock = 0;
+	double TPC;		// tic per apple clock
+	int nJitter;
+
+	LARGE_INTEGER measure1;
+	LARGE_INTEGER curTickCount, lastTickCount;
+	LARGE_INTEGER freq;
+	LARGE_INTEGER host_interval, apple_interval;
+	LARGE_INTEGER host_interval_hold;
 
 	int sig;
 	BOOL slept;
 	BOOL drawed;
 	int i;
 
+	QueryPerformanceFrequency(&freq);
+	TPC = (double)freq.QuadPart / g_dwCPS;
+
 	slept = FALSE;
 	drawed = FALSE;
 
 	m_pScreen->ClearBuffer();
 
-	dwLastTickCount = measure1 = GetTickCount();
+	QueryPerformanceCounter(&curTickCount);
+	measure1 = lastTickCount = curTickCount;
 
 	m_nAppleStatus = ACS_POWERON;
 
@@ -142,7 +151,9 @@ void CAppleClock::Run()
 		while( TRUE ){
 			if (SuspendHere())
 			{
-				dwLastTickCount = measure1 = GetTickCount();
+				QueryPerformanceCounter(&curTickCount);
+				lastTickCount = curTickCount;
+				measure1 = curTickCount;
 			}
 			if ( ShutdownHere() )
 				return;
@@ -180,14 +191,26 @@ void CAppleClock::Run()
 			m_cSlots.Clock(dwClockInc);
 			g_DXSound.Clock();
 
-			if (m_nBoost > 0)
+			if (m_nDrift > 0 || dwDriftAppleClock > 0)
 			{
-				m_nBoost -= dwClockInc;
-				lastAppleClock += dwClockInc;
-				if (m_nBoost < 0)
+				if (dwDriftAppleClock == 0)
 				{
-					lastAppleClock += m_nBoost;
-					m_nBoost = 0;
+					QueryPerformanceCounter(&curTickCount);
+					host_interval_hold.QuadPart = curTickCount.QuadPart - lastTickCount.QuadPart;
+				}
+
+				m_nDrift -= dwClockInc;
+				dwDriftAppleClock += dwClockInc;
+				if (m_nDrift <= 0)
+				{
+					dwDriftAppleClock += m_nDrift;
+
+					lastAppleClock += dwDriftAppleClock;
+					dwDriftAppleClock = 0;
+					lastTickCount.QuadPart = curTickCount.QuadPart - host_interval_hold.QuadPart;
+
+					m_nDrift = 0;
+					break;
 				}
 			}
 
@@ -210,43 +233,53 @@ void CAppleClock::Run()
 		dwCurClock = this->m_dwClock;
 
 		// measure clock speed
-		dwCurTickCount = GetTickCount();
+		QueryPerformanceCounter(&curTickCount);
 
-		host_interval = dwCurTickCount - measure1;
-		if ( host_interval > 1000 )
+		host_interval.QuadPart = curTickCount.QuadPart - measure1.QuadPart;
+		if (host_interval.QuadPart > freq.QuadPart)	// 1 second
 		{
-			m_dClockSpeed = (double)(dwCurClock - measure2) / host_interval / 1000;
-			measure1 = dwCurTickCount;		// host tick count
+			m_dClockSpeed = (double)(dwCurClock - measure2) / host_interval.QuadPart * freq.QuadPart / 1000000;
+			measure1 = curTickCount;		// host tick count
 			measure2 = dwCurClock;
 		}
 
-		if (dwCurTickCount > dwLastTickCount)
-			host_interval = dwCurTickCount - dwLastTickCount;
-		else
-			host_interval = 0;
-
-		apple_interval = (int)( (dwCurClock - lastAppleClock) / CPMS );
-
-		if ( (int)(apple_interval - host_interval ) > 0 )
+		if (dwDriftAppleClock > 0)
 		{
-			if ( (int)( apple_interval - host_interval ) > 1000 )
+			continue;
+		}
+
+		host_interval.QuadPart = ( curTickCount.QuadPart - lastTickCount.QuadPart );
+
+		apple_interval.QuadPart = (LONGLONG)( (dwCurClock - lastAppleClock) * TPC + .5);	// convert apple clock to tick count
+
+		nJitter = (int)(apple_interval.QuadPart - host_interval.QuadPart);
+		if (nJitter < -CLOCK)	// apple is too slow
+		{
+			// could not chase the apple speed
+			lastTickCount = curTickCount;
+			lastAppleClock = dwCurClock;
+		}
+		else if (nJitter > CLOCK)	// apple is too fast (something wrong)
+		{
+			Sleep(1);
+			lastTickCount = curTickCount;	// adjust host time
+			lastAppleClock = dwCurClock;
+			slept = TRUE;
+		}
+		else if (nJitter > 0)
+		{
+			while ((int)(apple_interval.QuadPart - host_interval.QuadPart) > 0)
 			{
 				Sleep(1);
-				dwLastTickCount = dwCurTickCount;
+				QueryPerformanceCounter(&curTickCount);
+				host_interval.QuadPart = (curTickCount.QuadPart - lastTickCount.QuadPart);
 				slept = TRUE;
 			}
-			else
-			{
-				while( (int)(apple_interval - host_interval ) > 0 )
-				{
-					Sleep(1);
-					host_interval = GetTickCount() - dwLastTickCount;
-					slept = TRUE;
-				}
-				dwLastTickCount += apple_interval;
-			}
-			lastAppleClock += (int)( apple_interval * CPMS );
+
+			lastTickCount.QuadPart += apple_interval.QuadPart;
+			lastAppleClock += (int)(apple_interval.QuadPart / TPC + .5);
 		}
+
 	}
 	m_pScreen->ClearBuffer();
 }
@@ -398,13 +431,13 @@ void CAppleClock::OnAfterDeactivate()
 
 void CAppleClock::SpeedUp()
 {
-	m_nBoost = BOOST_CLOCK_INTERVAL;
-	m_pScreen->Boost();
+	m_nDrift = DRIFT_CLOCK_INTERVAL;
+	m_pScreen->Relax();
 }
 
 void CAppleClock::SpeedStable()
 {
-	m_nBoost = 0;
+	m_nDrift = 0;
 }
 
 void CAppleClock::SetMachineType(int nMachineType, BOOL bPalMode)

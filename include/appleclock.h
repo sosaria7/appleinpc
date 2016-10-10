@@ -81,7 +81,7 @@ public:
 // Implementation
 protected:
 	DWORD m_dwClock;
-	int m_nBoost;
+	int m_nDrift;
 	int m_nAppleStatus;
 };
 
