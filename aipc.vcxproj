@@ -85,11 +85,12 @@
     </Bscmake>
     <Link>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>Debug</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OutputFile>.\Release\aipc.exe</OutputFile>
       <AdditionalDependencies>winmm.lib;dx80\lib\dinput.lib;dx80\lib\dsound.lib;dx80\lib\dxerr8.lib;dx80\lib\ddraw.lib;dx80\lib\dxguid.lib;dx80\lib\dinput8.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -133,6 +134,7 @@
       <OutputFile>.\Debug\aipc.exe</OutputFile>
       <AdditionalDependencies>winmm.lib;dx80\lib\dinput.lib;dx80\lib\dsound.lib;dx80\lib\dxerr8.lib;dx80\lib\ddraw.lib;dx80\lib\dxguid.lib;dx80\lib\dinput8.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <OptimizeReferences>false</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

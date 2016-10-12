@@ -121,6 +121,8 @@ void CAppleClock::Run()
 	DWORD dwClockInc;
 	DWORD dwDriftAppleClock = 0;
 	double TPC;		// tic per apple clock
+	double temp;
+	double remain = 0;
 	int nJitter;
 
 	LARGE_INTEGER measure1;
@@ -250,16 +252,18 @@ void CAppleClock::Run()
 
 		host_interval.QuadPart = ( curTickCount.QuadPart - lastTickCount.QuadPart );
 
-		apple_interval.QuadPart = (LONGLONG)( (dwCurClock - lastAppleClock) * TPC + .5);	// convert apple clock to tick count
+		temp = (dwCurClock - lastAppleClock) * TPC + remain;		// convert apple clock to tick count
+		apple_interval.QuadPart = (LONGLONG)temp;
+		remain = temp - apple_interval.QuadPart;
 
 		nJitter = (int)(apple_interval.QuadPart - host_interval.QuadPart);
-		if (nJitter < -CLOCK)	// apple is too slow
+		if (nJitter < -freq.QuadPart)	// apple is too slow
 		{
 			// could not chase the apple speed
 			lastTickCount = curTickCount;
 			lastAppleClock = dwCurClock;
 		}
-		else if (nJitter > CLOCK)	// apple is too fast (something wrong)
+		else if (nJitter > freq.QuadPart)	// apple is too fast (something wrong)
 		{
 			Sleep(1);
 			lastTickCount = curTickCount;	// adjust host time
@@ -277,7 +281,7 @@ void CAppleClock::Run()
 			}
 
 			lastTickCount.QuadPart += apple_interval.QuadPart;
-			lastAppleClock += (int)(apple_interval.QuadPart / TPC + .5);
+			lastAppleClock = dwCurClock;
 		}
 
 	}
