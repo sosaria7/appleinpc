@@ -295,7 +295,7 @@ void CScreen::Draw( int nLine, int nColumn )
 	{
 		if ( ( data & 1 ) != 0 )
 		{
-			pixelInfo[x] = color;
+			pixelInfo[x] = (BYTE)color;
 		}
 		else
 		{
@@ -872,13 +872,10 @@ HRESULT CScreen::Present()
 			{
 				return E_FAIL;
 			}
-            //hr = m_pDisplay->GetFrontBuffer()->Blt( &rect, m_pDisplay->GetBackBuffer(),
             hr = m_pDisplay->GetFrontBuffer()->Blt( &rect, lpdds, NULL, DDBLT_WAIT, NULL );
 		}
         else
 		{
-//			m_pDisplay->Blt( 0, 0, m_pSurfaceDisk, NULL );
-			RECT rect = { 0, 0, WIN_WIDTH, WIN_WIDTH };
 			lpdds = m_pSurfaceMain->GetDDrawSurface();
 			if ( lpdds == NULL )
 			{
