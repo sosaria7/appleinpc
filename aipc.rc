@@ -156,7 +156,7 @@ BEGIN
             VALUE "FileDescription", "Apple in PC"
             VALUE "FileVersion", "0.1.40.3"
             VALUE "InternalName", "aipc"
-            VALUE "LegalCopyright", "Copyright © 2002-2016"
+            VALUE "LegalCopyright", "Copyright ?2002-2016"
             VALUE "OriginalFilename", "aipc.exe"
             VALUE "ProductName", "Apple in PC"
             VALUE "ProductVersion", "0.1.40.3"
@@ -191,6 +191,14 @@ IDB_DISK_WRITE_F        BITMAP                  "res\\disk_wri.bmp"
 IDB_HDD                 BITMAP                  "res\\hdd.bmp"
 
 IDR_TOOLBAR             BITMAP                  "res\\toolbar1.bmp"
+
+IDB_KEY_CAPS            BITMAP                  "res\\key_caps.bmp"
+
+IDB_KEY_SCROLL          BITMAP                  "res\\key_scroll.bmp"
+
+IDB_KEY_CAPS_OFF        BITMAP                  "res\\key_caps_off.bmp"
+
+IDB_KEY_SCROLL_OFF      BITMAP                  "res\\key_scroll_off.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -783,6 +791,7 @@ BEGIN
     ID_INDICATOR_CLOCK_SPEED "clock"
     ID_INDICATOR_FRAME_SPEED "frame"
     ID_INDICATOR_DISK       "disk"
+	ID_INDICATOR_KEY_STATUS "keys"
 END
 
 STRINGTABLE

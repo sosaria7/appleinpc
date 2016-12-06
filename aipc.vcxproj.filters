@@ -45,12 +45,6 @@
     <Image Include="RES\bitmap1.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="RES\bmp00001.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="RES\bmp00002.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="RES\diskOff.bmp">
       <Filter>Resource Files</Filter>
     </Image>
@@ -82,6 +76,18 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\hdd.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\key_caps.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\key_scroll.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\key_scroll_off.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\key_caps_off.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

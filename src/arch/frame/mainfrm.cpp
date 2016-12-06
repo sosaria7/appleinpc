@@ -495,8 +495,9 @@ LRESULT CMainFrame::OnReqAcquire(WPARAM wParam, LPARAM lParam)
 				::ClipCursor(&rect);
 			}
 		}
-		g_pBoard->m_keyboard.SetCapsLock((GetKeyState(VK_CAPITAL) & 0x0001) != 0 );
+		g_pBoard->m_keyboard.SetCapsLock((GetKeyState(VK_CAPITAL) & 0x0001) == 0 );
 		g_pBoard->m_keyboard.SetScrollLock((GetKeyState(VK_SCROLL) & 0x0001) != 0);
+		m_wndStatusBar.SetKeyStatus(KEY_STATE_CAPTURE, true);
 	}
 	else
 	{
@@ -519,6 +520,7 @@ LRESULT CMainFrame::OnReqAcquire(WPARAM wParam, LPARAM lParam)
 			::ClipCursor(&m_stCursorClip);
 			m_hCursor = NULL;
 		}
+		m_wndStatusBar.SetKeyStatus(KEY_STATE_CAPTURE, false);
 	}
 	return 0;
 }

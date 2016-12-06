@@ -8,6 +8,7 @@
 #define ID_INDICATOR_CLOCK_SPEED        106
 #define ID_INDICATOR_FRAME_SPEED        107
 #define ID_INDICATOR_DISK               108
+#define ID_INDICATOR_KEY_STATUS         109
 #define IDR_MAINFRAME                   128
 #define IDR_APPLE2TYPE                  129
 #define IDD_DEBUG                       130
@@ -38,6 +39,10 @@
 #define IDD_SETTINGS_INPUT              173
 #define IDD_SETTINGS_MACHINE            175
 #define IDD_SETTINGS_COLOR              177
+#define IDB_KEY_CAPS                    183
+#define IDB_KEY_SCROLL                  184
+#define IDB_KEY_CAPS_OFF                185
+#define IDB_KEY_SCROLL_OFF              186
 #define IDC_LIST_PROCESS                1000
 #define IDC_EDIT_FILENAME2              1001
 #define IDC_BTN_SLOT1                   1002
@@ -205,7 +210,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        183
+#define _APS_NEXT_RESOURCE_VALUE        187
 #define _APS_NEXT_COMMAND_VALUE         32806
 #define _APS_NEXT_CONTROL_VALUE         1129
 #define _APS_NEXT_SYMED_VALUE           111

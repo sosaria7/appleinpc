@@ -30,6 +30,7 @@ static UINT indicators[] =
 	ID_INDICATOR_DISK,
 	ID_INDICATOR_CLOCK_SPEED,
 	ID_INDICATOR_FRAME_SPEED,
+	ID_INDICATOR_KEY_STATUS
 };
 
 CAppleStatusBar::CAppleStatusBar()
@@ -42,9 +43,16 @@ CAppleStatusBar::CAppleStatusBar()
 	VERIFY(m_bmDiskWrite_Full.LoadBitmap( IDB_DISK_WRITE_F ));
 	VERIFY(m_bmDiskOff_Full.LoadBitmap( IDB_DISK_OFF_F ));
 	VERIFY(m_bmHdd.LoadBitmap(IDB_HDD));
+	VERIFY(m_bmCapsOn.LoadBitmap(IDB_KEY_CAPS));
+	VERIFY(m_bmCapsOff.LoadBitmap(IDB_KEY_CAPS_OFF));
+	VERIFY(m_bmScrollLockOn.LoadBitmap(IDB_KEY_SCROLL));
+	VERIFY(m_bmScrollLockOff.LoadBitmap(IDB_KEY_SCROLL_OFF));
 	int i;
 	for( i = 0; i < 5; i++ )
 		m_iDiskStatus[i] = 0;
+	m_bKeyCaptured = false;
+	m_bKeyCaps = false;
+	m_bKeyScrollLock = false;
 }
 
 CAppleStatusBar::~CAppleStatusBar()
@@ -69,6 +77,9 @@ void CAppleStatusBar::DrawItem(LPDRAWITEMSTRUCT lpDrawItem)
 	case 1:
 		DrawDiskLight( lpDrawItem->hDC, lpDrawItem->rcItem );
 		return;
+	case 4:
+		DrawKeyStatus(lpDrawItem->hDC, lpDrawItem->rcItem);
+		return;
 	}
 	CStatusBar::DrawItem( lpDrawItem );
 }
@@ -79,11 +90,12 @@ BOOL CAppleStatusBar::Create(CWnd *pParentWnd, DWORD dwStyle)
 		||	!SetIndicators(indicators, sizeof(indicators)/sizeof(UINT)) )
 		return FALSE;
 
-	SetPaneInfo( 0, GetItemID( 0 ), GetPaneStyle( 0 ), 320 );
-	SetPaneInfo( 1, GetItemID( 1 ), GetPaneStyle( 1 ) | SBT_OWNERDRAW, 106 );
-	SetPaneInfo( 2, GetItemID( 2 ), GetPaneStyle( 2 ), 65 );
-	SetPaneInfo( 3, GetItemID( 3 ), GetPaneStyle( 3 ), 55 );
-	GetItemRect( 1, &m_rectDisk );
+	SetPaneInfo(0, GetItemID(0), GetPaneStyle(0), 280);
+	SetPaneInfo(1, GetItemID(1), GetPaneStyle(1) | SBT_OWNERDRAW, 106);
+	SetPaneInfo(2, GetItemID(2), GetPaneStyle(2), 65);
+	SetPaneInfo(3, GetItemID(3), GetPaneStyle(3), 55);
+	SetPaneInfo(4, GetItemID(4), GetPaneStyle(4) | SBT_OWNERDRAW, 40);
+	GetItemRect(1, &m_rectDisk);
 	return TRUE;
 }
 
@@ -104,6 +116,42 @@ void CAppleStatusBar::SetFrame(double frame)
 	CString szFrame;
 	szFrame.Format( "%3.2lf f/s", frame );
 	SetPaneText( 3, szFrame );
+}
+
+void CAppleStatusBar::SetKeyStatus(int index, int status)
+{
+	CScreen* pScreen = NULL;
+	bool bChanged;
+	bool* pbTarget;
+	bool bFlag = status != 0;
+
+	switch (index)
+	{
+	case 0:
+		pbTarget = &m_bKeyCaptured;
+		break;
+	case 1:
+		pbTarget = &m_bKeyCaps;
+		break;
+	case 2:
+		pbTarget = &m_bKeyScrollLock;
+		break;
+	default:
+		return;
+	}
+	bChanged = *pbTarget != bFlag;
+	*pbTarget = bFlag;
+
+	if (bChanged)
+	{
+		if (g_pBoard != NULL)
+			pScreen = g_pBoard->m_pScreen;
+
+		if (pScreen == NULL || pScreen->m_bWindowed)
+		{
+			InvalidateRect(&m_rectKeyStatus, FALSE);
+		}
+	}
 }
 
 void CAppleStatusBar::SetDiskStatus(int index, int status)
@@ -199,7 +247,8 @@ void CAppleStatusBar::SetDiskStatus(int index, int status)
 void CAppleStatusBar::OnSize(UINT nType, int cx, int cy) 
 {
 	CStatusBar::OnSize(nType, cx, cy);
-	GetItemRect( 1, &m_rectDisk );
+	GetItemRect(1, &m_rectDisk);
+	GetItemRect(4, &m_rectKeyStatus);
 	// TODO: Add your message handler code here
 }
 
@@ -209,7 +258,6 @@ void CAppleStatusBar::DrawDiskLight(HDC hDC, RECT rc)
 	dc.Attach(hDC);
 	CRect rect(rc);
 	CDC srcDC;
-	CDC maskDC;
 	BITMAP info;
 	CBitmap* pOldBitmap;
 	int margin;
@@ -271,7 +319,6 @@ void CAppleStatusBar::DrawDiskLight_Full(HDC hDC, RECT rc)
 	dc.Attach(hDC);
 	CRect rect(rc);
 	CDC srcDC;
-	CDC maskDC;
 	BITMAP info;
 	CBitmap* pOldBitmap;
 	
@@ -324,6 +371,50 @@ void CAppleStatusBar::DrawDiskLight_Full(HDC hDC, RECT rc)
 
 	dc.BitBlt(rect.left, rect.top, info.bmWidth, info.bmHeight,
 		&srcDC, 0, 0, SRCCOPY);
+
+	srcDC.SelectObject(pOldBitmap);
+	dc.Detach();
+}
+
+void CAppleStatusBar::DrawKeyStatus(HDC hDC, RECT rc)
+{
+	CDC dc;
+	dc.Attach(hDC);
+	CRect rect(rc);
+	CDC srcDC;
+	BITMAP info;
+	CBitmap* pOldBitmap;
+	CBitmap* pBitmap;
+
+	srcDC.CreateCompatibleDC(NULL);
+	pBitmap = m_bKeyCaptured ? &m_bmDiskRead : &m_bmDiskOff;
+
+	pOldBitmap = srcDC.SelectObject(pBitmap);
+	pBitmap->GetObject(sizeof(BITMAP), &info);
+
+	dc.BitBlt(rect.left, rect.top + (rect.Height() - info.bmHeight) / 2,
+		info.bmWidth, info.bmHeight, &srcDC, 0, 0, SRCCOPY);
+	rect.left += info.bmWidth + 2;
+
+	// caps lock
+	pBitmap = m_bKeyCaps ? &m_bmCapsOn : &m_bmCapsOff;
+
+	srcDC.SelectObject(pBitmap);
+	pBitmap->GetObject(sizeof(BITMAP), &info);
+
+	dc.BitBlt(rect.left, rect.top + (rect.Height() - info.bmHeight) / 2,
+		info.bmWidth, info.bmHeight, &srcDC, 0, 0, SRCCOPY);
+	rect.left += info.bmWidth + 2;
+
+	// scroll lock
+	pBitmap = m_bKeyScrollLock ? &m_bmScrollLockOn : &m_bmScrollLockOff;
+
+	srcDC.SelectObject(pBitmap);
+	pBitmap->GetObject(sizeof(BITMAP), &info);
+
+	dc.BitBlt(rect.left, rect.top + (rect.Height() - info.bmHeight) / 2,
+		info.bmWidth, info.bmHeight, &srcDC, 0, 0, SRCCOPY);
+	rect.left += info.bmWidth + 2;
 
 	srcDC.SelectObject(pOldBitmap);
 	dc.Detach();

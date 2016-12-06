@@ -7,6 +7,10 @@
 // AppleStatusBar.h : header file
 //
 
+#define KEY_STATE_CAPTURE		0
+#define KEY_STATE_CAPS			1
+#define KEY_STATE_SCROLL		2
+
 /////////////////////////////////////////////////////////////////////////////
 // CAppleStatusBar window
 
@@ -27,7 +31,16 @@ protected:
 	CBitmap m_bmDiskOff_Full;
 	CBitmap m_bmDiskRead_Full;
 	CBitmap m_bmDiskWrite_Full;
+
+	CBitmap m_bmCapsOn;
+	CBitmap m_bmCapsOff;
+	CBitmap m_bmScrollLockOn;
+	CBitmap m_bmScrollLockOff;
+
 	int m_iDiskStatus[5];
+	bool m_bKeyCaptured;
+	bool m_bKeyCaps;
+	bool m_bKeyScrollLock;
 	CBitmap m_bmHdd;
 
 // Operations
@@ -43,7 +56,9 @@ public:
 	void SetMessage( LPCTSTR lpszText );
 	void DrawDiskLight(HDC hDC, RECT rect);
 	void DrawDiskLight_Full(HDC hDC, RECT rect);
+	void DrawKeyStatus(HDC hDC, RECT rc);
 	void SetDiskStatus(int index, int status);
+	void SetKeyStatus(int index, int status);
 	void SetFrame(double frame);
 	void SetSpeed(double speed);
 	BOOL Create(CWnd *pParentWnd, DWORD dwStyle = WS_CHILD | WS_VISIBLE | CBRS_BOTTOM);
@@ -54,6 +69,7 @@ public:
 	// Generated message map functions
 protected:
 	CRect m_rectDisk;
+	CRect m_rectKeyStatus;
 	//{{AFX_MSG(CAppleStatusBar)
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	//}}AFX_MSG

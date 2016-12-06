@@ -34,7 +34,7 @@ CCriticalSection g_keyboardLock;
 CKeyboard::CKeyboard()
 {
 	m_lastKey=0;
-	m_bCaps = FALSE;
+	m_bCaps = TRUE;
 	m_bScroll = FALSE;
 }
 
@@ -58,10 +58,10 @@ void CKeyboard::OnKeyDown(WPARAM wParam, LPARAM lParam)
 		switch( wParam )
 		{
 		case DIK_CAPITAL:
-			m_bCaps = !m_bCaps;
+			SetCapsLock(!m_bCaps);
 			return;
 		case DIK_SCROLL:
-			m_bScroll = !m_bScroll;
+			SetScrollLock(!m_bScroll);
 			break;
 		case 0xC6:			// control+pause : break
 			g_pBoard->Reset();
@@ -163,7 +163,7 @@ void CKeyboard::OnKeyDown(WPARAM wParam, LPARAM lParam)
 	if ( key != 0 )
 	{
 		key |= 0x80;
-		if ( m_bCaps )
+		if ( !m_bCaps )
 		{
 			if ( key >= 0xC1 && key <= 0xDA )
 			{
@@ -245,11 +245,13 @@ void CKeyboard::EnableNumKey(BOOL enable)
 void CKeyboard::SetCapsLock(BOOL bCaps)
 {
 	m_bCaps = bCaps;
+	g_pBoard->m_lpwndMainFrame->m_wndStatusBar.SetKeyStatus(KEY_STATE_CAPS, bCaps);
 }
 
 void CKeyboard::SetScrollLock(BOOL bScroll)
 {
 	m_bScroll = bScroll;
+	g_pBoard->m_lpwndMainFrame->m_wndStatusBar.SetKeyStatus(KEY_STATE_SCROLL, bScroll);
 }
 
 BOOL CKeyboard::GetScrollLock()
