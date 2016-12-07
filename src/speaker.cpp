@@ -88,7 +88,7 @@ void CSpeaker::ChangeSampleRate()
 	int clock;
 	clock = g_dwCPS;		// 1MHz
 	m_iUpdateStep = (int)( (double)STEP * (double)g_DXSound.m_nSampleRate / clock + .5 );
-	m_dwLastAppleClock = 0;
+	m_dwLastAppleClock = g_pBoard->GetClock();
 	m_iLastUpdatePos = -1;
 	m_bToggle = FALSE;
 }

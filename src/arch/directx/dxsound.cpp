@@ -41,6 +41,7 @@ CDXSound::CDXSound()
 	m_nPan = 0;
 	m_bMute = FALSE;
 	m_nCheckStep = 0;
+	m_nSamplesInFrame = (m_nSampleRate / 60);
 }
 
 CDXSound::~CDXSound()
