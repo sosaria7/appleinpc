@@ -31,7 +31,7 @@ CDXSound::CDXSound()
 	m_stPSG = NULL;
 	m_wCurPos = 0;
 	m_dwLastClock = 0;
-	m_iRateHigh = 0;
+	m_iRateHigh = -1;
 	m_iRateLow = 0;
 	m_iToggle = 0;
 	m_nSampleRate = 44100;
@@ -195,15 +195,17 @@ void CDXSound::Clock()
 	int nVolR, nVolL;
 	DWORD dwDxBuffered, dwBufferedBytes;
 	DWORD dwReadPos, dwWritePos;
+	DWORD dwStep;
 
 	if ( m_lpDS == NULL || m_lpSndBuffer == NULL )
 		return;
 
 	interval = g_pBoard->GetClock() - m_dwLastClock;
 
-	if (interval < (DWORD)(g_dwCPS / 60 / CHECK_STEP ))
+	dwStep = (DWORD)(g_dwCPS / 60 / CHECK_STEP);
+	if (interval < dwStep)
 		return;
-	m_dwLastClock += ((DWORD)(interval / (g_dwCPS / 60 / CHECK_STEP))) * (g_dwCPS / 60 / CHECK_STEP);
+	m_dwLastClock += ((DWORD)(interval / dwStep)) * dwStep;
 
 	m_lpSndBuffer->GetCurrentPosition(&dwReadPos, &dwWritePos);
 	dwDxBuffered = dwWritePos - dwReadPos;
@@ -214,14 +216,14 @@ void CDXSound::Clock()
 		dwBufferedBytes += SND_BUFFER_SIZE;
 
 	m_nCheckStep++;
-	if (m_nCheckStep < CHECK_STEP && dwBufferedBytes >= m_nSampleRate / 4 )		// 3 / 12
+	if (m_nCheckStep < CHECK_STEP && dwBufferedBytes >= m_nSampleRate * 5 / 24 )		// 2.5 / 12
 	{
 		// enough buffer
 		return;
 	}
 
 	m_nCheckStep = 0;
-	if (dwBufferedBytes >= (m_nSampleRate / 2) || dwBufferedBytes < dwDxBuffered)	// 6 / 12
+	if (m_iRateHigh < 0 || dwBufferedBytes >= (m_nSampleRate / 2) || dwBufferedBytes < dwDxBuffered)	// 6 / 12
 	{
 		m_iRateHigh = 0;
 		m_iRateLow = 0;
@@ -235,12 +237,12 @@ void CDXSound::Clock()
 	else if (dwBufferedBytes >= m_nSampleRate / 3)	// 4 / 12
 	{
 		m_iRateLow = 0;
-		m_iRateHigh += m_nSampleRate / 2400;
+		m_iRateHigh = m_nSampleRate / 1200;
 	}
 	else if (dwBufferedBytes < m_nSampleRate / 6) // 2 / 12
 	{
 		m_iRateHigh = 0;
-		m_iRateLow += m_nSampleRate / 2400;
+		m_iRateLow = m_nSampleRate / 1200;
 	}
 	else		// 2/12 ~ 4/12
 	{
@@ -351,6 +353,8 @@ void CDXSound::Resume()
 	m_nSamplesInFrame = m_nSampleRate / 60;		// frames per second = 60
 	m_lpSndBuffer->Play( 0, 0, DSBPLAY_LOOPING );
 	m_bPlay = TRUE;
+	m_iRateHigh = -1;
+	Sleep(1);
 }
 
 
