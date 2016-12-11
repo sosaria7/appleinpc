@@ -36,7 +36,10 @@ public:
 	int GetSaturation();
 	void Initialize();
 	void InitPCJoystick();
-
+	bool GetSwapButtons() { return m_bSwapButtons; }
+	bool GetArrowAsPaddle() { return m_bArrowAsPaddle; }
+	void SetSwapButtons(bool bSwapButtons) { m_bSwapButtons = bSwapButtons; }
+	void SetArrayAsPaddle(bool bArrayAsPaddle) { m_bArrowAsPaddle = bArrayAsPaddle; }
 	BOOL m_bHasPCJoystick;
 
 protected:
@@ -47,6 +50,8 @@ protected:
 	int	m_nJoystickMode;
 	int m_nDeadZone;
 	int m_nSaturation;
+	bool m_bArrowAsPaddle;
+	bool m_bSwapButtons;
 };
 
 #endif // !defined(AFX_JOYSTICK_H__4DF81BD0_F4BF_4630_BCB4_82A4983195E4__INCLUDED_)

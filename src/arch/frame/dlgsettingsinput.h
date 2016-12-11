@@ -32,6 +32,8 @@ public:
 	CButton m_acJoystick[3];
 	CComboBox m_cJoyDead;
 	CComboBox m_cJoySat;
+	BOOL m_bArrowAsPaddle;
+	BOOL m_bSwapButtons;
 
 	virtual void OnOK();
 	virtual void OnCancel();

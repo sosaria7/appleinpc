@@ -19,6 +19,8 @@ IMPLEMENT_DYNAMIC(CDlgSettingsInput, CDialogEx)
 
 CDlgSettingsInput::CDlgSettingsInput(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_SETTINGS_INPUT, pParent)
+	, m_bArrowAsPaddle(FALSE)
+	, m_bSwapButtons(FALSE)
 {
 
 }
@@ -38,6 +40,8 @@ void CDlgSettingsInput::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_JOYSTICK_PCJOYSTICK, m_acJoystick[2]);
 	DDX_Control(pDX, IDC_JOYDEAD, m_cJoyDead);
 	DDX_Control(pDX, IDC_JOYSAT, m_cJoySat);
+	DDX_Check(pDX, IDC_ARRAW_AS_PADDLE, m_bArrowAsPaddle);
+	DDX_Check(pDX, IDC_SWAP_BUTTON_1_2, m_bSwapButtons);
 }
 
 
@@ -56,6 +60,8 @@ void CDlgSettingsInput::OnOK()
 	int i;
 	int nSelect;
 
+	UpdateData(TRUE);
+
 	// keyboard
 	g_cDIKeyboard.SetDelayTime(m_cKeyRepeat.GetPos(), m_cKeyDelay.GetPos());
 
@@ -72,6 +78,8 @@ void CDlgSettingsInput::OnOK()
 	g_pBoard->m_joystick.SetDeadZone(m_anDeadZoneList[nSelect]);
 	nSelect = m_cJoySat.GetCurSel();
 	g_pBoard->m_joystick.SetSaturation(m_anSaturationList[nSelect]);
+	g_pBoard->m_joystick.SetArrayAsPaddle(m_bArrowAsPaddle != 0);
+	g_pBoard->m_joystick.SetSwapButtons(m_bSwapButtons != 0);
 
 	CDialogEx::OnOK();
 }
@@ -135,6 +143,10 @@ BOOL CDlgSettingsInput::OnInitDialog()
 	m_cJoySat.SetCurSel(nSelect);
 	OnJoystickChanged();
 
+	m_bSwapButtons = g_pBoard->m_joystick.GetSwapButtons();
+	m_bArrowAsPaddle = g_pBoard->m_joystick.GetArrowAsPaddle();
+
+	UpdateData(FALSE);
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX Property Pages should return FALSE
 }

@@ -36,6 +36,8 @@ CJoystick::CJoystick()
 	m_bHasPCJoystick = FALSE;
 	m_nDeadZone = 10;
 	m_nSaturation = 95;
+	m_bArrowAsPaddle = true;
+	m_bSwapButtons = false;
 }
 
 CJoystick::~CJoystick()
@@ -52,7 +54,7 @@ BYTE CJoystick::GetStatus(BYTE num)
 	DIJOYSTATE2 *stJState;
 	BOOL bScroll;
 	keybd = &g_pBoard->m_keyboard;
-	bScroll = keybd->GetScrollLock();
+	bScroll = keybd->GetScrollLock() && m_bArrowAsPaddle;
 
 	switch( m_nJoystickMode )
 	{
@@ -60,9 +62,9 @@ BYTE CJoystick::GetStatus(BYTE num)
 		switch( num & 0x0F )
 		{
 		case 1:
-			return ( KEYDOWN( DIK_LMENU ) || KEYDOWN( DIK_DELETE ) ) ? 0xFF : 0x00;
+			return ( KEYDOWN( DIK_LMENU ) || (!m_bSwapButtons ? KEYDOWN(DIK_DELETE) : KEYDOWN(DIK_INSERT)) ) ? 0xFF : 0x00;
 		case 2:
-			return ( KEYDOWN( DIK_RMENU ) || KEYDOWN( DIK_INSERT ) ) ? 0xFF : 0x00;
+			return ( KEYDOWN( DIK_RMENU ) || (!m_bSwapButtons ? KEYDOWN(DIK_INSERT) : KEYDOWN(DIK_DELETE)) ) ? 0xFF : 0x00;
 		case 3:
 			return ( KEYDOWN( DIK_LSHIFT ) || KEYDOWN( DIK_RSHIFT ) ) ? 0xFF : 0x00;
 			// paddel
@@ -106,10 +108,10 @@ BYTE CJoystick::GetStatus(BYTE num)
 		{
 		case 1:		// button 0
 			Poll();
-			return ( KEYDOWN( DIK_LMENU ) || g_cDIJoystick.IsJoystickFire( 0 ) ) ? 0xFF : 0x00;
+			return ( KEYDOWN( DIK_LMENU ) || (!m_bSwapButtons ? g_cDIJoystick.IsJoystickFire(0) : g_cDIJoystick.IsJoystickFire(1))) ? 0xFF : 0x00;
 		case 2:		// button 1
 			Poll();
-			return ( KEYDOWN( DIK_RMENU ) || g_cDIJoystick.IsJoystickFire( 1 ) ) ? 0xFF : 0x00;
+			return ( KEYDOWN( DIK_RMENU ) || (!m_bSwapButtons ? g_cDIJoystick.IsJoystickFire(1) : g_cDIJoystick.IsJoystickFire(0))) ? 0xFF : 0x00;
 		case 3:		// button 3
 //			Poll();
 			return ( KEYDOWN( DIK_LSHIFT ) || KEYDOWN( DIK_RSHIFT ) ) ? 0xFF : 0x00;
@@ -258,12 +260,19 @@ void CJoystick::Serialize( CArchive &ar )
 		ar << m_nJoystickMode;
 		ar << m_nDeadZone;
 		ar << m_nSaturation;
+		ar << m_bArrowAsPaddle;
+		ar << m_bSwapButtons;
 	}
 	else
 	{
 		ar >> m_nJoystickMode;
 		ar >> m_nDeadZone;
 		ar >> m_nSaturation;
+		if (g_nSerializeVer >= 8)
+		{
+			ar >> m_bArrowAsPaddle;
+			ar >> m_bSwapButtons;
+		}
 		if ( m_nJoystickMode == JM_PCJOYSTICK )
 		{
 			if ( m_bHasPCJoystick == FALSE )

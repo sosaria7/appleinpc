@@ -162,6 +162,8 @@
 #define IDC_MACHINE_NTSC                1126
 #define IDC_MACHINE_PAL                 1127
 #define IDC_SETTINGS_TAB                1128
+#define IDC_SWAP_BUTTON_1_2             1129
+#define IDC_ARRAW_AS_PADDLE             1130
 #define ID_DEBUG                        32771
 #define ID_CONFIGURE_SLOTS              32772
 #define ID_REBOOT                       32773
@@ -212,7 +214,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        187
 #define _APS_NEXT_COMMAND_VALUE         32806
-#define _APS_NEXT_CONTROL_VALUE         1129
+#define _APS_NEXT_CONTROL_VALUE         1131
 #define _APS_NEXT_SYMED_VALUE           111
 #endif
 #endif

@@ -21,7 +21,9 @@ public:
 	void OnKeyDown(WPARAM wParam, LPARAM lParam);
 	void SetCapsLock(BOOL bCaps);
 	void SetScrollLock(BOOL bScroll);
-	BOOL GetScrollLock();
+	BOOL GetScrollLock() { return m_bScroll; }
+	BOOL GetCapsLock() { return m_bCaps; }
+
 	CKeyboard();
 	virtual ~CKeyboard();
 protected:

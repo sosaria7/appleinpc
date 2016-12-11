@@ -52,6 +52,9 @@ void CKeyboard::OnKeyDown(WPARAM wParam, LPARAM lParam)
 	BOOL ctrl = KEYDOWN( DIK_LCONTROL ) || KEYDOWN( DIK_RCONTROL );
 	BOOL alt = KEYDOWN( DIK_LMENU ) || KEYDOWN( DIK_RMENU );
 	BOOL shift = KEYDOWN( DIK_LSHIFT ) || KEYDOWN( DIK_RSHIFT );
+	CJoystick *joy;
+	joy = &g_pBoard->m_joystick;
+	bool bArrowAsPaddle = joy->GetArrowAsPaddle() && m_bScroll;
 
 	if ( lParam == 0 )		// only for key down, not for repeat
 	{
@@ -142,7 +145,7 @@ void CKeyboard::OnKeyDown(WPARAM wParam, LPARAM lParam)
 	case DIK_RIGHT:
 	case DIK_DOWN:
 	case DIK_UP:
-		if (m_bScroll == TRUE && akm_shift[DIK_NUMPAD2] == 0)
+		if (bArrowAsPaddle && akm_shift[DIK_NUMPAD2] == 0)
 		{
 			return;
 		}
@@ -252,9 +255,4 @@ void CKeyboard::SetScrollLock(BOOL bScroll)
 {
 	m_bScroll = bScroll;
 	g_pBoard->m_lpwndMainFrame->m_wndStatusBar.SetKeyStatus(KEY_STATE_SCROLL, bScroll);
-}
-
-BOOL CKeyboard::GetScrollLock()
-{
-	return m_bScroll;
 }

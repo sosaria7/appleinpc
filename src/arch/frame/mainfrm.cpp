@@ -32,7 +32,7 @@ int g_nSerializeVer = 0;
 
 static CString GetStatusFilePath();
 
-#define STATUS_VERSION		(7)
+#define STATUS_VERSION		(8)
 #define STATUS_MIN_VERSION	(3)
 #define STATUS_MAGIC	0x89617391
 
@@ -481,6 +481,26 @@ void CMainFrame::OnUpdatePower(CCmdUI* pCmdUI)
 
 LRESULT CMainFrame::OnReqAcquire(WPARAM wParam, LPARAM lParam)
 {
+	if (lParam == (LPARAM)&g_cDIKeyboard)
+	{
+		if (wParam)
+		{
+			g_pBoard->m_keyboard.SetCapsLock((GetKeyState(VK_CAPITAL) & 0x0001) == 0);
+			g_pBoard->m_keyboard.SetScrollLock((GetKeyState(VK_SCROLL) & 0x0001) != 0);
+			m_wndStatusBar.SetKeyStatus(KEY_STATE_CAPTURE, true);
+		}
+		else
+		{
+			BYTE abyKeyState[256];
+			if (GetKeyboardState(abyKeyState) != FALSE)
+			{
+				abyKeyState[VK_SCROLL] = g_pBoard->m_keyboard.GetScrollLock() != FALSE;
+				abyKeyState[VK_CAPITAL] = g_pBoard->m_keyboard.GetCapsLock() == FALSE;
+				SetKeyboardState(abyKeyState);
+			}
+			m_wndStatusBar.SetKeyStatus(KEY_STATE_CAPTURE, false);
+		}
+	}
 	if ( wParam )
 	{
 		if (lParam == (LPARAM)&g_cDIMouse)
@@ -495,9 +515,6 @@ LRESULT CMainFrame::OnReqAcquire(WPARAM wParam, LPARAM lParam)
 				::ClipCursor(&rect);
 			}
 		}
-		g_pBoard->m_keyboard.SetCapsLock((GetKeyState(VK_CAPITAL) & 0x0001) == 0 );
-		g_pBoard->m_keyboard.SetScrollLock((GetKeyState(VK_SCROLL) & 0x0001) != 0);
-		m_wndStatusBar.SetKeyStatus(KEY_STATE_CAPTURE, true);
 	}
 	else
 	{
@@ -520,8 +537,8 @@ LRESULT CMainFrame::OnReqAcquire(WPARAM wParam, LPARAM lParam)
 			::ClipCursor(&m_stCursorClip);
 			m_hCursor = NULL;
 		}
-		m_wndStatusBar.SetKeyStatus(KEY_STATE_CAPTURE, false);
 	}
+
 	return 0;
 }
 
@@ -697,13 +714,13 @@ void CMainFrame::OnKillFocus(CWnd* pNewWnd)
 
 	m_bKeyboardCapture = g_cDIKeyboard.GetIsActive();
 	TRACE("keyboard capture=%d\n", m_bKeyboardCapture);
-	// TODO: Add your message handler code here
+
 	::PostMessage( m_hWnd, UM_REQACQUIRE, FALSE, (LPARAM)NULL );
 }
 
 void CMainFrame::OnSetFocus(CWnd* pOldWnd)
 {
-	__super::OnSetFocus(pOldWnd);
+	CFrameWnd::OnSetFocus(pOldWnd);
 
 	if (m_bKeyboardCapture == TRUE)
 	{
@@ -713,6 +730,7 @@ void CMainFrame::OnSetFocus(CWnd* pOldWnd)
 	{
 		g_cDIKeyboard.Restore();
 	}
+	::PostMessage(m_hWnd, UM_REQACQUIRE, TRUE, (LPARAM)NULL);
 }
 
 void CMainFrame::OnUpdateDiskette(CCmdUI* pCmdUI) 
