@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Project\night\appleinpc\aipc.rc
+// Used by F:\Project\night_project\appleinpc\aipc.rc
 //
 #define IDC_DEFAULT                     3
 #define IDD_ABOUTBOX                    100
@@ -164,6 +164,10 @@
 #define IDC_SETTINGS_TAB                1128
 #define IDC_SWAP_BUTTON_1_2             1129
 #define IDC_ARRAW_AS_PADDLE             1130
+#define IDC_STATE_FILENAME              1131
+#define IDC_STATE_BROWSE                1132
+#define IDC_STATE_LOAD                  1133
+#define IDC_STATE_SAVE                  1134
 #define ID_DEBUG                        32771
 #define ID_CONFIGURE_SLOTS              32772
 #define ID_REBOOT                       32773
@@ -214,7 +218,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        187
 #define _APS_NEXT_COMMAND_VALUE         32806
-#define _APS_NEXT_CONTROL_VALUE         1131
+#define _APS_NEXT_CONTROL_VALUE         1135
 #define _APS_NEXT_SYMED_VALUE           111
 #endif
 #endif

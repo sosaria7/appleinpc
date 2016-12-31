@@ -16,10 +16,7 @@ static char THIS_FILE[] = __FILE__;
 CDlgConfigHDD::CDlgConfigHDD(CHDDInterface* pInterface, CWnd* pParent /*=NULL*/)
 	: CDialog(CDlgConfigHDD::IDD, pParent)
 {
-	//{{AFX_DATA_INIT(CDlgConfigHDD)
 	m_strDisk1Image = _T("");
-		// NOTE: the ClassWizard will add member initialization here
-	//}}AFX_DATA_INIT
 	m_pInterface = pInterface;
 }
 
@@ -27,21 +24,17 @@ CDlgConfigHDD::CDlgConfigHDD(CHDDInterface* pInterface, CWnd* pParent /*=NULL*/)
 void CDlgConfigHDD::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CDlgConfigHDD)
 	DDX_Control(pDX, IDC_CHK_DISK1, m_btnEnableDisk1);
 	DDX_Control(pDX, IDC_BTN_BROWSE1, m_btnBrowseDisk1);
-	DDX_Text(pDX, IDC_EDIT_FILENAME1, m_strDisk1Image);
-		// NOTE: the ClassWizard will add DDX and DDV calls here
-	//}}AFX_DATA_MAP
+	DDX_Control(pDX, IDC_EDIT_FILENAME1, m_cDisk1Path);
 }
 
 
 BEGIN_MESSAGE_MAP(CDlgConfigHDD, CDialog)
-	//{{AFX_MSG_MAP(CDlgConfigHDD)
 	ON_BN_CLICKED(IDC_BTN_BROWSE1, OnBtnBrowse1)
 	ON_BN_CLICKED(IDC_CHK_DISK1, OnChkDisk1)
-		// NOTE: the ClassWizard will add message map macros here
-	//}}AFX_MSG_MAP
+	ON_EN_SETFOCUS(IDC_EDIT_FILENAME1, &CDlgConfigHDD::OnSetfocusEditFilename)
+	ON_EN_KILLFOCUS(IDC_EDIT_FILENAME1, &CDlgConfigHDD::OnKillfocusEditFilename)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -53,6 +46,7 @@ BOOL CDlgConfigHDD::OnInitDialog()
 
 	m_btnEnableDisk1.SetCheck(1);
 	m_strDisk1Image = m_pInterface->GetDrive(0)->GetFileName();
+	SetFileName(&m_cDisk1Path, m_strDisk1Image);
 
 	UpdateData(FALSE);
 	
@@ -66,9 +60,8 @@ void CDlgConfigHDD::OnBtnBrowse1()
 
 	if (dlgFile.DoModal() == IDOK)
 	{
-		CString oldStr = m_strDisk1Image;
 		m_strDisk1Image = dlgFile.GetPathName();
-		UpdateData(FALSE);
+		SetFileName(&m_cDisk1Path, m_strDisk1Image);
 	}
 }
 
@@ -76,12 +69,12 @@ void CDlgConfigHDD::OnChkDisk1()
 {
 	if (m_btnEnableDisk1.GetCheck() == 0)
 	{
-		GetDlgItem(IDC_EDIT_FILENAME1)->EnableWindow(FALSE);
+		m_cDisk1Path.EnableWindow(FALSE);
 		m_btnBrowseDisk1.EnableWindow(FALSE);
 	}
 	else
 	{
-		GetDlgItem(IDC_EDIT_FILENAME1)->EnableWindow();
+		m_cDisk1Path.EnableWindow();
 		m_btnBrowseDisk1.EnableWindow();
 	}
 }
@@ -89,6 +82,7 @@ void CDlgConfigHDD::OnChkDisk1()
 void CDlgConfigHDD::OnOK() 
 {
 	UpdateData(TRUE);
+	m_btnEnableDisk1.SetFocus();
 
 	if ( m_btnEnableDisk1.GetCheck() && m_strDisk1Image != "" )
 	{
@@ -112,4 +106,23 @@ void CDlgConfigHDD::OnOK()
 	}
 
 	CDialog::OnOK();
+}
+
+void CDlgConfigHDD::OnSetfocusEditFilename()
+{
+	// TODO: Add your control notification handler code here
+	m_cDisk1Path.SetWindowText(m_strDisk1Image);
+}
+
+
+void CDlgConfigHDD::OnKillfocusEditFilename()
+{
+	// TODO: Add your control notification handler code here
+	m_cDisk1Path.GetWindowText(m_strDisk1Image);
+	SetFileName(&m_cDisk1Path, m_strDisk1Image);
+}
+
+void CDlgConfigHDD::SetFileName(CEdit *edit, CString path)
+{
+	edit->SetWindowText(path.Mid(path.ReverseFind('\\') + 1));
 }
