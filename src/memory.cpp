@@ -609,21 +609,30 @@ void CAppleIOU::Serialize(CArchive &ar)
 	}
 	else
 	{
-		ar.Read( m_pMem, A2MEMSIZE );
+		ar.Read(m_pMem, A2MEMSIZE);
 		ar >> m_iMemMode;
 		if (g_nSerializeVer >= 7)
 		{
 			ar >> m_nMachineType;
 		}
+
 		m_iLastMemMode = ~m_iMemMode;
+		if (m_iMemMode & MS_READAUX)
+		{
+			SwitchAuxMemory(RDCARDRAM);
+		}
+		else
+		{
+			SwitchAuxMemory(RDMAINRAM);
+		}
+		if (m_iMemMode & MS_WRITEAUX)
+		{
+			SwitchAuxMemory(WRCARDRAM);
+		}
+		else
+		{
+			SwitchAuxMemory(WRMAINRAM);
+		}
 		UpdateMemoryMap();
-		if ( m_iMemMode & MS_READAUX )
-		{
-			SwitchAuxMemory( RDCARDRAM );
-		}
-		if ( m_iMemMode & MS_WRITEAUX )
-		{
-			SwitchAuxMemory( WRCARDRAM );
-		}
 	}
 }

@@ -201,28 +201,24 @@ void CDlgConfigDisk::OnOK()
 
 void CDlgConfigDisk::OnSetfocusEditFilename1()
 {
-	// TODO: Add your control notification handler code here
 	m_cDisk1Path.SetWindowText(m_strDisk1Image);
 }
 
 
 void CDlgConfigDisk::OnKillfocusEditFilename1()
 {
-	// TODO: Add your control notification handler code here
 	m_cDisk1Path.GetWindowText(m_strDisk1Image);
 	SetFileName(&m_cDisk1Path, m_strDisk1Image);
 }
 
 void CDlgConfigDisk::OnSetfocusEditFilename2()
 {
-	// TODO: Add your control notification handler code here
 	m_cDisk2Path.SetWindowText(m_strDisk2Image);
 }
 
 
 void CDlgConfigDisk::OnKillfocusEditFilename2()
 {
-	// TODO: Add your control notification handler code here
 	m_cDisk2Path.GetWindowText(m_strDisk2Image);
 	SetFileName(&m_cDisk2Path, m_strDisk2Image);
 }

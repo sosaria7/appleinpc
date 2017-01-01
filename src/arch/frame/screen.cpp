@@ -71,6 +71,7 @@ CScreen::CScreen()
 
 	m_nMsgVisiable = 0;
 	m_bWindowed = TRUE;
+	m_bDoubleSize = FALSE;
 //	m_bInitializing = FALSE;
 	m_iScrMode = SS_TEXT;
 	m_szMessage = "";
@@ -1406,9 +1407,10 @@ void CScreen::OnMove(int x, int y)
 	// TODO: Add your message handler code here
 }
 
-void CScreen::SetFullScreenMode(BOOL bFullScreen)
+void CScreen::SetScreenMode(BOOL bFullScreen, BOOL bDoubleSize)
 {
 	BOOL bWindowed = !bFullScreen;
+	m_bDoubleSize = bDoubleSize;
 	if ( m_bWindowed != bWindowed )
 	{
 		BOOL suspended = g_pBoard->GetIsSuspended();
@@ -1615,6 +1617,7 @@ void CScreen::Serialize(CArchive &ar)
 		ar << m_bScanline;
 		ar << m_dwClock;
 		ar << m_dataLatch;
+		ar << m_bDoubleSize;
 	}
 	else
 	{
@@ -1636,7 +1639,10 @@ void CScreen::Serialize(CArchive &ar)
 			m_nLine = m_dwClock / 65;
 			m_nColumn = m_dwClock % 65;
 		}
-
+		if (g_nSerializeVer >= 9)
+		{
+			ar >> m_bDoubleSize;
+		}
 		SetHSB( m_uHSB );
 		ApplyColors();
 		RedrawAll();

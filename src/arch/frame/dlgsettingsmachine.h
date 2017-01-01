@@ -31,4 +31,14 @@ public:
 	CButton m_cMachinePAL;
 	virtual BOOL OnInitDialog();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
+protected:
+	CEdit m_cSateFilename;
+	CString m_strStateFileName;
+public:
+	void SetFileName(CEdit *edit, CString path);
+	afx_msg void OnClickedStateLoad();
+	afx_msg void OnClickedStateSave();
+	afx_msg void OnClickedStateBrowse();
+	afx_msg void OnSetfocusStateFilename();
+	afx_msg void OnKillfocusStateFilename();
 };

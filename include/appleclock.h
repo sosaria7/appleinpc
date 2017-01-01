@@ -40,6 +40,9 @@ public:
 
 	CEvent	m_cMessage;
 	BOOL m_bPALMode;
+	BOOL m_bReserveLoadState;
+	CString m_strStateFilePath;
+
 	int m_nMachineType;
 
 protected:
@@ -77,6 +80,11 @@ public:
 
 	void Serialize( CArchive &archive );
 	void SetMachineType(int nMachineType, BOOL bPalMode);
+	BOOL SaveState(CString strPath);
+	BOOL LoadState(CString strPath);
+	void ReserveLoadState(CString strPath) { m_strStateFilePath = strPath;  m_bReserveLoadState = TRUE; }
+	CString GetStateFilePath() { return m_strStateFilePath; }
+	void SetStateFilePath(CString strPath) { m_strStateFilePath = strPath; }
 
 // Implementation
 protected:

@@ -134,6 +134,7 @@ public:
 	CSurface* m_pSurfaceMain;
 
 	BOOL m_bWindowed;
+	BOOL m_bDoubleSize;
 	CDisplay* m_pDisplay;
 	BYTE m_aiScreenTable[0x2000][2];
 	WORD m_awScanOT[192];
@@ -249,7 +250,7 @@ public:
 	void SetMessage(TCHAR* szText);
 	void UpdateDiskSurface();
 	CSurface* GetDiskSurface();
-	void SetFullScreenMode(BOOL bFullScreen);
+	void SetScreenMode(BOOL bFullScreen, BOOL bDoubleSize);
 	void Reset();
 	unsigned int ApplyRGBFormat( unsigned int rgb32, LPDDPIXELFORMAT DDpf);
 	unsigned int ApplyDarkRGBFormat( unsigned int rgb32, LPDDPIXELFORMAT lpDDpf, double rate );
@@ -274,6 +275,7 @@ public:
 	void Render();
 	void Run();
 	void Relax();
+	BOOL IsDoubleSized() { return m_bDoubleSize; }
 };
 
 /////////////////////////////////////////////////////////////////////////////

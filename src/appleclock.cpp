@@ -20,6 +20,7 @@
 #include "arch/frame/dlgsettings.h"
 #include "arch/frame/mainfrm.h"
 #include "arch/directx/dxsound.h"
+#include "arch/directx/dikeyboard.h"
 
 #include "appleclock.h"
 #include "localclock.h"
@@ -38,11 +39,16 @@ static char THIS_FILE[] = __FILE__;
 BOOL g_debug = FALSE;
 
 CAppleClock *g_pBoard = NULL;
+extern CDIKeyboard g_cDIKeyboard;
 
 #ifdef _DEBUG
 static int g_breakpoint = -1;
 #endif
 
+#define STATUS_VERSION		(9)
+#define STATUS_MIN_VERSION	(3)
+#define STATUS_MAGIC	0x89617391
+int g_nSerializeVer = 0;
 
 #define LINE_CLOCK			65
 #define DRAW_CLOCK			(LINE_CLOCK*192)	// 12480
@@ -91,6 +97,8 @@ CAppleClock::CAppleClock()
 	m_bPALMode = FALSE;
 	m_nMachineType = MACHINE_APPLE2E;
 	m_pCpu = new C65c02();
+	m_bReserveLoadState = FALSE;
+	m_strStateFilePath = TEXT("");
 
 	SetMachineType(MACHINE_APPLE2E, FALSE);
 }
@@ -312,9 +320,11 @@ void CAppleClock::OnConfigureSlots()
 	int stat = m_nAppleStatus;
 	if ( GetIsActive() )
 		Suspend(TRUE);
-	CDlgSettings dlgSettings;
-	dlgSettings.DoModal();
-	if ( GetIsActive() )
+	{
+		CDlgSettings dlgSettings;
+		dlgSettings.DoModal();
+	}
+	if (GetIsActive() || m_bReserveLoadState == TRUE)
 		Resume();
 }
 
@@ -370,6 +380,11 @@ void CAppleClock::Suspend(BOOL bWait)
 
 void CAppleClock::Resume()
 {
+	if (m_bReserveLoadState == TRUE && !m_strStateFilePath.IsEmpty())
+	{
+		LoadState(m_strStateFilePath);
+		m_bReserveLoadState = FALSE;
+	}
 	CCustomThread::Resume();
 	g_DXSound.Resume();
 }
@@ -526,10 +541,103 @@ void CAppleClock::Serialize( CArchive &ar )
 			PowerOn();
 		}
 	}
-	if ( bActive )
-	{
-		Resume();
-	}
+}
 
+BOOL CAppleClock::SaveState(CString strPath)
+{
+	CFile file;
+	BOOL bSuccess = FALSE;
+
+	if (file.Open(strPath, CFile::modeCreate | CFile::modeWrite))
+	{
+		CArchive ar(&file, CArchive::store);
+
+		bSuccess = TRUE;
+		g_pBoard->Suspend(TRUE);
+
+		int nVal, nVal2;
+		try
+		{
+			g_nSerializeVer = STATUS_VERSION;
+
+			ar << STATUS_MAGIC;
+			ar << STATUS_VERSION;
+			nVal = 0;
+			ar << nVal;		// double size (not used)
+			g_pBoard->Serialize(ar);
+			ar << g_DXSound.GetPan();
+			ar << g_DXSound.GetVolume();
+			ar << g_DXSound.m_bMute;
+			g_cDIKeyboard.GetDelayTime(&nVal, &nVal2);
+			ar << nVal;
+			ar << nVal2;
+			ar << m_strStateFilePath;
+		}
+		catch (CFileException* fe)
+		{
+			(void)fe;
+			bSuccess = FALSE;
+		}
+		catch (CArchiveException* ae)
+		{
+			(void)ae;
+			bSuccess = FALSE;
+		}
+		ar.Close();
+		file.Close();
+	}
+	return bSuccess;
+}
+
+BOOL CAppleClock::LoadState(CString strPath)
+{
+	CFile file;
+	BOOL bSuccess = FALSE;
+
+	if (file.Open(strPath, CFile::modeRead))
+	{
+		int nVal, nVal2;
+
+		bSuccess = TRUE;
+		CArchive ar(&file, CArchive::load);
+		try
+		{
+			ar >> nVal;
+			ar >> nVal2;
+			if (nVal != STATUS_MAGIC || nVal2 < STATUS_MIN_VERSION)
+			{
+				throw new CArchiveException();
+			}
+			g_nSerializeVer = nVal2;
+
+			ar >> nVal;		// double size
+			g_pBoard->Serialize(ar);
+			ar >> nVal;
+			g_DXSound.SetPan(nVal);
+			ar >> nVal;
+			g_DXSound.SetVolume(nVal);
+			ar >> g_DXSound.m_bMute;
+			ar >> nVal;
+			ar >> nVal2;
+			g_cDIKeyboard.SetDelayTime(nVal, nVal2);
+			if (g_nSerializeVer >= 9)
+			{
+				ar >> m_strStateFilePath;
+			}
+		}
+		catch (CFileException* fe)
+		{
+			(void)fe;
+			bSuccess = FALSE;
+		}
+		catch (CArchiveException* ae)
+		{
+			(void)ae;
+			bSuccess = FALSE;
+		}
+		ar.Close();
+		file.Close();
+	}
+	return bSuccess;
 }
 

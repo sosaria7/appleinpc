@@ -74,8 +74,6 @@ void CKeyboard::OnKeyDown(WPARAM wParam, LPARAM lParam)
 			if ( ctrl )		// Toggle Full Screen mode
 			{
 				::PostMessage( g_pBoard->m_lpwndMainFrame->m_hWnd, WM_COMMAND, ID_FULL_SCREEN, 0 );
-				//CScreen* pScreen = g_pBoard->m_pScreen;
-				//pScreen->SetFullScreenMode( pScreen->m_bWindowed );		// Toggle Full Screen mode
 				return;
 			}
 			else if ( shift )	// Toggle Message View

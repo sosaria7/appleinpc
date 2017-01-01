@@ -58,8 +58,6 @@ public:
 #endif
 	void ResizeWindow();
 
-protected:  // control bar embedded members
-// Generated message map functions
 protected:
 	//{{AFX_MSG(CMainFrame)
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);

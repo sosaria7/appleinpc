@@ -28,13 +28,9 @@ static char THIS_FILE[] = __FILE__;
 CDIJoystick g_cDIJoystick;
 CDIKeyboard g_cDIKeyboard;
 CDIMouse	g_cDIMouse;
-int g_nSerializeVer = 0;
 
 static CString GetStatusFilePath();
 
-#define STATUS_VERSION		(8)
-#define STATUS_MIN_VERSION	(3)
-#define STATUS_MAGIC	0x89617391
 
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame
@@ -165,58 +161,24 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	g_pBoard->Initialize();
 //	g_pBoard->CreateThread();
 //	g_pBoard->SetThreadPriority(THREAD_PRIORITY_ABOVE_NORMAL);
-
-
-	CFile file;
-	CString strStatusFile = GetStatusFilePath();
-	if ( file.Open( strStatusFile, CFile::modeRead ) )
+	CFileStatus fileStatus;
+	CString strStatusFile;
+	strStatusFile = GetStatusFilePath();
+	CFile::GetStatus(strStatusFile, fileStatus);
+	// if regular file exists
+	if (CFile::GetStatus(GetStatusFilePath(), fileStatus) == TRUE && (fileStatus.m_attribute & CFile::Attribute::directory) == 0)
 	{
-		int nVal, nVal2;
-		BOOL bError = FALSE;
-		CArchive ar(&file, CArchive::load);
-		try
-		{
-			ar >> nVal;
-			ar >> nVal2;
-			if ( nVal != STATUS_MAGIC || nVal2 < STATUS_MIN_VERSION )
-			{
-				throw new CArchiveException();
-			}
-			g_nSerializeVer = nVal2;
-
-			ar >> m_bDoubleSize;
-			g_pBoard->Serialize(ar);
-			ar >> nVal;
-			g_DXSound.SetPan( nVal );
-			ar >> nVal;
-			g_DXSound.SetVolume( nVal );
-			ar >> g_DXSound.m_bMute;
-			ar >> nVal;
-			ar >> nVal2;
-			g_cDIKeyboard.SetDelayTime( nVal, nVal2 );
-		}
-		catch (CFileException* fe)
-		{
-			(void)fe;
-			bError = TRUE;
-		}
-		catch (CArchiveException* ae)
-		{
-			(void)ae;
-			bError = TRUE;
-		}
-		ar.Close();
-		file.Close();
-		if ( bError == TRUE )
+		if (g_pBoard->LoadState(strStatusFile) == FALSE)
 		{
 			CString strMessage;
-			this->MessageBox( TEXT("Fail to load last state"), TEXT("Error - Apple in PC"), MB_OK );
-			strMessage.Format( TEXT("Remove status file to fix this error:\n%s"), strStatusFile );
-			this->MessageBox( strMessage, TEXT("Error - Apple in PC"), MB_OK );
+			this->MessageBox(TEXT("Fail to load last state"), TEXT("Error - Apple in PC"), MB_OK);
+			strMessage.Format(TEXT("Remove status file to fix this error:\n%s"), strStatusFile);
+			this->MessageBox(strMessage, TEXT("Error - Apple in PC"), MB_OK);
 			exit(1);
 			return 1;
 		}
 	}
+	m_bDoubleSize = m_wndView.IsDoubleSized();
 
 	RECT rc;
 	::GetWindowRect( m_hWnd, &rc );
@@ -311,40 +273,9 @@ void CMainFrame::OnClose()
 {
 	CFile file;
 	CString strStatusFile = GetStatusFilePath();
-	if ( file.Open( strStatusFile, CFile::modeCreate | CFile::modeWrite ) )
+	if (g_pBoard->SaveState(strStatusFile) == FALSE)
 	{
-		CArchive ar(&file, CArchive::store);
-
-		g_pBoard->Suspend(TRUE);
-
-		int nVal, nVal2;
-		try
-		{
-			g_nSerializeVer = STATUS_VERSION;
-
-			ar << STATUS_MAGIC;
-			ar << STATUS_VERSION;
-			ar << m_bDoubleSize;
-			g_pBoard->Serialize(ar);
-			ar << g_DXSound.GetPan();
-			ar << g_DXSound.GetVolume();
-			ar << g_DXSound.m_bMute;
-			g_cDIKeyboard.GetDelayTime( &nVal, &nVal2 );
-			ar << nVal;
-			ar << nVal2;
-		}
-		catch (CFileException* fe)
-		{
-			(void)fe;
-			this->MessageBox( TEXT("Fail to store current state"), TEXT("Error - Apple in PC"), MB_OK );
-		}
-		catch (CArchiveException* ae)
-		{
-			(void)ae;
-			this->MessageBox( TEXT("Fail to store current state"), TEXT("Error - Apple in PC"), MB_OK );
-		}
-		ar.Close();
-		file.Close();
+		this->MessageBox(TEXT("Fail to store current state"), TEXT("Error - Apple in PC"), MB_OK);
 	}
 	g_pBoard->Exit();
 
@@ -527,7 +458,7 @@ LRESULT CMainFrame::OnReqAcquire(WPARAM wParam, LPARAM lParam)
 		if ( m_bFullScreen == TRUE )
 		{
 			m_bFullScreen = FALSE;
-			m_wndView.SetFullScreenMode( FALSE );
+			m_wndView.SetScreenMode(FALSE, m_bDoubleSize);
 			ResizeWindow();
 		}
 		if (m_hCursor != NULL)
@@ -571,7 +502,7 @@ void CMainFrame::OnToggleFullScreen()
 		m_stWindowPos.x = rc.left;
 		m_stWindowPos.y = rc.top;
 	}
-	m_wndView.SetFullScreenMode(m_bFullScreen);
+	m_wndView.SetScreenMode(m_bFullScreen, m_bDoubleSize);
 	ResizeWindow();
 }
 
@@ -587,6 +518,8 @@ void CMainFrame::ResizeWindow()
 		this->ShowWindow( SW_SHOWNORMAL );
 	}
 	m_winRect.SetRectEmpty();
+
+	m_wndView.SetScreenMode(m_bFullScreen, m_bDoubleSize);
 
 	if ( m_bFullScreen == TRUE )
 	{
@@ -681,7 +614,6 @@ void CMainFrame::ResizeWindow()
 			m_cMenu.CheckMenuItem( ID_2XSCREEN, MF_UNCHECKED );
 		}
 	}
-
 }
 
 static CString GetStatusFilePath()
@@ -914,3 +846,4 @@ void CMainFrame::OnRawInput(UINT nInputcode, HRAWINPUT hRawInput)
 
 	CFrameWnd::OnRawInput(nInputcode, hRawInput);
 }
+
