@@ -479,8 +479,8 @@ BEGIN
     LTEXT           "-d2 <path>\t : start with a disk in drive-2",IDC_STATIC,18,34,234,8
     LTEXT           "-h <path>\t : start with a hard disk drive",IDC_STATIC,18,48,234,8
     LTEXT           "-w\t\t : save state on exit (state file path required)",IDC_STATIC,18,76,234,8
-    LTEXT           "-s <path>\t : load a state file on start",IDC_STATIC,18,62,234,8
-    LTEXT           "-r\t\t : reboot on start",IDC_STATIC,18,90,234,8
+    LTEXT           "-s <path>\t : load a state file at startup",IDC_STATIC,18,62,234,8
+    LTEXT           "-r\t\t : reboot at startup",IDC_STATIC,18,89,234,8
 END
 
 
@@ -636,7 +636,7 @@ BEGIN
         HORZGUIDE, 56
         HORZGUIDE, 70
         HORZGUIDE, 84
-        HORZGUIDE, 98
+        HORZGUIDE, 97
     END
 END
 #endif    // APSTUDIO_INVOKED
