@@ -174,6 +174,7 @@
     <ClInclude Include="include\aipcdefs.h" />
     <ClInclude Include="include\appleclock.h" />
     <ClInclude Include="include\applekeymap.h" />
+    <ClInclude Include="include\arch\CommandLineOption.h" />
     <ClInclude Include="include\arch\CustomThread.h" />
     <ClInclude Include="include\arch\directx\ddutil.h" />
     <ClInclude Include="include\arch\directx\dibase.h" />
@@ -235,6 +236,7 @@
     <ClCompile Include="src\6821.cpp" />
     <ClCompile Include="src\8913.cpp" />
     <ClCompile Include="src\appleclock.cpp" />
+    <ClCompile Include="src\arch\CommandLineOption.cpp" />
     <ClCompile Include="src\arch\CustomThread.cpp" />
     <ClCompile Include="src\arch\directx\ddutil.cpp" />
     <ClCompile Include="src\arch\directx\dibase.cpp" />

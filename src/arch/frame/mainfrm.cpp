@@ -13,6 +13,8 @@
 #include "arch/directx/dijoystick.h"
 #include "arch/directx/dikeyboard.h"
 #include "arch/directx/dimouse.h"
+#include "arch/CommandLineOption.h"
+
 #include "keyboard.h"
 #include "card.h"
 #include "phasor.h"
@@ -105,6 +107,7 @@ CMainFrame::~CMainFrame()
 
 int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
+	BOOL bRet;
 	if (CFrameWnd::OnCreate(lpCreateStruct) == -1)
 		return -1;
 
@@ -157,16 +160,29 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_cMenu.LoadMenu( IDR_MAINFRAME );
 	SetMenu( &m_cMenu );
 
+	CCommandLineOption option;
+	bRet = option.Parse(GetCommandLine());
+	if (bRet == FALSE)
+	{
+		CString strMessage;
+		strMessage.Format(TEXT("%s"), option.m_strErrorMsg);
+		this->MessageBox(strMessage, TEXT("Error - Apple in PC"), MB_OK);
+		exit(1);
+	}
 
 	g_pBoard->Initialize();
 //	g_pBoard->CreateThread();
 //	g_pBoard->SetThreadPriority(THREAD_PRIORITY_ABOVE_NORMAL);
 	CFileStatus fileStatus;
 	CString strStatusFile;
-	strStatusFile = GetStatusFilePath();
-	CFile::GetStatus(strStatusFile, fileStatus);
+
+	if (!option.m_strStatePath.IsEmpty())
+		strStatusFile = option.m_strStatePath;
+	else
+		strStatusFile = GetStatusFilePath();
+
 	// if regular file exists
-	if (CFile::GetStatus(GetStatusFilePath(), fileStatus) == TRUE && (fileStatus.m_attribute & CFile::Attribute::directory) == 0)
+	if (CFile::GetStatus(strStatusFile, fileStatus) == TRUE && (fileStatus.m_attribute & CFile::Attribute::directory) == 0)
 	{
 		if (g_pBoard->LoadState(strStatusFile) == FALSE)
 		{
@@ -177,6 +193,26 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 			exit(1);
 			return 1;
 		}
+	}
+	if (!option.m_strStatePath.IsEmpty())
+	{
+		g_pBoard->SetStateFilePath(option.m_strStatePath, option.m_bSaveOnExit);
+	}
+	if (!option.m_strDisk1Path.IsEmpty())
+	{
+		g_pBoard->m_cSlots.SetDiskette1(option.m_strDisk1Path);
+	}
+	if (!option.m_strDisk2Path.IsEmpty())
+	{
+		g_pBoard->m_cSlots.SetDiskette2(option.m_strDisk1Path);
+	}
+	if (!option.m_strHardDiskPath.IsEmpty())
+	{
+		g_pBoard->m_cSlots.SetHardDisk(option.m_strHardDiskPath);
+	}
+	if (option.m_bReboot == TRUE)
+	{
+		g_pBoard->Reboot();
 	}
 	m_bDoubleSize = m_wndView.IsDoubleSized();
 

@@ -106,7 +106,8 @@ CAppleClock::CAppleClock()
 CAppleClock::~CAppleClock()
 {
 	// safly exit the thread
-	Exit();
+	//Exit();
+	PowerOff();
 	delete m_pCpu;
 /*
 	DWORD dwExitCode;
@@ -382,8 +383,12 @@ void CAppleClock::Resume()
 {
 	if (m_bReserveLoadState == TRUE && !m_strStateFilePath.IsEmpty())
 	{
+		CString strStateFilePath = m_strStateFilePath;
+
 		LoadState(m_strStateFilePath);
 		m_bReserveLoadState = FALSE;
+
+		m_strStateFilePath = strStateFilePath;
 	}
 	CCustomThread::Resume();
 	g_DXSound.Resume();
@@ -420,6 +425,10 @@ DWORD CAppleClock::GetClock()
 // do not call in apple thread. it will cause dead lock.
 void CAppleClock::Exit()
 {
+	if (m_bSaveStateOnExit == TRUE && !m_strStateFilePath.IsEmpty())
+	{
+		SaveState(m_strStateFilePath);
+	}
 	PowerOff();
 }
 
@@ -538,6 +547,7 @@ void CAppleClock::Serialize( CArchive &ar )
 
 		if ( m_nAppleStatus == ACS_POWERON )
 		{
+			Suspend(FALSE);
 			PowerOn();
 		}
 	}
@@ -572,6 +582,7 @@ BOOL CAppleClock::SaveState(CString strPath)
 			ar << nVal;
 			ar << nVal2;
 			ar << m_strStateFilePath;
+			ar << m_bSaveStateOnExit;
 		}
 		catch (CFileException* fe)
 		{
@@ -623,6 +634,7 @@ BOOL CAppleClock::LoadState(CString strPath)
 			if (g_nSerializeVer >= 9)
 			{
 				ar >> m_strStateFilePath;
+				ar >> m_bSaveStateOnExit;
 			}
 		}
 		catch (CFileException* fe)

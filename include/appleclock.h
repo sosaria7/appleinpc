@@ -42,6 +42,7 @@ public:
 	BOOL m_bPALMode;
 	BOOL m_bReserveLoadState;
 	CString m_strStateFilePath;
+	BOOL m_bSaveStateOnExit;
 
 	int m_nMachineType;
 
@@ -82,9 +83,20 @@ public:
 	void SetMachineType(int nMachineType, BOOL bPalMode);
 	BOOL SaveState(CString strPath);
 	BOOL LoadState(CString strPath);
-	void ReserveLoadState(CString strPath) { m_strStateFilePath = strPath;  m_bReserveLoadState = TRUE; }
-	CString GetStateFilePath() { return m_strStateFilePath; }
-	void SetStateFilePath(CString strPath) { m_strStateFilePath = strPath; }
+	void ReserveLoadState(CString strPath) {
+		m_strStateFilePath = strPath;
+		m_bReserveLoadState = TRUE;
+	}
+	CString GetStateFilePath() {
+		return m_strStateFilePath;
+	}
+	BOOL GetSaveStateOnExit() {
+		return m_bSaveStateOnExit;
+	}
+	void SetStateFilePath(CString strPath, BOOL bSaveStateOnExit) {
+		m_strStateFilePath = strPath;
+		m_bSaveStateOnExit = bSaveStateOnExit;
+	}
 
 // Implementation
 protected:

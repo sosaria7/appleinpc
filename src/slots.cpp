@@ -102,6 +102,30 @@ void CSlots::ConfigureDiskette()
 	}
 }
 
+void CSlots::SetDiskette1(CString strDiskPath)
+{
+	if (m_nDiskSlotNum >= 0)
+	{
+		((CDiskInterface*)m_slots[m_nDiskSlotNum])->GetDrive(0)->Mount(strDiskPath);
+	}
+}
+
+void CSlots::SetDiskette2(CString strDiskPath)
+{
+	if (m_nDiskSlotNum >= 0)
+	{
+		((CDiskInterface*)m_slots[m_nDiskSlotNum])->GetDrive(1)->Mount(strDiskPath);
+	}
+}
+
+void CSlots::SetHardDisk(CString strDiskPath)
+{
+	if (m_nHardDiskSlotNum >= 0)
+	{
+		((CHDDInterface*)m_slots[m_nHardDiskSlotNum])->GetDrive(0)->Mount(strDiskPath);
+	}
+}
+
 void CSlots::ConfigureHardDisk()
 {
 	if ( m_nHardDiskSlotNum >= 0 )

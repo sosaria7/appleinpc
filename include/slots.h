@@ -39,6 +39,9 @@ public:
 	BOOL HasDiskInterface();
 	BOOL HasHardDiskInterface();
 	BOOL HasMouseInterface();
+	void SetDiskette1(CString strDiskPath);
+	void SetDiskette2(CString strDiskPath);
+	void SetHardDisk(CString strDiskPath);
 
 	void Serialize( CArchive &ar );
 

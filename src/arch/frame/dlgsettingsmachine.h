@@ -41,4 +41,5 @@ public:
 	afx_msg void OnClickedStateBrowse();
 	afx_msg void OnSetfocusStateFilename();
 	afx_msg void OnKillfocusStateFilename();
+	BOOL m_bSaveStateOnExit;
 };

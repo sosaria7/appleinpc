@@ -278,6 +278,9 @@
     <ClInclude Include="src\arch\frame\dlgsettingscolor.h">
       <Filter>Header\arch.h\frame.h</Filter>
     </ClInclude>
+    <ClInclude Include="include\arch\CommandLineOption.h">
+      <Filter>Header\arch.h</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\arch\directx\ddutil.cpp">
@@ -435,6 +438,9 @@
     </ClCompile>
     <ClCompile Include="src\arch\frame\dlgsettingsslot.cpp">
       <Filter>Source\arch\frame</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\CommandLineOption.cpp">
+      <Filter>Source\arch</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

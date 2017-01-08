@@ -43,6 +43,7 @@
 #define IDB_KEY_SCROLL                  184
 #define IDB_KEY_CAPS_OFF                185
 #define IDB_KEY_SCROLL_OFF              186
+#define IDD_CMD_USAGE                   187
 #define IDC_LIST_PROCESS                1000
 #define IDC_EDIT_FILENAME2              1001
 #define IDC_BTN_SLOT1                   1002
@@ -168,6 +169,7 @@
 #define IDC_STATE_BROWSE                1132
 #define IDC_STATE_LOAD                  1133
 #define IDC_STATE_SAVE                  1134
+#define IDC_SAVE_STATE_ON_EXIT          1135
 #define ID_DEBUG                        32771
 #define ID_CONFIGURE_SLOTS              32772
 #define ID_REBOOT                       32773
@@ -187,6 +189,7 @@
 #define ID_SUSPEND                      32795
 #define ID_RESUME                       32796
 #define ID_SUSPENDRESUME                32804
+#define ID_HELP_COMMANDLINEUSAGE        32806
 #define ID_SLOT_NONE                    33000
 #define ID_SLOT_DISK                    33001
 #define ID_SLOT_MOCKINGBOARD            33002
@@ -216,9 +219,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        187
-#define _APS_NEXT_COMMAND_VALUE         32806
-#define _APS_NEXT_CONTROL_VALUE         1135
+#define _APS_NEXT_RESOURCE_VALUE        189
+#define _APS_NEXT_COMMAND_VALUE         32807
+#define _APS_NEXT_CONTROL_VALUE         1136
 #define _APS_NEXT_SYMED_VALUE           111
 #endif
 #endif

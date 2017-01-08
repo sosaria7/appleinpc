@@ -56,7 +56,23 @@ BOOL CDlgConfigHDD::OnInitDialog()
 
 void CDlgConfigHDD::OnBtnBrowse1() 
 {
-	CFileDialog dlgFile(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, "DSK Files (*.hdv;*.2mg;*.2img)|*.hdv;*.2mg;*.2img|All Files (*.*)|*.*||");
+	const TCHAR* pFileName = NULL;
+	TCHAR buffer[4096] = TEXT("");
+	TCHAR** lppPart = { NULL };
+
+	if (m_strDisk1Image.IsEmpty())
+	{
+		pFileName = NULL;
+	}
+	else
+	{
+		if (GetFullPathName(m_strDisk1Image, 4096, buffer, lppPart) != 0)
+			pFileName = buffer;
+		else
+			pFileName = (const TCHAR*)m_strDisk1Image;
+	}
+
+	CFileDialog dlgFile(TRUE, TEXT("hdv"), pFileName, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, "DSK Files (*.hdv;*.2mg;*.2img)|*.hdv;*.2mg;*.2img|All Files (*.*)|*.*||");
 
 	if (dlgFile.DoModal() == IDOK)
 	{

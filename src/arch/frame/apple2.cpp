@@ -18,6 +18,7 @@ static char THIS_FILE[] = __FILE__;
 BEGIN_MESSAGE_MAP(CApple2App, CWinApp)
 	//{{AFX_MSG_MAP(CApple2App)
 	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
+	ON_COMMAND(ID_HELP_COMMANDLINEUSAGE, OnHelpCmdUsage)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
 		//    DO NOT EDIT what you see in these blocks of generated code!
 	//}}AFX_MSG_MAP
@@ -142,6 +143,45 @@ void CApple2App::OnAppAbout()
 	aboutDlg.DoModal();
 }
 
+/////////////////////////////////////////////////////////////////////////////
+// CCmdLineUsage dialog used for App About
+
+class CCmdLineUsage : public CDialog
+{
+public:
+	CCmdLineUsage();
+
+	enum { IDD = IDD_CMD_USAGE };
+
+protected:
+	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+														//}}AFX_VIRTUAL
+
+														// Implementation
+protected:
+	DECLARE_MESSAGE_MAP()
+};
+
+CCmdLineUsage::CCmdLineUsage() : CDialog(CCmdLineUsage::IDD)
+{
+
+}
+
+void CCmdLineUsage::DoDataExchange(CDataExchange* pDX)
+{
+	CDialog::DoDataExchange(pDX);
+
+}
+
+BEGIN_MESSAGE_MAP(CCmdLineUsage, CDialog)
+
+END_MESSAGE_MAP()
+
+void CApple2App::OnHelpCmdUsage()
+{
+	CCmdLineUsage dlg;
+	dlg.DoModal();
+}
 /////////////////////////////////////////////////////////////////////////////
 // CApple2App message handlers
 
