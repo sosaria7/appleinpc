@@ -617,7 +617,7 @@ void CMainFrame::ResizeWindow()
 		RepositionBars(AFX_IDW_CONTROLBAR_FIRST,
 			AFX_IDW_CONTROLBAR_LAST,
 			0, reposQuery, rcClientNow);
-		
+		/*
 		CPoint ptOffset(rcClientNow.left - rcClientStart.left,
 			rcClientNow.top - rcClientStart.top);
 		
@@ -632,7 +632,7 @@ void CMainFrame::ResizeWindow()
 			pwndChild->MoveWindow(rcChild, FALSE);
 			pwndChild = pwndChild->GetNextWindow();
 		}
-		
+		*/
 		CRect rcWindow;
 		GetWindowRect(rcWindow);
 		
