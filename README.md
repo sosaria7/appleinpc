@@ -1,4 +1,4 @@
-# Apple in PC
+# Apple in a PC
 
 AIPC(Apple in a PC) is an Apple //e computer emulator for Windows.
 
