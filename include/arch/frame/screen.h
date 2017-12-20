@@ -217,6 +217,7 @@ protected:
 	RECT m_stMainRect;
 
 	int m_iColorDepth;
+	DWORD m_dwColorHalfMask;
 	DWORD m_nTime;
 	BOOL m_bPowerOn;
 	BOOL m_bScanline;

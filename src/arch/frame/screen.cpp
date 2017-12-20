@@ -421,6 +421,12 @@ void CScreen::Render()
 	DDSURFACEDESC2 ddsd;
     RECT rect={0, 0, WIN_WIDTH, WIN_HEIGHT};
 
+	if (m_bDoubleSize == TRUE)
+	{
+		rect.right *= 2;
+		rect.bottom *= 2;
+	}
+
     ddsd.dwSize=sizeof(ddsd);
 	
 	HRESULT result;
@@ -453,7 +459,11 @@ void CScreen::Render()
 
     char* pSurface = (char*)ddsd.lpSurface;
 	int lPitch = ddsd.lPitch;
-
+	int lHalfPitch = lPitch;
+	if (m_bDoubleSize == TRUE)
+	{
+		lPitch *= 2;
+	}
 	if( !m_bPowerOn || g_pBoard->GetAppleStatus() == ACS_POWEROFF )
 	{
 		memset( pSurface, 0, WIN_HEIGHT * lPitch );
@@ -514,6 +524,16 @@ void CScreen::Render()
 		break;
 	}
 
+	DWORD lastLineColor[WIN_WIDTH * 2];
+	memset(lastLineColor, 0, sizeof(lastLineColor));
+
+	DWORD lastColor = 0, lastColor2 = 0;
+	DWORD colorHalf, colorHalf2;
+	DWORD colorMix, colorMix2;
+
+	memset(pSurface, 0, WIN_TOP_MARGIN * lPitch);
+	memset(pSurface + (WIN_TOP_MARGIN + 192 * 2) * lPitch, 0, WIN_BOTTOM_MARGIN * lPitch);
+
 	for( y = 0; y < 192; y++ )
 	{
 		// draw pixelInfo to surface
@@ -566,6 +586,33 @@ void CScreen::Render()
 				curColor2 = curColor;
 			}
 
+			if (m_bDoubleSize == TRUE)
+			{
+				colorHalf = (curColor & m_dwColorHalfMask) >> 1;
+				colorHalf2 = (curColor2 & m_dwColorHalfMask) >> 1;
+
+				if (x > 0)
+				{
+					colorMix = colorHalf + lastColor;
+					colorMix2 = colorHalf2 + lastColor2;
+					*(DWORD*)surface = colorMix;
+					*(DWORD*)(surface + lPitch) = colorMix2;
+
+					colorMix = (colorMix & m_dwColorHalfMask) >> 1;
+					colorMix2 = (colorMix2 & m_dwColorHalfMask) >> 1;
+					*(DWORD*)(surface - lHalfPitch) = lastLineColor[x * 2 - 1] + colorMix;
+					*(DWORD*)(surface + lHalfPitch) = colorMix + colorMix2;
+					lastLineColor[x * 2 - 1] = colorMix2;
+				}
+				surface += colorDepth;
+
+				*(DWORD*)(surface - lHalfPitch) = lastLineColor[x * 2] + colorHalf;
+				*(DWORD*)(surface + lHalfPitch) = colorHalf + colorHalf2;
+				lastLineColor[x * 2] = colorHalf2;
+
+				lastColor = colorHalf;
+				lastColor2 = colorHalf2;
+			}
 			*(DWORD*)surface = curColor;
 			*(DWORD*)(surface + lPitch) = curColor2;
 
@@ -573,9 +620,6 @@ void CScreen::Render()
 		}
 	}
 	
-	memset( pSurface, 0, WIN_TOP_MARGIN * lPitch );
-	memset( pSurface + (WIN_TOP_MARGIN+192*2) * lPitch, 0, WIN_BOTTOM_MARGIN * lPitch );
-
 	lpddsBack->Unlock(NULL);
 
 //	if ( bScreenDirty )
@@ -667,7 +711,15 @@ BOOL CScreen::InitDirectX()
 		g_cDIMouse.SetActive(TRUE);
 	}
 
-	m_pDisplay->CreateSurface( &m_pSurfaceMain, WIN_WIDTH, WIN_HEIGHT );
+	if (m_bDoubleSize || !m_bWindowed)
+	{
+		m_pDisplay->CreateSurface(&m_pSurfaceMain, WIN_WIDTH * 2, WIN_HEIGHT * 2);
+	}
+	else
+	{
+		m_pDisplay->CreateSurface(&m_pSurfaceMain, WIN_WIDTH, WIN_HEIGHT);
+	}
+
 	m_pSurfaceMain->Clear();
 	
 	ApplyColors();
@@ -1100,7 +1152,9 @@ void CScreen::ApplyColors()
 	m_pDisplay->GetFrontBuffer()->GetPixelFormat(&DDpf);
 	
 	m_iColorDepth = DDpf.dwRGBBitCount;
-	
+
+	m_dwColorHalfMask = ~((DDpf.dwRBitMask & ~(DDpf.dwRBitMask << 1)) | (DDpf.dwGBitMask & ~(DDpf.dwGBitMask << 1)) | (DDpf.dwBBitMask & ~(DDpf.dwBBitMask << 1)));
+
 	for( i = 0; i < 16; i++ )
 	{
 		for(j = 0; j < 16; j++)
@@ -1410,14 +1464,15 @@ void CScreen::OnMove(int x, int y)
 void CScreen::SetScreenMode(BOOL bFullScreen, BOOL bDoubleSize)
 {
 	BOOL bWindowed = !bFullScreen;
-	m_bDoubleSize = bDoubleSize;
-	if ( m_bWindowed != bWindowed )
+
+	if ( m_bWindowed != bWindowed || m_bDoubleSize != bDoubleSize)
 	{
 		BOOL suspended = g_pBoard->GetIsSuspended();
 		if ( !suspended )
 			g_pBoard->Suspend(TRUE);
 		CLockMgr<CCSWrapper> guard( m_Lock, TRUE );
 		m_bWindowed = bWindowed;
+		m_bDoubleSize = bDoubleSize;
 		InitDirectX();
 		if ( !suspended )
 			g_pBoard->Resume();
@@ -1604,6 +1659,7 @@ void CScreen::SetScanline(BOOL bScanline)
 void CScreen::Serialize(CArchive &ar)
 {
 	CObject::Serialize(ar);
+	BOOL bDoubleSize;
 
 	if ( ar.IsStoring() )
 	{
@@ -1641,10 +1697,13 @@ void CScreen::Serialize(CArchive &ar)
 		}
 		if (g_nSerializeVer >= 9)
 		{
-			ar >> m_bDoubleSize;
+			ar >> bDoubleSize;
 		}
 		SetHSB( m_uHSB );
 		ApplyColors();
+
+		SetScreenMode(!m_bWindowed, bDoubleSize);
+
 		RedrawAll();
 	}
 }
