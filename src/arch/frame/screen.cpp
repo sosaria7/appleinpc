@@ -420,8 +420,9 @@ void CScreen::Render()
 {
 	DDSURFACEDESC2 ddsd;
     RECT rect={0, 0, WIN_WIDTH, WIN_HEIGHT};
+	BOOL bDoubleSize = !m_bWindowed || m_bDoubleSize;
 
-	if (m_bDoubleSize == TRUE)
+	if (bDoubleSize == TRUE)
 	{
 		rect.right *= 2;
 		rect.bottom *= 2;
@@ -460,7 +461,7 @@ void CScreen::Render()
     char* pSurface = (char*)ddsd.lpSurface;
 	int lPitch = ddsd.lPitch;
 	int lHalfPitch = lPitch;
-	if (m_bDoubleSize == TRUE)
+	if (bDoubleSize == TRUE)
 	{
 		lPitch *= 2;
 	}
@@ -586,7 +587,7 @@ void CScreen::Render()
 				curColor2 = curColor;
 			}
 
-			if (m_bDoubleSize == TRUE)
+			if (bDoubleSize == TRUE)
 			{
 				colorHalf = (curColor & m_dwColorHalfMask) >> 1;
 				colorHalf2 = (curColor2 & m_dwColorHalfMask) >> 1;
