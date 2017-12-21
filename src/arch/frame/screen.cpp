@@ -528,10 +528,6 @@ void CScreen::Render()
 	DWORD lastLineColor[WIN_WIDTH * 2];
 	memset(lastLineColor, 0, sizeof(lastLineColor));
 
-	DWORD lastColor = 0, lastColor2 = 0;
-	DWORD colorHalf, colorHalf2;
-	DWORD colorMix, colorMix2;
-
 	memset(pSurface, 0, WIN_TOP_MARGIN * lPitch);
 	memset(pSurface + (WIN_TOP_MARGIN + 192 * 2) * lPitch, 0, WIN_BOTTOM_MARGIN * lPitch);
 
@@ -548,12 +544,18 @@ void CScreen::Render()
 		
 		BYTE colorIndex = 0;
 
-		UINT curColor, curColor2;
+		DWORD curColor, curColor2;
+		DWORD lastColor = 0, lastColor2 = 0;
+		DWORD colorHalf, colorHalf2;
+		DWORD colorMix, colorMix2;
+		int x2;
+
 		unsigned int brightness;
 		colorIndex = pixelInfo[0];
 
 		brightness = !!(pixelInfo[0] & 0x0f);
 
+		x2 = 0;
 		for (x = 0; x < WIN_WIDTH; x++)
 		{
 			if (colorTable != NULL)
@@ -592,24 +594,24 @@ void CScreen::Render()
 				colorHalf = (curColor & m_dwColorHalfMask) >> 1;
 				colorHalf2 = (curColor2 & m_dwColorHalfMask) >> 1;
 
-				if (x > 0)
-				{
-					colorMix = colorHalf + lastColor;
-					colorMix2 = colorHalf2 + lastColor2;
-					*(DWORD*)surface = colorMix;
-					*(DWORD*)(surface + lPitch) = colorMix2;
+				colorMix = colorHalf + lastColor;
+				colorMix2 = colorHalf2 + lastColor2;
+				*(DWORD*)surface = colorMix;
+				*(DWORD*)(surface + lPitch) = colorMix2;
 
-					colorMix = (colorMix & m_dwColorHalfMask) >> 1;
-					colorMix2 = (colorMix2 & m_dwColorHalfMask) >> 1;
-					*(DWORD*)(surface - lHalfPitch) = lastLineColor[x * 2 - 1] + colorMix;
-					*(DWORD*)(surface + lHalfPitch) = colorMix + colorMix2;
-					lastLineColor[x * 2 - 1] = colorMix2;
-				}
+				colorMix = (colorMix & m_dwColorHalfMask) >> 1;
+				colorMix2 = (colorMix2 & m_dwColorHalfMask) >> 1;
+				*(DWORD*)(surface - lHalfPitch) = lastLineColor[x2] + colorMix;
+				*(DWORD*)(surface + lHalfPitch) = colorMix + colorMix2;
+				lastLineColor[x2] = colorMix2;
+				x2++;
+
 				surface += colorDepth;
 
-				*(DWORD*)(surface - lHalfPitch) = lastLineColor[x * 2] + colorHalf;
+				*(DWORD*)(surface - lHalfPitch) = lastLineColor[x2] + colorHalf;
 				*(DWORD*)(surface + lHalfPitch) = colorHalf + colorHalf2;
-				lastLineColor[x * 2] = colorHalf2;
+				lastLineColor[x2] = colorHalf2;
+				x2++;
 
 				lastColor = colorHalf;
 				lastColor2 = colorHalf2;
