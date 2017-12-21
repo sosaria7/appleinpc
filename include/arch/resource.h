@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by F:\Project\night_project\appleinpc\aipc.rc
+// Used by E:\Project\night_project\appleinpc\aipc.rc
 //
 #define IDC_DEFAULT                     3
 #define IDD_ABOUTBOX                    100
@@ -170,6 +170,7 @@
 #define IDC_STATE_LOAD                  1133
 #define IDC_STATE_SAVE                  1134
 #define IDC_SAVE_STATE_ON_EXIT          1135
+#define IDC_PHASOR_SWAP_SPEAKERS        1136
 #define ID_DEBUG                        32771
 #define ID_CONFIGURE_SLOTS              32772
 #define ID_REBOOT                       32773
@@ -219,9 +220,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        189
+#define _APS_NEXT_RESOURCE_VALUE        190
 #define _APS_NEXT_COMMAND_VALUE         32807
-#define _APS_NEXT_CONTROL_VALUE         1136
+#define _APS_NEXT_CONTROL_VALUE         1137
 #define _APS_NEXT_SYMED_VALUE           111
 #endif
 #endif

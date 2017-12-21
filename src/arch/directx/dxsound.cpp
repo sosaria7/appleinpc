@@ -125,6 +125,7 @@ BOOL CDXSound::CreateBuffer()
 void CDXSound::AddPSG(CPSG *psg, int pan)
 {
 	stPSG *st = new stPSG;
+	CLockMgr<CCSWrapper> guard(m_Lock, TRUE);
 	st->psg = psg;
 	st->pan = pan;
 	st->next = m_stPSG;
@@ -134,6 +135,7 @@ void CDXSound::AddPSG(CPSG *psg, int pan)
 void CDXSound::RemovePSG(CPSG *psg)
 {
 	stPSG *st, *last;
+	CLockMgr<CCSWrapper> guard(m_Lock, TRUE);
 	st = m_stPSG;
 	last = NULL;
 	while ( st )
@@ -269,6 +271,8 @@ void CDXSound::Clock()
 	}
 
 	stPSG *st;
+	CLockMgr<CCSWrapper> guard(m_Lock, TRUE);
+
 	st = m_stPSG;
 
 
@@ -397,6 +401,7 @@ void CDXSound::ChangeSampleRate(unsigned int nSampleRate)
 	CreateBuffer();
 
 	stPSG *st;
+	CLockMgr<CCSWrapper> guard(m_Lock, TRUE);
 	st = m_stPSG;
 
 	while( st )

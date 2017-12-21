@@ -22,27 +22,15 @@ CPhasor::CPhasor()
 {
 	m_strDeviceName = "Mocking B./Phasor";
 	m_iDeviceNum = CARD_PHASOR;
-	g_DXSound.AddPSG( &m_8913[0], 1 );
-	g_DXSound.AddPSG( &m_8913[1], 1 );
-	g_DXSound.AddPSG( &m_8913[2], -1 );
-	g_DXSound.AddPSG( &m_8913[3], -1 );
-#ifdef HAVE_VOTRAX			// not implemented yet
-	g_DXSound.AddPSG( &m_cVotrax[0], 1 );
-	g_DXSound.AddPSG( &m_cVotrax[1], -1 );
-#endif
 	m_byMode = 0;			// Native Phasor Mode
+	m_bSwapSpeakers = FALSE;
+
+	RegisterPSG();
 }
 
 CPhasor::~CPhasor()
 {
-	g_DXSound.RemovePSG( &m_8913[0] );
-	g_DXSound.RemovePSG( &m_8913[1] );
-	g_DXSound.RemovePSG( &m_8913[2] );
-	g_DXSound.RemovePSG( &m_8913[3] );
-#ifdef HAVE_VOTRAX
-	g_DXSound.RemovePSG( &m_cVotrax[0] );
-	g_DXSound.RemovePSG( &m_cVotrax[1] );
-#endif
+	UnregisterPSG();
 }
 
 void CPhasor::WriteRom(WORD addr, BYTE data)
@@ -196,6 +184,7 @@ void CPhasor::Configure()
 
 	CDlgConfigMockingBoard dlg;
 	dlg.m_bMute = m_8913[0].m_bMute && m_8913[3].m_bMute;
+	dlg.m_bSwapSpeakers = m_bSwapSpeakers;
 	dlg.SetRightVol( m_8913[0].m_iVol );
 	dlg.SetLeftVol( m_8913[2].m_iVol );
 	dlg.SetDipSwitch( m_byMode );
@@ -209,6 +198,12 @@ void CPhasor::Configure()
 		m_8913[1].m_iVol = dlg.GetRightVol();
 		m_8913[2].m_iVol = dlg.GetLeftVol();
 		m_8913[3].m_iVol = dlg.GetLeftVol();
+		if (m_bSwapSpeakers != dlg.m_bSwapSpeakers)
+		{
+			UnregisterPSG();
+			RegisterPSG();
+			m_bSwapSpeakers = dlg.m_bSwapSpeakers;
+		}
 		SetDipSwitch( dlg.GetDipSwitch() );
 	}
 }
@@ -274,10 +269,38 @@ void CPhasor::SetDipSwitch(int nDipSwitch)
 	return;
 }
 
+void CPhasor::RegisterPSG()
+{
+	int pan = 1;
+	if (m_bSwapSpeakers == TRUE)
+		pan = -1;
+
+	g_DXSound.AddPSG(&m_8913[0], pan);
+	g_DXSound.AddPSG(&m_8913[1], pan);
+	g_DXSound.AddPSG(&m_8913[2], -pan);
+	g_DXSound.AddPSG(&m_8913[3], -pan);
+#ifdef HAVE_VOTRAX			// not implemented yet
+	g_DXSound.AddPSG(&m_cVotrax[0], pan);
+	g_DXSound.AddPSG(&m_cVotrax[1], -pan);
+#endif
+}
+
+void CPhasor::UnregisterPSG()
+{
+	g_DXSound.RemovePSG(&m_8913[0]);
+	g_DXSound.RemovePSG(&m_8913[1]);
+	g_DXSound.RemovePSG(&m_8913[2]);
+	g_DXSound.RemovePSG(&m_8913[3]);
+#ifdef HAVE_VOTRAX
+	g_DXSound.RemovePSG(&m_cVotrax[0]);
+	g_DXSound.RemovePSG(&m_cVotrax[1]);
+#endif
+}
 
 void CPhasor::Serialize( CArchive &ar )
 {
 	CCard::Serialize( ar );
+	BOOL bSwapSpeakers;
 
 	if ( ar.IsStoring() )
 	{
@@ -288,6 +311,7 @@ void CPhasor::Serialize( CArchive &ar )
 		m_8913[1].Serialize( ar );
 		m_8913[2].Serialize( ar );
 		m_8913[3].Serialize( ar );
+		ar << m_bSwapSpeakers;
 	}
 	else
 	{
@@ -298,5 +322,15 @@ void CPhasor::Serialize( CArchive &ar )
 		m_8913[1].Serialize( ar );
 		m_8913[2].Serialize( ar );
 		m_8913[3].Serialize( ar );
+		if (g_nSerializeVer >= 10)
+		{
+			ar >> bSwapSpeakers;
+			if (m_bSwapSpeakers != bSwapSpeakers)
+			{
+				UnregisterPSG();
+				RegisterPSG();
+				m_bSwapSpeakers = bSwapSpeakers;
+			}
+		}
 	}
 }

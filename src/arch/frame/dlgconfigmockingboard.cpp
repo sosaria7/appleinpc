@@ -23,6 +23,7 @@ CDlgConfigMockingBoard::CDlgConfigMockingBoard(CWnd* pParent /*=NULL*/)
 {
 	//{{AFX_DATA_INIT(CDlgConfigMockingBoard)
 	m_bMute = FALSE;
+	m_bSwapSpeakers = FALSE;
 	//}}AFX_DATA_INIT
 	m_nDipSwitch = PM_MB;
 }
@@ -37,6 +38,7 @@ void CDlgConfigMockingBoard::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_PHASOR_VOLUME, m_slVolume);
 	DDX_Control(pDX, IDC_PHASOR_BALANCE, m_slBalance);
 	DDX_Check(pDX, IDC_PHASOR_MUTE, m_bMute);
+	DDX_Check(pDX, IDC_PHASOR_SWAP_SPEAKERS, m_bSwapSpeakers);
 	//}}AFX_DATA_MAP
 }
 

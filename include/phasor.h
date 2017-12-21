@@ -50,11 +50,14 @@ public:
 
 protected:
 	BYTE m_byMode;
+	BOOL m_bSwapSpeakers;
 	C6522	m_6522[2];
 	C8913	m_8913[4];
 #ifdef HAVE_VOTRAX
 	CVotrax	m_cVotrax[2];
 #endif
+	void RegisterPSG();
+	void UnregisterPSG();
 };
 
 

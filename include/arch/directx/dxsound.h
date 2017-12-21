@@ -3,6 +3,7 @@
 
 #include <mmreg.h>
 #include <dsound.h>
+#include "lockmgr.h"
 
 #define MAX_CHARACTER	5
 #define MAX_ACTION		7
@@ -53,6 +54,7 @@ public:
 	int m_nSamplesInFrame;
 
 protected:
+	CCSWrapper m_Lock;
 	int m_nToggleValue;
 	BOOL m_bPlay;
 	BOOL m_iToggle;

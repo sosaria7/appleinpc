@@ -29,6 +29,7 @@ public:
 	CSliderCtrl	m_slVolume;
 	CSliderCtrl	m_slBalance;
 	BOOL	m_bMute;
+	BOOL	m_bSwapSpeakers;
 	//}}AFX_DATA
 
 
