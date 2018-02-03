@@ -390,7 +390,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
     LTEXT           "Apple in PC v0.1.42.1",IDC_STATIC,40,10,119,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2002-2017",IDC_STATIC,40,62,79,8
+    LTEXT           "Copyright (C) 2002-2018",IDC_STATIC,40,62,79,8
     DEFPUSHBUTTON   "&OK",IDOK,125,56,50,14,WS_GROUP
     LTEXT           "https://github.com/sosaria7/appleinpc",IDC_STATIC,40,38,129,8
     LTEXT           "sosaria7@gmail.com",IDC_STATIC,40,24,94,8
