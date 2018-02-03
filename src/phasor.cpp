@@ -200,9 +200,9 @@ void CPhasor::Configure()
 		m_8913[3].m_iVol = dlg.GetLeftVol();
 		if (m_bSwapSpeakers != dlg.m_bSwapSpeakers)
 		{
+			m_bSwapSpeakers = dlg.m_bSwapSpeakers;
 			UnregisterPSG();
 			RegisterPSG();
-			m_bSwapSpeakers = dlg.m_bSwapSpeakers;
 		}
 		SetDipSwitch( dlg.GetDipSwitch() );
 	}
@@ -327,9 +327,9 @@ void CPhasor::Serialize( CArchive &ar )
 			ar >> bSwapSpeakers;
 			if (m_bSwapSpeakers != bSwapSpeakers)
 			{
+				m_bSwapSpeakers = bSwapSpeakers;
 				UnregisterPSG();
 				RegisterPSG();
-				m_bSwapSpeakers = bSwapSpeakers;
 			}
 		}
 	}
