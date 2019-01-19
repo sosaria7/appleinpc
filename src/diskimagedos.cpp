@@ -345,7 +345,7 @@ BOOL CDiskImageDos::CheckImage(int hFile, const BYTE* order)
 BOOL CDiskImageDos::IsMyType(int hFile, const char* szExt )
 {
 	// 확장자로 확인
-	if ( IsMatch( "dsk;do", szExt ) )
+	if ( IsMatch( "do", szExt ) )
 		return TRUE;
 	if (IsMatch("po;nib;apl;iie;prg", szExt))
 		return FALSE;

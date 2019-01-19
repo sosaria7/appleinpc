@@ -206,6 +206,7 @@ int C65c02::Process()
 			TRACE("BRK at $%04X\n", m_regPC - 1);
 		{
 			int d_i, d_current;
+			char buffer[40];
 			d_current = m_current;
 			TRACE("Trace PC register\n");
 			for (d_i = 0; d_i < 10; d_i++)
@@ -215,9 +216,11 @@ int C65c02::Process()
 			TRACE("Stack : $%02X\n    ", m_regS);
 			for (d_i = 0; d_i < 10; d_i++)
 			{
-				TRACE("%02X ", READMEM8(((m_regS + d_i) & 0xFF) + 0x100));
+				//TRACE("%02X ", READMEM8(((m_regS + d_i) & 0xFF) + 0x100));
+				snprintf(buffer + d_i * 3, 40 - d_i * 3, "%02X ", READMEM8(((m_regS + d_i) & 0xFF) + 0x100));
 			}
-			TRACE("\n");
+			TRACE("%s\n", buffer);
+			//TRACE("\n");
 		}
 #endif
 		BRK; CLOCK(7); break;
