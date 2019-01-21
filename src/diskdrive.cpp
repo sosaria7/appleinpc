@@ -177,6 +177,14 @@ int CDiskDrive::Mount( const char* pszImageName )
 		else
 			pNewImage = new CDiskImageNib();
 	}
+	else if (_stricmp(szExt, "dsk") == 0)
+	{
+		// assume a file with "dsk" extension is dos format
+		if (m_pDiskImage && m_pDiskImage->GetId() == IMAGE_DOS)
+			pNewImage = m_pDiskImage;
+		else
+			pNewImage = new CDiskImageDos();
+	}
 	else
 	{
 		_close( hFile );
