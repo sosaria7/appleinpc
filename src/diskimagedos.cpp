@@ -342,14 +342,8 @@ BOOL CDiskImageDos::CheckImage(int hFile, const BYTE* order)
 	}
 	return !err;
 }
-BOOL CDiskImageDos::IsMyType(int hFile, const char* szExt )
+BOOL CDiskImageDos::IsMyType(int hFile)
 {
-	// 확장자로 확인
-	if ( IsMatch( "do", szExt ) )
-		return TRUE;
-	if (IsMatch("po;nib;apl;iie;prg", szExt))
-		return FALSE;
-	// 모르는 확장자 인경우 내용 확인
 	// check for a dos order image of a dos diskette
 	return CheckImage( hFile, sg_abyLogicalOrder );
 }

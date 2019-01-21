@@ -92,13 +92,9 @@ BOOL CDiskImageNib::CheckImage(int hFile)
 	return( i < 512 );
 }
 
-BOOL CDiskImageNib::IsMyType(int hFile, const char* szExt )
+BOOL CDiskImageNib::IsMyType(int hFile)
 {
 	int nSize;
-
-	// 확장자로 확인
-	if (IsMatch("do;po;apl;iie;prg;2mg", szExt))
-		return FALSE;
 
 	nSize = _lseek(hFile, 0, SEEK_END );
 	if ( ( nSize % 35 ) == 0 )

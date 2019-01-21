@@ -112,9 +112,6 @@
     <ClInclude Include="include\arch\directx\dimouse.h">
       <Filter>Header\arch.h\directx.h</Filter>
     </ClInclude>
-    <ClInclude Include="include\diskimagepo.h">
-      <Filter>Header\arch.h\directx.h</Filter>
-    </ClInclude>
     <ClInclude Include="include\arch\directx\dxsound.h">
       <Filter>Header\arch.h\directx.h</Filter>
     </ClInclude>
@@ -280,6 +277,9 @@
     </ClInclude>
     <ClInclude Include="include\arch\CommandLineOption.h">
       <Filter>Header\arch.h</Filter>
+    </ClInclude>
+    <ClInclude Include="include\diskimagepo.h">
+      <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

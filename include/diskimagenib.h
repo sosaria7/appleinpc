@@ -20,7 +20,8 @@ public:
 	virtual int GetId(){ return IMAGE_NIBBLE; }
 	CDiskImageNib();
 	virtual ~CDiskImageNib();
-	static BOOL IsMyType(int hFile, const char* szExt );
+	static BOOL IsMyType(int hFile);
+	static BOOL IsMyExtension(const char* szExt) { return IsMatch("nib", szExt); }
 protected:
 	static BOOL CheckImage(int hFile);
 	virtual BOOL ReadBuffer();

@@ -55,12 +55,9 @@ public:
 	virtual BOOL InitImage() { return TRUE; }
 
 	virtual void MoveTrack(UINT m_nTrack);
-	static BOOL IsMyType(int hFile, const char* szExt )
-	{
-		return FALSE;
-	}
+	static BOOL IsMyType(int hFile) { return FALSE; }
+	static BOOL IsMyExtension(const char* szExt) { return FALSE; }
 	static int Get2mgFormat(int hFile);
-
 	int GetNibblesPerTrack()
 	{
 		return m_nNibblesPerTrack;

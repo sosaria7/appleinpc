@@ -20,7 +20,8 @@ public:
 	virtual int GetId(){ return IMAGE_PRODOS; }
 	CDiskImagePo();
 	virtual ~CDiskImagePo();
-	static BOOL IsMyType(int hFile, const char* szExt );
+	static BOOL IsMyType(int hFile);
+	static BOOL IsMyExtension(const char* szExt) { return IsMatch("po", szExt); }
 };
 
 #endif // !defined(AFX_DISKIMAGEPO_H__44FA5C8E_4106_4349_8249_25F81157F9FD__INCLUDED_)

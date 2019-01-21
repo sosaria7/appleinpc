@@ -151,51 +151,66 @@ int CDiskDrive::Mount( const char* pszImageName )
 		strncpy( szExt, pszImageName + j, 3 );
 
 	nImageFormat = CDiskImage::Get2mgFormat(hFile);
-	// 이미지가 어느 형식인지 확인한다.
-	if (nImageFormat == IMAGE_DOS ||
-		CDiskImageDos::IsMyType( hFile, szExt ) )
+	if (nImageFormat == IMAGE_NONE)
 	{
-		// 이미 있는 CDiskImage와 동일한 종류이면 새로 생성하지 않는다.
-		if ( m_pDiskImage && m_pDiskImage->GetId() == IMAGE_DOS )
-			pNewImage = m_pDiskImage;
-		else
-			pNewImage = new CDiskImageDos();
+		if (CDiskImageDos::IsMyExtension(szExt))
+		{
+			nImageFormat = IMAGE_DOS;
+		}
+		else if (CDiskImagePo::IsMyExtension(szExt))
+		{
+			nImageFormat = IMAGE_PRODOS;
+		}
+		else if (CDiskImageNib::IsMyExtension(szExt))
+		{
+			nImageFormat = IMAGE_NIBBLE;
+		}
+		else if (CDiskImageDos::IsMyType(hFile))
+		{
+			nImageFormat = IMAGE_DOS;
+		}
+		else if (CDiskImagePo::IsMyType(hFile))
+		{
+			nImageFormat = IMAGE_PRODOS;
+		}
+		else if (CDiskImageNib::IsMyType(hFile))
+		{
+			nImageFormat = IMAGE_NIBBLE;
+		}
+		else if (_stricmp(szExt, "dsk") == 0)
+		{
+			nImageFormat = IMAGE_DOS;
+		}
 	}
-	else if (nImageFormat == IMAGE_PRODOS ||
-		CDiskImagePo::IsMyType( hFile, szExt ) )
+	_close(hFile);
+
+	if (m_pDiskImage && m_pDiskImage->GetId() == nImageFormat)
 	{
-		if ( m_pDiskImage && m_pDiskImage->GetId() == IMAGE_PRODOS )
-			pNewImage = m_pDiskImage;
-		else
-			pNewImage = new CDiskImagePo();
-	}
-	else if (nImageFormat == IMAGE_NIBBLE ||
-		CDiskImageNib::IsMyType( hFile, szExt ) )
-	{
-		if ( m_pDiskImage && m_pDiskImage->GetId() == IMAGE_NIBBLE )
-			pNewImage = m_pDiskImage;
-		else
-			pNewImage = new CDiskImageNib();
-	}
-	else if (_stricmp(szExt, "dsk") == 0)
-	{
-		// assume a file with "dsk" extension is dos format
-		if (m_pDiskImage && m_pDiskImage->GetId() == IMAGE_DOS)
-			pNewImage = m_pDiskImage;
-		else
-			pNewImage = new CDiskImageDos();
+		pNewImage = m_pDiskImage;
 	}
 	else
 	{
-		_close( hFile );
-		return E_UNKNOWN_FORMAT;		// unknown image type
+		switch (nImageFormat)
+		{
+		case IMAGE_DOS:
+			pNewImage = new CDiskImageDos();
+			break;
+		case IMAGE_PRODOS:
+			pNewImage = new CDiskImagePo();
+			break;
+		case IMAGE_NIBBLE:
+			pNewImage = new CDiskImageNib();
+			break;
+		default:
+			// unknown image type
+			return E_UNKNOWN_FORMAT;
+		}
 	}
-	_close( hFile );
 
 	nErrNo = pNewImage->Mount( pszImageName );
 	if ( nErrNo == E_SUCCESS )
 	{
-		// 성공한 경우 새로운 CDiskImage가 생성되었으면 기존의것은 삭제한다.
+		// if new CDiskImage object is created, delete the old one
 		if ( m_pDiskImage != pNewImage )
 		{
 			if ( m_pDiskImage )
@@ -206,7 +221,8 @@ int CDiskDrive::Mount( const char* pszImageName )
 		return E_SUCCESS;
 	}
 	m_strImagePath = "";
-	// 실패한 경우 새로운 CDiskImage가 생성되었으면 새로운 것을 삭제한다.
+
+	// if new CDiskImage object is created, delete the new one because mounting has failed
 	if ( m_pDiskImage != pNewImage )
 		delete pNewImage;
 	return nErrNo;
