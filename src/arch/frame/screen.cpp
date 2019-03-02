@@ -53,7 +53,7 @@ CScreen::CScreen()
 	m_bPowerOn = FALSE;
 	m_iBlinkCount = 0;
 	m_nVideoMode = SM_COLOR;
-	m_bScanline = FALSE;
+	m_bScanline = TRUE;
 	m_dFrameRate = 0;
 
 	memset(m_pixelInfo, 0, sizeof(m_pixelInfo));

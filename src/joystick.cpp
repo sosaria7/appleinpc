@@ -17,6 +17,15 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
+extern "C" {
+	typedef DWORD(WINAPI *TFnXInputGetState)(DWORD dwUserIndex, XINPUT_STATE* pState);
+	typedef DWORD(WINAPI *TFnXInputGetCapabilities)(DWORD dwUserIndex, DWORD dwFlags, XINPUT_CAPABILITIES* pCapabilities);
+};
+
+TFnXInputGetState			s_fnXInputGetState = NULL;
+TFnXInputGetCapabilities	s_fnXInputGetCapabilities = NULL;
+HMODULE hXInputModule = NULL;
+
 #define JOY_MIN_DEADZONE		0
 #define JOY_MAX_DEADZONE		20
 #define JOY_MIN_SATURATION		50
@@ -41,6 +50,21 @@ CJoystick::CJoystick()
 	m_bSwapButtons = FALSE;
 	m_bIsLegacy = FALSE;
 	memset(&m_xinputState, 0, sizeof(m_xinputState));
+
+	if (hXInputModule == NULL)
+	{
+		hXInputModule = LoadLibrary("xinput1_3.dll");
+		if (hXInputModule != NULL)
+		{
+			s_fnXInputGetState = (TFnXInputGetState)GetProcAddress(hXInputModule, "XInputGetState");
+			s_fnXInputGetCapabilities = (TFnXInputGetCapabilities)GetProcAddress(hXInputModule, "XInputGetCapabilities");
+			if (s_fnXInputGetState == NULL || s_fnXInputGetCapabilities == NULL)
+			{
+				s_fnXInputGetState = NULL;
+				s_fnXInputGetCapabilities = NULL;
+			}
+		}
+	}
 }
 
 CJoystick::~CJoystick()
@@ -303,7 +327,7 @@ void CJoystick::Poll()
 		}
 		else
 		{
-			if (XInputGetState(0, &m_xinputState) != ERROR_SUCCESS)
+			if (s_fnXInputGetState != NULL && s_fnXInputGetState(0, &m_xinputState) != ERROR_SUCCESS)
 			{
 				m_bHasPCJoystick = FALSE;
 				m_bIsLegacy = FALSE;
@@ -318,7 +342,7 @@ void CJoystick::InitPCJoystick()
 	if (m_bHasPCJoystick == FALSE)
 	{
 		XINPUT_CAPABILITIES caps;
-		if (XInputGetCapabilities(0, XINPUT_FLAG_GAMEPAD, &caps) == ERROR_SUCCESS)
+		if (s_fnXInputGetCapabilities != NULL && s_fnXInputGetCapabilities(0, XINPUT_FLAG_GAMEPAD, &caps) == ERROR_SUCCESS)
 		{
 			m_bHasPCJoystick = TRUE;
 			m_bIsLegacy = FALSE;
@@ -326,7 +350,7 @@ void CJoystick::InitPCJoystick()
 	}
 	if (m_bHasPCJoystick == TRUE && m_bIsLegacy == FALSE)
 	{
-		if (XInputGetState(0, &m_xinputState) != ERROR_SUCCESS)
+		if (s_fnXInputGetState != NULL && s_fnXInputGetState(0, &m_xinputState) != ERROR_SUCCESS)
 		{
 			m_bHasPCJoystick = FALSE;
 			m_bIsLegacy = FALSE;
@@ -377,6 +401,7 @@ void CJoystick::Serialize( CArchive &ar )
 
 void CJoystick::Initialize()
 {
+
 	ChangeDevice( m_nJoystickMode );
 	SetDeadZone( m_nDeadZone );
 	SetSaturation( m_nSaturation );
