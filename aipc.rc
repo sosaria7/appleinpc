@@ -56,6 +56,16 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_KEY_NUMLOCK         BITMAP                  "res\\numlock_on.bmp"
+
+IDB_KEY_NUMLOCK_OFF     BITMAP                  "res\\numlock_off.bmp"
+
 #endif    // Korean (Korea) resources
 /////////////////////////////////////////////////////////////////////////////
 

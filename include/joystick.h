@@ -25,8 +25,6 @@ public:
 	CJoystick();
 	virtual ~CJoystick();
 
-	int GetDevice();
-	int ChangeDevice(int nMode);
 	void Strobe();
 	BYTE GetStatus( BYTE num );
 
@@ -51,7 +49,6 @@ protected:
 	BOOL m_bStrobe;
 	DWORD m_dwLastClock;
 	DWORD m_dwLastPoll;
-	int	m_nJoystickMode;
 	int m_nDeadZone;
 	int m_nSaturation;
 	bool m_bArrowAsPaddle;

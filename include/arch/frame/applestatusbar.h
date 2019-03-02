@@ -10,6 +10,7 @@
 #define KEY_STATE_CAPTURE		0
 #define KEY_STATE_CAPS			1
 #define KEY_STATE_SCROLL		2
+#define KEY_STATE_NUMLOCK		3
 
 /////////////////////////////////////////////////////////////////////////////
 // CAppleStatusBar window
@@ -27,7 +28,7 @@ protected:
 	CBitmap m_bmDiskOff;
 	CBitmap m_bmDiskRead;
 	CBitmap m_bmDiskWrite;
-
+	
 	CBitmap m_bmDiskOff_Full;
 	CBitmap m_bmDiskRead_Full;
 	CBitmap m_bmDiskWrite_Full;
@@ -36,11 +37,14 @@ protected:
 	CBitmap m_bmCapsOff;
 	CBitmap m_bmScrollLockOn;
 	CBitmap m_bmScrollLockOff;
+	CBitmap m_bmNumLockOn;
+	CBitmap m_bmNumLockOff;
 
 	int m_iDiskStatus[5];
 	bool m_bKeyCaptured;
 	bool m_bKeyCaps;
 	bool m_bKeyScrollLock;
+	bool m_bKeyNumLock;
 	CBitmap m_bmHdd;
 
 // Operations

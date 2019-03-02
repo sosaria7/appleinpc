@@ -21,14 +21,16 @@ public:
 	void OnKeyDown(WPARAM wParam, LPARAM lParam);
 	void SetCapsLock(BOOL bCaps);
 	void SetScrollLock(BOOL bScroll);
+	void SetNumLock(BOOL bNumLock);
 	BOOL GetScrollLock() { return m_bScroll; }
 	BOOL GetCapsLock() { return m_bCaps; }
-
+	BOOL GetNumLock() { return m_bNumLock; }
 	CKeyboard();
 	virtual ~CKeyboard();
 protected:
 	BOOL m_bCaps;
 	BOOL m_bScroll;
+	BOOL m_bNumLock;
 	BYTE m_keyStrobe;
 	BYTE m_lastKey;
 	BYTE m_last;

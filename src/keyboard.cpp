@@ -36,6 +36,7 @@ CKeyboard::CKeyboard()
 	m_lastKey=0;
 	m_bCaps = TRUE;
 	m_bScroll = FALSE;
+	m_bNumLock = FALSE;
 }
 
 CKeyboard::~CKeyboard()
@@ -65,6 +66,9 @@ void CKeyboard::OnKeyDown(WPARAM wParam, LPARAM lParam)
 			return;
 		case DIK_SCROLL:
 			SetScrollLock(!m_bScroll);
+			break;
+		case DIK_NUMLOCK:
+			SetNumLock(!m_bNumLock);
 			break;
 		case 0xC6:			// control+pause : break
 			g_pBoard->Reset();
@@ -253,4 +257,12 @@ void CKeyboard::SetScrollLock(BOOL bScroll)
 {
 	m_bScroll = bScroll;
 	g_pBoard->m_lpwndMainFrame->m_wndStatusBar.SetKeyStatus(KEY_STATE_SCROLL, bScroll);
+}
+
+void CKeyboard::SetNumLock(BOOL bNumLock)
+{
+	m_bNumLock = bNumLock;
+
+	CKeyboard::EnableNumKey(m_bNumLock);
+	g_pBoard->m_lpwndMainFrame->m_wndStatusBar.SetKeyStatus(KEY_STATE_NUMLOCK, bNumLock);
 }

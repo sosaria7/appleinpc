@@ -44,6 +44,8 @@
 #define IDB_KEY_CAPS_OFF                185
 #define IDB_KEY_SCROLL_OFF              186
 #define IDD_CMD_USAGE                   187
+#define IDB_KEY_NUMLOCK                 190
+#define IDB_KEY_NUMLOCK_OFF             191
 #define IDC_LIST_PROCESS                1000
 #define IDC_EDIT_FILENAME2              1001
 #define IDC_BTN_SLOT1                   1002
@@ -220,7 +222,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        190
+#define _APS_NEXT_RESOURCE_VALUE        192
 #define _APS_NEXT_COMMAND_VALUE         32807
 #define _APS_NEXT_CONTROL_VALUE         1137
 #define _APS_NEXT_SYMED_VALUE           111

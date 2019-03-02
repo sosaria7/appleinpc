@@ -30,6 +30,9 @@ HMODULE hXInputModule = NULL;
 #define JOY_MAX_DEADZONE		20
 #define JOY_MIN_SATURATION		50
 #define JOY_MAX_SATURATION		100
+#define JOY_MIN_PADDLE			-10000
+#define JOY_MAX_PADDLE			9999
+#define JOY_PADDLE_RANGE		20000
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -41,7 +44,6 @@ CJoystick::CJoystick()
 {
 	m_dwLastClock = 0;
 	m_dwLastPoll = 0;
-	m_nJoystickMode = JM_KEYPAD;
 	m_bStrobe = FALSE;
 	m_bHasPCJoystick = FALSE;
 	m_nDeadZone = 10;
@@ -77,10 +79,6 @@ CJoystick::~CJoystick()
 BYTE CJoystick::GetStatus(BYTE num)
 {
 	DWORD retval = 0x7f;
-	CKeyboard *keybd;
-	BOOL bScroll;
-	keybd = &g_pBoard->m_keyboard;
-	bScroll = keybd->GetScrollLock() && m_bArrowAsPaddle;
 
 	switch (num & 0x0F)
 	{
@@ -100,10 +98,10 @@ BYTE CJoystick::GetStatus(BYTE num)
 		else
 			return 0x00;
 	case 4:		// paddel 0
-		retval = (GetPaddleState(0) + 10000) * 0x100 / 20000;
+		retval = (GetPaddleState(0) - JOY_MIN_PADDLE) * 0x100 / JOY_PADDLE_RANGE;
 		break;
 	case 5:		// paddel 1
-		retval = (GetPaddleState(1) + 10000) * 0x100 / 20000;
+		retval = (GetPaddleState(1) - JOY_MIN_PADDLE) * 0x100 / JOY_PADDLE_RANGE;
 		break;
 	case 6:		// paddel 2
 	case 7:		// paddel 3
@@ -170,35 +168,55 @@ int CJoystick::GetPaddleState(int num)
 	int retval = 0;
 	BOOL bScroll;
 	CKeyboard *keybd;
+	BOOL bNumLock;
 	keybd = &g_pBoard->m_keyboard;
+
+	// use keypad as joystick when numlock is off
+	bNumLock = keybd->GetNumLock();
 
 	bScroll = keybd->GetScrollLock() && m_bArrowAsPaddle;
 
-	if (num == 0)
+	if (!bNumLock)
 	{
-		if (KEYDOWN(DIK_NUMPAD1) ||
-			KEYDOWN(DIK_NUMPAD4) ||
-			KEYDOWN(DIK_NUMPAD7) ||
-			(bScroll && KEYDOWN(DIK_LEFT)))
-			return -10000;
-		if (KEYDOWN(DIK_NUMPAD9) ||
-			KEYDOWN(DIK_NUMPAD6) ||
-			KEYDOWN(DIK_NUMPAD3) ||
-			(bScroll && KEYDOWN(DIK_RIGHT)))
-			return 9999;
+		if (num == 0)
+		{
+			if (KEYDOWN(DIK_NUMPAD1) ||
+				KEYDOWN(DIK_NUMPAD4) ||
+				KEYDOWN(DIK_NUMPAD7))
+				return JOY_MIN_PADDLE;
+			if (KEYDOWN(DIK_NUMPAD9) ||
+				KEYDOWN(DIK_NUMPAD6) ||
+				KEYDOWN(DIK_NUMPAD3))
+				return JOY_MAX_PADDLE;
+		}
+		else
+		{
+			if (KEYDOWN(DIK_NUMPAD7) ||
+				KEYDOWN(DIK_NUMPAD8) ||
+				KEYDOWN(DIK_NUMPAD9))
+				return JOY_MIN_PADDLE;
+			if (KEYDOWN(DIK_NUMPAD1) ||
+				KEYDOWN(DIK_NUMPAD2) ||
+				KEYDOWN(DIK_NUMPAD3))
+				return JOY_MAX_PADDLE;
+		}
 	}
-	else
+	if (bScroll)
 	{
-		if (KEYDOWN(DIK_NUMPAD7) ||
-			KEYDOWN(DIK_NUMPAD8) ||
-			KEYDOWN(DIK_NUMPAD9) ||
-			(bScroll && KEYDOWN(DIK_UP)))
-			return -10000;
-		if (KEYDOWN(DIK_NUMPAD1) ||
-			KEYDOWN(DIK_NUMPAD2) ||
-			KEYDOWN(DIK_NUMPAD3) ||
-			(bScroll && KEYDOWN(DIK_DOWN)))
-			return 9999;
+		if (num == 0)
+		{
+			if (KEYDOWN(DIK_LEFT))
+				return JOY_MIN_PADDLE;
+			if (KEYDOWN(DIK_RIGHT))
+				return JOY_MAX_PADDLE;
+		}
+		else
+		{
+			if (KEYDOWN(DIK_UP))
+				return JOY_MIN_PADDLE;
+			if (KEYDOWN(DIK_DOWN))
+				return JOY_MAX_PADDLE;
+		}
 	}
 
 	Poll();
@@ -217,17 +235,17 @@ int CJoystick::GetPaddleState(int num)
 			if (num == 0)
 			{
 				if ((m_xinputState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT) != 0)
-					return -10000;
+					return JOY_MIN_PADDLE;
 				else if ((m_xinputState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT) != 0)
-					return 9999;
+					return JOY_MAX_PADDLE;
 				else
 					retval = m_xinputState.Gamepad.sThumbLX;
 			}
 			else
 				if ((m_xinputState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP) != 0)
-					return -10000;
+					return JOY_MIN_PADDLE;
 				else if ((m_xinputState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN) != 0)
-					return 9999;
+					return JOY_MAX_PADDLE;
 				else
 					retval = -m_xinputState.Gamepad.sThumbLY - 1;
 			retval = retval * 10000 / 32768;
@@ -236,10 +254,10 @@ int CJoystick::GetPaddleState(int num)
 			retval = retval * 100 / m_nSaturation;
 		if (retval >= -m_nDeadZone * 100 && retval <= m_nDeadZone * 100)
 			retval = 0;
-		if (retval > 9999)
-			retval = 9999;
-		else if (retval < -10000)
-			retval = -10000;
+		if (retval > JOY_MAX_PADDLE)
+			retval = JOY_MAX_PADDLE;
+		else if (retval < JOY_MIN_PADDLE)
+			retval = JOY_MIN_PADDLE;
 	}
 	return retval;
 }
@@ -248,21 +266,6 @@ void CJoystick::Strobe()
 {
 	m_dwLastClock = g_pBoard->GetClock();
 	m_bStrobe = TRUE;
-}
-
-int CJoystick::ChangeDevice(int nMode)
-{
-	if ( m_nJoystickMode == nMode )
-		return 0;
-	m_nJoystickMode = nMode;
-	CKeyboard::EnableNumKey( nMode != JM_KEYPAD );
-
-	return 0;
-}
-
-int CJoystick::GetDevice()
-{
-	return m_nJoystickMode;
 }
 
 int CJoystick::GetDeadZone()
@@ -369,10 +372,11 @@ void CJoystick::InitPCJoystick()
 void CJoystick::Serialize( CArchive &ar )
 {
 	CObject::Serialize( ar );
+	int nDummy = 0;
 
 	if ( ar.IsStoring() )
 	{
-		ar << m_nJoystickMode;
+		ar << nDummy;
 		ar << m_nDeadZone;
 		ar << m_nSaturation;
 		ar << m_bArrowAsPaddle;
@@ -380,7 +384,7 @@ void CJoystick::Serialize( CArchive &ar )
 	}
 	else
 	{
-		ar >> m_nJoystickMode;
+		ar >> nDummy;
 		ar >> m_nDeadZone;
 		ar >> m_nSaturation;
 		if (g_nSerializeVer >= 8)
@@ -388,21 +392,12 @@ void CJoystick::Serialize( CArchive &ar )
 			ar >> m_bArrowAsPaddle;
 			ar >> m_bSwapButtons;
 		}
-		if ( m_nJoystickMode == JM_PCJOYSTICK )
-		{
-			if ( m_bHasPCJoystick == FALSE )
-			{
-				m_nJoystickMode = JM_KEYPAD;
-			}
-		}
 		Initialize();
 	}
 }
 
 void CJoystick::Initialize()
 {
-
-	ChangeDevice( m_nJoystickMode );
 	SetDeadZone( m_nDeadZone );
 	SetSaturation( m_nSaturation );
 }

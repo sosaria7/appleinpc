@@ -90,6 +90,12 @@
     <Image Include="res\key_caps_off.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\numlock_on.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\numlock_off.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="aipc.rc">

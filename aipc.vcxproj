@@ -153,6 +153,8 @@
     <Image Include="res\key_caps_off.bmp" />
     <Image Include="res\key_scroll.bmp" />
     <Image Include="res\key_scroll_off.bmp" />
+    <Image Include="res\numlock_off.bmp" />
+    <Image Include="res\numlock_on.bmp" />
     <Image Include="res\Toolbar.bmp" />
     <Image Include="RES\toolbar1.bmp" />
   </ItemGroup>
