@@ -133,6 +133,7 @@ public:
 
 	int m_iMemMode;
 	int	m_iLastMemMode;
+	BOOL m_bLastWriteRamFlag;
 	BYTE CheckMode( WORD addr );
 	void SwitchAuxMemory( WORD addr );
 	void Init();

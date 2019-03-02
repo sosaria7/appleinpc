@@ -88,7 +88,7 @@
       <GenerateDebugInformation>Debug</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OutputFile>.\Release\aipc.exe</OutputFile>
-      <AdditionalDependencies>winmm.lib;dx80\lib\dinput.lib;dx80\lib\dsound.lib;dx80\lib\dxerr8.lib;dx80\lib\ddraw.lib;dx80\lib\dxguid.lib;dx80\lib\dinput8.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;dx80\lib\dinput.lib;dx80\lib\dsound.lib;dx80\lib\dxerr8.lib;dx80\lib\ddraw.lib;dx80\lib\dxguid.lib;dx80\lib\dinput8.lib;xinput.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
@@ -132,7 +132,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OutputFile>.\Debug\aipc.exe</OutputFile>
-      <AdditionalDependencies>winmm.lib;dx80\lib\dinput.lib;dx80\lib\dsound.lib;dx80\lib\dxerr8.lib;dx80\lib\ddraw.lib;dx80\lib\dxguid.lib;dx80\lib\dinput8.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;dx80\lib\dinput.lib;dx80\lib\dsound.lib;dx80\lib\dxerr8.lib;dx80\lib\ddraw.lib;dx80\lib\dxguid.lib;dx80\lib\dinput8.lib;xinput.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <OptimizeReferences>false</OptimizeReferences>
     </Link>

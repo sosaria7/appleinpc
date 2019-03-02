@@ -138,8 +138,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,1,42,3
- PRODUCTVERSION 0,1,42,3
+ FILEVERSION 0,1,43,1
+ PRODUCTVERSION 0,1,43,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -155,12 +155,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "FileDescription", "Apple in PC"
-            VALUE "FileVersion", "0.1.42.3"
+            VALUE "FileVersion", "0.1.43.1"
             VALUE "InternalName", "aipc"
             VALUE "LegalCopyright", "Copyright 2002-2018"
             VALUE "OriginalFilename", "aipc.exe"
             VALUE "ProductName", "Apple in PC"
-            VALUE "ProductVersion", "0.1.42.3"
+            VALUE "ProductVersion", "0.1.43.1"
         END
     END
     BLOCK "VarFileInfo"
@@ -298,17 +298,14 @@ BEGIN
     GROUPBOX        "Keyboard",IDC_STATIC,7,16,186,37
     LTEXT           "Delay",IDC_STATIC,11,33,23,8
     LTEXT           "Repeat",IDC_STATIC,84,33,28,8
-    CONTROL         "None",IDC_JOYSTICK_NONE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,16,80,39,9
-    CONTROL         "NumPad",IDC_JOYSTICK_NUMPAD,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,57,80,51,9
-    CONTROL         "PC Joystick",IDC_JOYSTICK_PCJOYSTICK,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,110,80,64,9
-    COMBOBOX        IDC_JOYDEAD,53,98,40,76,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_JOYSAT,141,98,40,75,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Joystick",IDC_STATIC,7,66,186,83
-    LTEXT           "Saturation",IDC_STATIC,101,102,40,8
-    LTEXT           "Dead Zone",IDC_STATIC,11,102,37,8
+    COMBOBOX        IDC_JOYDEAD,53,95,40,76,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_JOYSAT,141,95,40,75,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Joystick",IDC_STATIC,7,82,186,67
+    LTEXT           "Saturation",IDC_STATIC,101,99,40,8
+    LTEXT           "Dead Zone",IDC_STATIC,11,99,37,8
     CONTROL         "Use arrow keys as paddles when scroll-lock on",IDC_ARRAW_AS_PADDLE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,133,163,10
-    CONTROL         "Swap button 1,2",IDC_SWAP_BUTTON_1_2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,119,69,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,130,163,10
+    CONTROL         "Swap button 1,2",IDC_SWAP_BUTTON_1_2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,116,69,10
 END
 
 IDD_SETTINGS_MACHINE DIALOGEX 0, 0, 200, 189
@@ -389,7 +386,7 @@ CAPTION "Apple in PC"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
-    LTEXT           "Apple in PC v0.1.42.3",IDC_STATIC,40,10,119,8,SS_NOPREFIX
+    LTEXT           "Apple in PC v0.1.43.1",IDC_STATIC,40,10,119,8,SS_NOPREFIX
     LTEXT           "Copyright (C) 2002-2018",IDC_STATIC,40,62,79,8
     DEFPUSHBUTTON   "&OK",IDOK,125,56,50,14,WS_GROUP
     LTEXT           "https://github.com/sosaria7/appleinpc",IDC_STATIC,40,38,129,8
@@ -539,8 +536,7 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 182
         HORZGUIDE, 41
-        HORZGUIDE, 78
-        HORZGUIDE, 99
+        HORZGUIDE, 95
     END
 
     IDD_SETTINGS_MACHINE, DIALOG

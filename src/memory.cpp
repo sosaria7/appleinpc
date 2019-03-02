@@ -409,6 +409,7 @@ BYTE CAppleIOU::ReadMem8(int nAddr)
 				break;
 			case 0x080:
 				m_iLastMemMode = m_iMemMode;
+				m_bLastWriteRamFlag = (m_iMemMode & MS_WRITERAM) != 0;
 				m_iMemMode = (m_iMemMode & ~0x0F) | (nAddr & 0x0F);
 				UpdateMemoryMap();
 				break;
@@ -535,6 +536,7 @@ void CAppleIOU::WriteMem8(int nAddr, BYTE byData)
 			// change memory mode (Language Card)
 		case 0x080:
 			m_iLastMemMode = m_iMemMode;
+			m_bLastWriteRamFlag = (m_iMemMode & MS_WRITERAM) != 0;
 			m_iMemMode = (m_iMemMode & ~0x0F) | (nAddr & 0x0F);
 			UpdateMemoryMap();
 			break;
@@ -579,7 +581,10 @@ void CAppleIOU::WriteMem8(int nAddr, BYTE byData)
 	default:
 		if (m_pWriteMap[page] != NULL)
 		{
-			m_pWriteMap[page][offset] = byData;
+			// write protection of 0xd000 ~ 0xffff area is released by accessing twice at (0xc08x | MS_WRITERAM)
+			// for the first, m_pWriteMap[0x0d~0x0f] will be set, and for the second, m_bLastWriteRamFlag will be set true.
+			if (page < 0x0D || m_bLastWriteRamFlag == TRUE)
+				m_pWriteMap[page][offset] = byData;
 		}
 		break;
 	}

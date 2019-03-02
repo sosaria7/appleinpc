@@ -29,7 +29,6 @@ protected:
 public:
 	wcSliderButton	m_cKeyDelay;
 	wcSliderButton	m_cKeyRepeat;
-	CButton m_acJoystick[3];
 	CComboBox m_cJoyDead;
 	CComboBox m_cJoySat;
 	BOOL m_bArrowAsPaddle;
@@ -40,6 +39,5 @@ public:
 
 	virtual BOOL OnInitDialog();
 
-	afx_msg void OnJoystickChanged();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };

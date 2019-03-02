@@ -10,6 +10,7 @@
 #endif // _MSC_VER > 1000
 
 #include "dinput.h"
+#include <Xinput.h>
 
 #define JM_NONE			0
 #define JM_KEYPAD		1
@@ -44,6 +45,9 @@ public:
 
 protected:
 	void Poll();
+	BOOL IsButtonDown(int num);
+	int GetPaddleState(int num);
+
 	BOOL m_bStrobe;
 	DWORD m_dwLastClock;
 	DWORD m_dwLastPoll;
@@ -52,6 +56,8 @@ protected:
 	int m_nSaturation;
 	bool m_bArrowAsPaddle;
 	bool m_bSwapButtons;
+	BOOL m_bIsLegacy;
+	XINPUT_STATE m_xinputState;
 };
 
 #endif // !defined(AFX_JOYSTICK_H__4DF81BD0_F4BF_4630_BCB4_82A4983195E4__INCLUDED_)

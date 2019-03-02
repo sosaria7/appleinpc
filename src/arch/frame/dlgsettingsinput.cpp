@@ -35,9 +35,6 @@ void CDlgSettingsInput::DoDataExchange(CDataExchange* pDX)
 
 	DDX_SliderButtonCtrl(pDX, IDC_KEYBOARD_DELAY, m_cKeyDelay, 0);
 	DDX_SliderButtonCtrl(pDX, IDC_KEYBOARD_REPEAT, m_cKeyRepeat, 0);
-	DDX_Control(pDX, IDC_JOYSTICK_NONE, m_acJoystick[0]);
-	DDX_Control(pDX, IDC_JOYSTICK_NUMPAD, m_acJoystick[1]);
-	DDX_Control(pDX, IDC_JOYSTICK_PCJOYSTICK, m_acJoystick[2]);
 	DDX_Control(pDX, IDC_JOYDEAD, m_cJoyDead);
 	DDX_Control(pDX, IDC_JOYSAT, m_cJoySat);
 	DDX_Check(pDX, IDC_ARRAW_AS_PADDLE, m_bArrowAsPaddle);
@@ -46,9 +43,7 @@ void CDlgSettingsInput::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CDlgSettingsInput, CDialogEx)
-	ON_BN_CLICKED(IDC_JOYSTICK_NONE, OnJoystickChanged)
-	ON_BN_CLICKED(IDC_JOYSTICK_NUMPAD, OnJoystickChanged)
-	ON_BN_CLICKED(IDC_JOYSTICK_PCJOYSTICK, OnJoystickChanged)
+
 END_MESSAGE_MAP()
 
 
@@ -57,7 +52,6 @@ END_MESSAGE_MAP()
 
 void CDlgSettingsInput::OnOK()
 {
-	int i;
 	int nSelect;
 
 	UpdateData(TRUE);
@@ -66,14 +60,6 @@ void CDlgSettingsInput::OnOK()
 	g_cDIKeyboard.SetDelayTime(m_cKeyRepeat.GetPos(), m_cKeyDelay.GetPos());
 
 	// joystick
-	for (i = 0; i < 3; i++)
-	{
-		if (m_acJoystick[i].GetCheck() == BST_CHECKED)
-		{
-			g_pBoard->m_joystick.ChangeDevice(i);
-			break;
-		}
-	}
 	nSelect = m_cJoyDead.GetCurSel();
 	g_pBoard->m_joystick.SetDeadZone(m_anDeadZoneList[nSelect]);
 	nSelect = m_cJoySat.GetCurSel();
@@ -105,16 +91,6 @@ BOOL CDlgSettingsInput::OnInitDialog()
 	m_cKeyDelay.SetRange(nKeyDelay, 250, 1000);
 
 	// Joystick
-	g_pBoard->m_joystick.InitPCJoystick();
-	i = g_pBoard->m_joystick.GetDevice();
-	if (!g_pBoard->m_joystick.m_bHasPCJoystick)
-	{
-		if (i == JM_PCJOYSTICK)
-			i = JM_KEYPAD;
-		m_acJoystick[JM_PCJOYSTICK].EnableWindow(FALSE);
-	}
-	m_acJoystick[i].SetCheck(BST_CHECKED);
-
 	CString strValue;
 	int nSelect = 0;
 	int nCheckValue = g_pBoard->m_joystick.GetDeadZone();
@@ -141,7 +117,6 @@ BOOL CDlgSettingsInput::OnInitDialog()
 		}
 	}
 	m_cJoySat.SetCurSel(nSelect);
-	OnJoystickChanged();
 
 	m_bSwapButtons = g_pBoard->m_joystick.GetSwapButtons();
 	m_bArrowAsPaddle = g_pBoard->m_joystick.GetArrowAsPaddle();
@@ -149,17 +124,6 @@ BOOL CDlgSettingsInput::OnInitDialog()
 	UpdateData(FALSE);
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // EXCEPTION: OCX Property Pages should return FALSE
-}
-
-
-void CDlgSettingsInput::OnJoystickChanged()
-{
-	BOOL bEnableDeadZone;
-	// TODO: Add your control notification handler code here
-	bEnableDeadZone = (m_acJoystick[JM_PCJOYSTICK].GetCheck() == BST_CHECKED);
-
-	m_cJoyDead.EnableWindow(bEnableDeadZone);
-	m_cJoySat.EnableWindow(bEnableDeadZone);
 }
 
 

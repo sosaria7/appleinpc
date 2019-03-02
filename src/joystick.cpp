@@ -9,6 +9,7 @@
 #include "joystick.h"
 #include "65c02.h"
 #include "appleclock.h"
+#include <Xinput.h>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -36,8 +37,10 @@ CJoystick::CJoystick()
 	m_bHasPCJoystick = FALSE;
 	m_nDeadZone = 10;
 	m_nSaturation = 95;
-	m_bArrowAsPaddle = true;
-	m_bSwapButtons = false;
+	m_bArrowAsPaddle = TRUE;
+	m_bSwapButtons = FALSE;
+	m_bIsLegacy = FALSE;
+	memset(&m_xinputState, 0, sizeof(m_xinputState));
 }
 
 CJoystick::~CJoystick()
@@ -51,106 +54,39 @@ BYTE CJoystick::GetStatus(BYTE num)
 {
 	DWORD retval = 0x7f;
 	CKeyboard *keybd;
-	DIJOYSTATE2 *stJState;
 	BOOL bScroll;
 	keybd = &g_pBoard->m_keyboard;
 	bScroll = keybd->GetScrollLock() && m_bArrowAsPaddle;
 
-	switch( m_nJoystickMode )
+	switch (num & 0x0F)
 	{
-	case JM_KEYPAD:
-		switch( num & 0x0F )
-		{
-		case 1:
-			return ( KEYDOWN( DIK_LMENU ) || (!m_bSwapButtons ? KEYDOWN(DIK_DELETE) : KEYDOWN(DIK_INSERT)) ) ? 0xFF : 0x00;
-		case 2:
-			return ( KEYDOWN( DIK_RMENU ) || (!m_bSwapButtons ? KEYDOWN(DIK_INSERT) : KEYDOWN(DIK_DELETE)) ) ? 0xFF : 0x00;
-		case 3:
-			return ( KEYDOWN( DIK_LSHIFT ) || KEYDOWN( DIK_RSHIFT ) ) ? 0xFF : 0x00;
-			// paddel
-		case 4:
-			if ( KEYDOWN( DIK_NUMPAD1 )
-				|| KEYDOWN( DIK_NUMPAD4 )
-				|| KEYDOWN( DIK_NUMPAD7 ) 
-				|| (bScroll && KEYDOWN( DIK_LEFT )) )
-				retval -= 0x7f;
-			if ( KEYDOWN( DIK_NUMPAD3 )
-				|| KEYDOWN( DIK_NUMPAD6 )
-				|| KEYDOWN( DIK_NUMPAD9 )
-				|| (bScroll && KEYDOWN( DIK_RIGHT )) )
-				retval += 0x80;
-			break;
-			// paddel 1
-		case 5:
-			if ( KEYDOWN( DIK_NUMPAD7 )
-				|| KEYDOWN( DIK_NUMPAD8 )
-				|| KEYDOWN( DIK_NUMPAD9 ) 
-				|| (bScroll && KEYDOWN( DIK_UP )) )
-				retval -= 0x7f;
-			if ( KEYDOWN( DIK_NUMPAD1 )
-				|| KEYDOWN( DIK_NUMPAD2 )
-				|| KEYDOWN( DIK_NUMPAD3 ) 
-				|| (bScroll && KEYDOWN( DIK_DOWN )) )
-				retval += 0x80;
-			break;
-			// paddel 2
-		case 6:
-			// paddel 3
-		case 7:
-			retval = 0x7F;
-			break;
-		default:
-			return MemReturnRandomData(2);
-		}
+	case 1:		// button 0
+		if (IsButtonDown(0))
+			return 0xFF;
+		else
+			return 0x00;
+	case 2:		// button 1
+		if (IsButtonDown(1))
+			return 0xFF;
+		else
+			return 0x00;
+	case 3:		// button 3
+		if (KEYDOWN(DIK_LSHIFT) || KEYDOWN(DIK_RSHIFT))
+			return 0xFF;
+		else
+			return 0x00;
+	case 4:		// paddel 0
+		retval = (GetPaddleState(0) + 10000) * 0x100 / 20000;
 		break;
-	case JM_PCJOYSTICK:
-		switch( num & 0x0F )
-		{
-		case 1:		// button 0
-			Poll();
-			return ( KEYDOWN( DIK_LMENU ) || (!m_bSwapButtons ? g_cDIJoystick.IsJoystickFire(0) : g_cDIJoystick.IsJoystickFire(1))) ? 0xFF : 0x00;
-		case 2:		// button 1
-			Poll();
-			return ( KEYDOWN( DIK_RMENU ) || (!m_bSwapButtons ? g_cDIJoystick.IsJoystickFire(1) : g_cDIJoystick.IsJoystickFire(0))) ? 0xFF : 0x00;
-		case 3:		// button 3
-//			Poll();
-			return ( KEYDOWN( DIK_LSHIFT ) || KEYDOWN( DIK_RSHIFT ) ) ? 0xFF : 0x00;
-		case 4:		// paddel 0
-			Poll();
-			stJState = g_cDIJoystick.GetJoystickStateInfo();
-			retval = ( stJState->lX + 10000 ) * 0xFF / 20000;
-			break;
-		case 5:		// paddel 1
-			Poll();
-			stJState = g_cDIJoystick.GetJoystickStateInfo();
-			retval = ( stJState->lY + 10000 ) * 0xFF / 20000;
-			break;
-		case 6:		// paddel 2
-		case 7:		// paddel 3
-			retval = 0x7F;
-			break;
-		default:
-			return MemReturnRandomData(2);
-		}
+	case 5:		// paddel 1
+		retval = (GetPaddleState(1) + 10000) * 0x100 / 20000;
 		break;
-	default:		// No Joystick
-		switch( num & 0x0F )
-		{
-		case 1:
-			return KEYDOWN( DIK_LMENU ) ? 0xFF : 0x00;
-		case 2:
-			return KEYDOWN( DIK_RMENU ) ? 0xFF : 0x00;
-		case 3:
-			return ( KEYDOWN( DIK_LSHIFT ) || KEYDOWN( DIK_RSHIFT ) ) ? 0xFF : 0x00;
-		case 4:
-		case 5:
-		case 6:
-		case 7:
-			retval = 0x7F;
-			break;
-		default:
-			return MemReturnRandomData(2);
-		}
+	case 6:		// paddel 2
+	case 7:		// paddel 3
+		retval = 0x7F;
+		break;
+	default:
+		return MemReturnRandomData(2);
 	}
 
 //	if ( m_bStrobe == FALSE )
@@ -168,6 +104,120 @@ BYTE CJoystick::GetStatus(BYTE num)
 	}
 
 	return 0xFF;
+}
+
+BOOL CJoystick::IsButtonDown(int num)
+{
+	BOOL bIsDown = FALSE;
+
+	if (num == 0)
+	{
+		if (KEYDOWN(DIK_LMENU) || (!m_bSwapButtons ? KEYDOWN(DIK_DELETE) : KEYDOWN(DIK_INSERT)))
+			return TRUE;
+	}
+	else
+	{
+		if (KEYDOWN(DIK_RMENU) || (!m_bSwapButtons ? KEYDOWN(DIK_INSERT) : KEYDOWN(DIK_DELETE)))
+			return TRUE;
+	}
+
+	Poll();
+	if (m_bHasPCJoystick == TRUE)
+	{
+		if (m_bIsLegacy == TRUE)
+		{
+			bIsDown = g_cDIJoystick.IsJoystickFire(num);
+		}
+		else
+		{
+			if (num == 0)
+				bIsDown = (m_xinputState.Gamepad.wButtons & (XINPUT_GAMEPAD_A | XINPUT_GAMEPAD_Y)) != 0;
+			else
+				bIsDown = (m_xinputState.Gamepad.wButtons & (XINPUT_GAMEPAD_B | XINPUT_GAMEPAD_X)) != 0;
+		}
+	}
+	return bIsDown;
+}
+
+// -10000 ~ 9999
+int CJoystick::GetPaddleState(int num)
+{
+	DIJOYSTATE2 *stJState;
+	int retval = 0;
+	BOOL bScroll;
+	CKeyboard *keybd;
+	keybd = &g_pBoard->m_keyboard;
+
+	bScroll = keybd->GetScrollLock() && m_bArrowAsPaddle;
+
+	if (num == 0)
+	{
+		if (KEYDOWN(DIK_NUMPAD1) ||
+			KEYDOWN(DIK_NUMPAD4) ||
+			KEYDOWN(DIK_NUMPAD7) ||
+			(bScroll && KEYDOWN(DIK_LEFT)))
+			return -10000;
+		if (KEYDOWN(DIK_NUMPAD9) ||
+			KEYDOWN(DIK_NUMPAD6) ||
+			KEYDOWN(DIK_NUMPAD3) ||
+			(bScroll && KEYDOWN(DIK_RIGHT)))
+			return 9999;
+	}
+	else
+	{
+		if (KEYDOWN(DIK_NUMPAD7) ||
+			KEYDOWN(DIK_NUMPAD8) ||
+			KEYDOWN(DIK_NUMPAD9) ||
+			(bScroll && KEYDOWN(DIK_UP)))
+			return -10000;
+		if (KEYDOWN(DIK_NUMPAD1) ||
+			KEYDOWN(DIK_NUMPAD2) ||
+			KEYDOWN(DIK_NUMPAD3) ||
+			(bScroll && KEYDOWN(DIK_DOWN)))
+			return 9999;
+	}
+
+	Poll();
+	if (m_bHasPCJoystick == TRUE)
+	{
+		if (m_bIsLegacy == TRUE)
+		{
+			stJState = g_cDIJoystick.GetJoystickStateInfo();
+			if (num == 0)
+				retval = stJState->lX;
+			else
+				retval = stJState->lY;
+		}
+		else
+		{
+			if (num == 0)
+			{
+				if ((m_xinputState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT) != 0)
+					return -10000;
+				else if ((m_xinputState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT) != 0)
+					return 9999;
+				else
+					retval = m_xinputState.Gamepad.sThumbLX;
+			}
+			else
+				if ((m_xinputState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP) != 0)
+					return -10000;
+				else if ((m_xinputState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN) != 0)
+					return 9999;
+				else
+					retval = -m_xinputState.Gamepad.sThumbLY - 1;
+			retval = retval * 10000 / 32768;
+		}
+		if (m_nSaturation > 0)
+			retval = retval * 100 / m_nSaturation;
+		if (retval >= -m_nDeadZone * 100 && retval <= m_nDeadZone * 100)
+			retval = 0;
+		if (retval > 9999)
+			retval = 9999;
+		else if (retval < -10000)
+			retval = -10000;
+	}
+	return retval;
 }
 
 void CJoystick::Strobe()
@@ -212,7 +262,6 @@ void CJoystick::SetDeadZone( int nDeadZone )
 		nDeadZone = JOY_MAX_DEADZONE;
 	}
 	m_nDeadZone = nDeadZone;
-	g_cDIJoystick.SetDeadZone( nDeadZone );
 }
 
 void CJoystick::SetSaturation( int nSaturation )
@@ -226,19 +275,41 @@ void CJoystick::SetSaturation( int nSaturation )
 		nSaturation = JOY_MAX_SATURATION;
 	}
 	m_nSaturation = nSaturation;
-	g_cDIJoystick.SetSaturation( nSaturation );
 }
 
 void CJoystick::Poll()
 {
-	if ( m_nJoystickMode == JM_PCJOYSTICK )
+	DWORD dwCurrentTick = ::GetTickCount();
+	if (dwCurrentTick - m_dwLastPoll < 50)
 	{
-		DWORD dwClock = g_pBoard->GetClock();
-		if ( ( dwClock - m_dwLastPoll ) > 51200 )		// 1/20 second (20 frame)
+		return;
+	}
+	if (m_bHasPCJoystick == FALSE)
+	{
+		if (dwCurrentTick - m_dwLastPoll > 1000)
 		{
-			m_dwLastPoll = dwClock;
-			g_cDIJoystick.PollDevice();
+			InitPCJoystick();
+			m_dwLastPoll = dwCurrentTick;
 		}
+	}
+	if (m_bHasPCJoystick == TRUE)
+	{
+		if (m_bIsLegacy == TRUE) {
+			if (g_cDIJoystick.PollDevice() == FALSE)
+			{
+				m_bHasPCJoystick = FALSE;
+				m_bIsLegacy = FALSE;
+			}
+		}
+		else
+		{
+			if (XInputGetState(0, &m_xinputState) != ERROR_SUCCESS)
+			{
+				m_bHasPCJoystick = FALSE;
+				m_bIsLegacy = FALSE;
+			}
+		}
+		m_dwLastPoll = dwCurrentTick;
 	}
 }
 
@@ -246,8 +317,28 @@ void CJoystick::InitPCJoystick()
 {
 	if (m_bHasPCJoystick == FALSE)
 	{
+		XINPUT_CAPABILITIES caps;
+		if (XInputGetCapabilities(0, XINPUT_FLAG_GAMEPAD, &caps) == ERROR_SUCCESS)
+		{
+			m_bHasPCJoystick = TRUE;
+			m_bIsLegacy = FALSE;
+		}
+	}
+	if (m_bHasPCJoystick == TRUE && m_bIsLegacy == FALSE)
+	{
+		if (XInputGetState(0, &m_xinputState) != ERROR_SUCCESS)
+		{
+			m_bHasPCJoystick = FALSE;
+			m_bIsLegacy = FALSE;
+		}
+	}
+	if (m_bHasPCJoystick == FALSE)
+	{
 		if (g_cDIJoystick.InitJoystick())
-			g_pBoard->m_joystick.m_bHasPCJoystick = TRUE;
+		{
+			m_bHasPCJoystick = TRUE;
+			m_bIsLegacy = TRUE;
+		}
 	}
 }
 
