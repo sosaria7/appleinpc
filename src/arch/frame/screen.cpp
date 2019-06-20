@@ -449,7 +449,6 @@ void CScreen::Render()
 			result=lpddsBack->Lock(&rect,&ddsd,DDLOCK_NOSYSLOCK|DDLOCK_WAIT,NULL);
 			if FAILED( result )
 				return;
-			RedrawAll();		// redraw all
         }
 		else
 		{
@@ -726,7 +725,6 @@ BOOL CScreen::InitDirectX()
 	m_pSurfaceMain->Clear();
 	
 	ApplyColors();
-	RedrawAll();
 //	m_bInitializing = FALSE;
 	TRACE("Init end\n");
 	return TRUE;
@@ -1004,17 +1002,7 @@ BYTE CScreen::ChangeMode(WORD addr)
 		m_iScrMode &= ~SS_ALTCHAR;
 		break;
 	}
-	RedrawAll();
 	return 0x00;
-}
-
-void CScreen::RedrawAll()
-{
-	CLockMgr<CCSWrapper> guard( m_Lock, TRUE );	
-	for(int i=0; i<192; i++)
-		m_aScanLine[i] = 1;
-	//if ( !g_pBoard->GetIsActive() || g_pBoard->GetIsSuspended() )
-	//	Redraw();
 }
 
 void CScreen::setLookUp(BYTE *pMemory)
@@ -1048,8 +1036,6 @@ void CScreen::setLookUp(BYTE *pMemory)
 		// page2, mixed
 		// SS_PAGE2|SS_MIXED
 		m_apbScanAT[5][i]=m_apbScanAT[i>159?6:4][i];
-		
-		m_aScanLine[i]=0;
 	}
 	
 	for(i=0; i<3; i++)
@@ -1067,13 +1053,11 @@ int CScreen::GetMonitorType()
 void CScreen::ChangeMonitorType()
 {
 	m_nVideoMode = (m_nVideoMode+1)&0x03;
-	RedrawAll();
 }
 
 void CScreen::ChangeMonitorType( int type )
 {
 	m_nVideoMode = type & 0x03;
-	RedrawAll();
 }
 
 sYIQ CScreen::Rgb2ntsc( unsigned int rgb32 )
@@ -1174,7 +1158,6 @@ void CScreen::ApplyColors()
 	m_uGreen = ApplyRGBFormat( m_uRGBGreen, &DDpf );
 	m_uGreenScanLine = ApplyDarkRGBFormat( m_uRGBGreen, &DDpf, .5 );
 	
-	RedrawAll();
 	Redraw();
 }
 
@@ -1378,61 +1361,9 @@ unsigned int CScreen::ApplyDarkRGBFormat(unsigned int rgb32, LPDDPIXELFORMAT lpD
 	return( r | g | b );
 }
 
-void CScreen::writeMemory(WORD addr, BYTE data, BOOL aux)
-{
-	BYTE x = addr&0x7F;
-	int addrPage=0;
-	int curPage = ( m_iScrMode & SS_80STORE ) ? 0 : m_iScrMode & SS_PAGE2;
-	if ( addr >= 0x2000 && addr < 0x6000 && x < 120 )
-	{
-		if ( addr & 0x4000 )
-			addrPage = SS_PAGE2;
-		
-		if ( ( addrPage ^ curPage ) == 0 )		// same page
-		{
-			BOOL bDHIRES = ( m_iScrMode & ( SS_80COL | SS_DHIRES ) ) == ( SS_80COL | SS_DHIRES );
-			if ( bDHIRES || !aux )		// dhires || aux == false
-			{
-				addr&=0x1FFF;
-				int line = ( addr >> 10 ) | ( ( addr >> 4 ) & 0x38 ) | m_abPosTable[x];
-				// when mode is graphics and not lo-res and mixed-graphics
-				if ( !( m_iScrMode&SS_TEXT ) && m_iScrMode&SS_HIRES
-					&& ( !( m_iScrMode & SS_MIXED ) || line < 160 ) )
-				{
-					// refresh only same page
-					m_aScanLine[line]=1;
-				}
-			}
-		}
-	}
-	else if ( addr >= 0x400 && addr < 0xC00 && x < 120 )
-	{
-		if ( addr & 0x800 )
-			addrPage = SS_PAGE2;
-		
-		if( ( addrPage ^ curPage ) == 0 )		// same page
-		{
-			BOOL b80COL = m_iScrMode & SS_80COL;
-			if ( b80COL || !aux )		// 80col || aux == false
-			{
-				int line = ( ( addr >> 4 ) & 0x38 ) | m_abPosTable[x];
-				// when mode is text or lo-res or mixed-text
-				if ( ( m_iScrMode&SS_TEXT || !( m_iScrMode&SS_HIRES )
-					|| ( ( m_iScrMode & SS_MIXED ) && line >= 160 ) ) )
-				{
-					// refresh only same page
-					addr&=0x3FF;
-					m_aScanLine[line]=1;
-				}
-			}
-		}
-	}
-}
-
 void CScreen::Reset()
 {
 	m_iScrMode = SS_TEXT;
-	RedrawAll();
 }
 
 void CScreen::CaptureInput(BOOL bMouseCapture)
@@ -1706,8 +1637,6 @@ void CScreen::Serialize(CArchive &ar)
 		ApplyColors();
 
 		SetScreenMode(!m_bWindowed, bDoubleSize);
-
-		RedrawAll();
 	}
 }
 

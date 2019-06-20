@@ -477,18 +477,15 @@ void CAppleIOU::WriteMem8(int nAddr, BYTE byData)
 			if ( m_iMemMode & MS_HISCR )
 			{
 				m_pMem[ nAddr + 0x10000 ] = byData;
-				g_pBoard->m_pScreen->writeMemory( nAddr, byData, TRUE );
 			}
 			else
 			{
 				m_pMem[ nAddr ] = byData;
-				g_pBoard->m_pScreen->writeMemory( nAddr, byData, FALSE );
 			}
 		}
 		else
 		{
 			m_pWriteMap[page][offset] = byData;
-			g_pBoard->m_pScreen->writeMemory( nAddr, byData, m_iMemMode & MS_WRITEAUX );
 		}
 		return;
 	}

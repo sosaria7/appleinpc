@@ -140,7 +140,6 @@ public:
 	WORD m_awScanOT[192];
 	BYTE* m_apbScanAT[8][192];
 	int m_iScrMode;
-	int m_aScanLine[192];
 	BYTE m_pixelInfo[192][WIN_WIDTH+3];
 	CCSWrapper m_Lock;
 	BOOL m_bPreview;		// for color config dialog
@@ -266,12 +265,10 @@ public:
 	void ChangeMonitorType();
 	void ChangeMonitorType(int type);
 	int GetMonitorType();
-	void RedrawAll();
 	BYTE m_abPosTable[120];
 	void setLookUp(BYTE *pMemory);
 	BYTE GetVideoData();
 
-	void writeMemory(WORD addr, BYTE data, BOOL aux);
 	void ClearBuffer();
 	void Render();
 	void Run();

@@ -375,7 +375,6 @@ void CAppleClock::Suspend(BOOL bWait)
 {
 	g_DXSound.Suspend();
 	CCustomThread::Suspend(bWait);
-	m_pScreen->RedrawAll();
 	m_pScreen->Redraw();
 }
 
@@ -453,7 +452,6 @@ void CAppleClock::OnAfterDeactivate()
 	SpeedStable();
 	m_nAppleStatus = ACS_POWEROFF;
 
-	m_pScreen->RedrawAll();
 	m_pScreen->Redraw();
 }
 
