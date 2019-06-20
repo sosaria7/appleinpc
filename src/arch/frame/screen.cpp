@@ -74,6 +74,7 @@ CScreen::CScreen()
 	m_bDoubleSize = FALSE;
 //	m_bInitializing = FALSE;
 	m_iScrMode = SS_TEXT;
+	m_iScrModeHold = m_iScrMode;
 	m_szMessage = "";
 	m_bMouseCapture = FALSE;
 
@@ -323,6 +324,7 @@ void CScreen::Clock( DWORD clock )
 	for( i = 0; i < (int)clock; i++ )
 	{
 		Draw( m_nLine, m_nColumn - 25 );
+		m_iScrMode = m_iScrModeHold;
 		m_nColumn++;
 		if ( m_nColumn >= 65 )
 		{
@@ -958,48 +960,48 @@ BYTE CScreen::ChangeMode(WORD addr)
 {
 	switch(addr){
 	case TXTCLR:
-		m_iScrMode &= ~SS_TEXT;
+		m_iScrModeHold &= ~SS_TEXT;
 		break;
 	case TXTSET:
-		m_iScrMode |= SS_TEXT;
+		m_iScrModeHold |= SS_TEXT;
 		break;
 	case MIXCLR:
-		m_iScrMode &= ~SS_MIXED;
+		m_iScrModeHold &= ~SS_MIXED;
 		break;
 	case MIXSET:
-		m_iScrMode |= SS_MIXED;
+		m_iScrModeHold |= SS_MIXED;
 		break;
 	case LOWSCR:
-		m_iScrMode &= ~SS_PAGE2;
+		m_iScrModeHold &= ~SS_PAGE2;
 		break;
 	case HISCR:
-//		if ( !( m_iScrMode & SS_80COL ) )
-		m_iScrMode |= SS_PAGE2;
+//		if ( !( m_iScrModeHold & SS_80COL ) )
+		m_iScrModeHold |= SS_PAGE2;
 		break;
 	case LOWRES:
-		m_iScrMode &= ~SS_HIRES;
+		m_iScrModeHold &= ~SS_HIRES;
 		break;
 	case HIRES:
-		m_iScrMode |= SS_HIRES;
+		m_iScrModeHold |= SS_HIRES;
 		break;
 	case SETDHIRES:
-		m_iScrMode |= SS_DHIRES;
+		m_iScrModeHold |= SS_DHIRES;
 		break;
 	case CLRDHIRES:
-		m_iScrMode &= ~SS_DHIRES;
+		m_iScrModeHold &= ~SS_DHIRES;
 		break;
 	case SET80VID:
-		m_iScrMode |= SS_80COL;
+		m_iScrModeHold |= SS_80COL;
 //		m_iScrMode &= ~SS_PAGE2;
 		break;
 	case CLR80VID:
-		m_iScrMode &= ~SS_80COL;
+		m_iScrModeHold &= ~SS_80COL;
 		break;
 	case SETALTCHAR:
-		m_iScrMode |= SS_ALTCHAR;
+		m_iScrModeHold |= SS_ALTCHAR;
 		break;
 	case CLRALTCHAR:
-		m_iScrMode &= ~SS_ALTCHAR;
+		m_iScrModeHold &= ~SS_ALTCHAR;
 		break;
 	}
 	return 0x00;
@@ -1238,12 +1240,12 @@ BYTE CScreen::CheckMode(WORD addr)
 
 void CScreen::Set80Store()
 {
-	m_iScrMode |= SS_80STORE;
+	m_iScrModeHold |= SS_80STORE;
 }
 
 void CScreen::Clr80Store()
 {
-	m_iScrMode &= ~SS_80STORE;
+	m_iScrModeHold &= ~SS_80STORE;
 }
 
 void CScreen::ReInitialize()
@@ -1364,6 +1366,7 @@ unsigned int CScreen::ApplyDarkRGBFormat(unsigned int rgb32, LPDDPIXELFORMAT lpD
 void CScreen::Reset()
 {
 	m_iScrMode = SS_TEXT;
+	m_iScrModeHold = SS_TEXT;
 }
 
 void CScreen::CaptureInput(BOOL bMouseCapture)
@@ -1633,6 +1636,8 @@ void CScreen::Serialize(CArchive &ar)
 		{
 			ar >> bDoubleSize;
 		}
+		m_iScrModeHold = m_iScrMode;
+
 		SetHSB( m_uHSB );
 		ApplyColors();
 

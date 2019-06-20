@@ -140,6 +140,7 @@ public:
 	WORD m_awScanOT[192];
 	BYTE* m_apbScanAT[8][192];
 	int m_iScrMode;
+	int m_iScrModeHold;
 	BYTE m_pixelInfo[192][WIN_WIDTH+3];
 	CCSWrapper m_Lock;
 	BOOL m_bPreview;		// for color config dialog
