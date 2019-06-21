@@ -464,6 +464,7 @@ LRESULT CMainFrame::OnReqAcquire(WPARAM wParam, LPARAM lParam)
 			{
 				abyKeyState[VK_SCROLL] = g_pBoard->m_keyboard.GetScrollLock() != FALSE;
 				abyKeyState[VK_CAPITAL] = g_pBoard->m_keyboard.GetCapsLock() == FALSE;
+				abyKeyState[VK_NUMLOCK] = g_pBoard->m_keyboard.GetNumLock() != FALSE;
 				SetKeyboardState(abyKeyState);
 			}
 			m_wndStatusBar.SetKeyStatus(KEY_STATE_CAPTURE, false);

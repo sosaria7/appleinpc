@@ -185,8 +185,8 @@ void CPhasor::Configure()
 	CDlgConfigMockingBoard dlg;
 	dlg.m_bMute = m_8913[0].m_bMute && m_8913[3].m_bMute;
 	dlg.m_bSwapSpeakers = m_bSwapSpeakers;
-	dlg.SetRightVol( m_8913[0].m_iVol );
-	dlg.SetLeftVol( m_8913[2].m_iVol );
+	dlg.SetLeftVol( m_8913[0].m_iVol );
+	dlg.SetRightVol( m_8913[2].m_iVol );
 	dlg.SetDipSwitch( m_byMode );
 	if ( dlg.DoModal() == IDOK )
 	{
@@ -275,10 +275,10 @@ void CPhasor::RegisterPSG()
 	if (m_bSwapSpeakers == TRUE)
 		pan = -1;
 
-	g_DXSound.AddPSG(&m_8913[0], pan);
-	g_DXSound.AddPSG(&m_8913[1], pan);
-	g_DXSound.AddPSG(&m_8913[2], -pan);
-	g_DXSound.AddPSG(&m_8913[3], -pan);
+	g_DXSound.AddPSG(&m_8913[0], -pan);
+	g_DXSound.AddPSG(&m_8913[1], -pan);
+	g_DXSound.AddPSG(&m_8913[2], pan);
+	g_DXSound.AddPSG(&m_8913[3], pan);
 #ifdef HAVE_VOTRAX			// not implemented yet
 	g_DXSound.AddPSG(&m_cVotrax[0], pan);
 	g_DXSound.AddPSG(&m_cVotrax[1], -pan);
