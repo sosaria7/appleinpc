@@ -4,6 +4,7 @@
 
 #include "arch/frame/stdafx.h"
 #include "arch/frame/aipc.h"
+#include "appleclock.h"
 #include "6522.h"
 #include "65c02.h"
 //#include "appleclock.h"
@@ -69,6 +70,7 @@ void C6522::Write(BYTE reg, BYTE data)
 	case SY_T1C_H:
 		m_abyRegs[SY_T1L_H] = data;
 		m_abyRegs[SY_T1C_L] = m_abyRegs[SY_T1L_L];
+		m_byExtraClock = 2;		// 1.5 clock, but assume it is 2 clock.
 	case SY_T1L_H:
 		m_abyRegs[SY_IFR] &= ~( SY_BIT_T1 );
 		SetIFR7();
@@ -163,6 +165,7 @@ void C6522::Reset()
     m_bCA2 = FALSE;
     m_bCB1 = FALSE;
     m_bCB2 = FALSE;
+	m_byExtraClock = 0;
 
 	m_bDoubleClock = FALSE;
 }
@@ -186,23 +189,37 @@ void C6522::Clock(WORD clock)
 	BYTE timer1_ctrl = m_abyRegs[SY_ACR] >> 6;
 	temp = m_abyRegs[SY_T1C_L] | ( m_abyRegs[SY_T1C_H] << 8 );
 
-		if ( temp < clock )
+	if ( temp < clock )
+	{
+		if ( timer1_ctrl & 1 )		// free run mode
 		{
-			if ( timer1_ctrl & 1 )		// free run mode
-			{
-				m_abyRegs[SY_T1C_L] = m_abyRegs[SY_T1L_L];
-				m_abyRegs[SY_T1C_H] = m_abyRegs[SY_T1L_H];
-				temp += m_abyRegs[SY_T1C_L] | ( m_abyRegs[SY_T1C_H] << 8 );
-			}
-			m_abyRegs[SY_IFR] |= SY_BIT_T1 | SY_BIT_IRQ;
-			if ( timer1_ctrl & 2 )
-				m_byORB ^= 0x80;
-			if ( ( m_abyRegs[SY_IER] & m_abyRegs[SY_IFR] ) > 0x80 )
-				m_bIRQB = TRUE;
+			m_abyRegs[SY_T1C_L] = m_abyRegs[SY_T1L_L];
+			m_abyRegs[SY_T1C_H] = m_abyRegs[SY_T1L_H];
+			temp += m_abyRegs[SY_T1C_L] | ( m_abyRegs[SY_T1C_H] << 8 );
+			m_byExtraClock = 2;	// need 2 more clock
 		}
-		temp -= clock;
-		m_abyRegs[SY_T1C_L] = temp & 0xFF;
-		m_abyRegs[SY_T1C_H] = temp >> 8;
+		m_abyRegs[SY_IFR] |= SY_BIT_T1 | SY_BIT_IRQ;
+		if ( timer1_ctrl & 2 )
+			m_byORB ^= 0x80;
+		if ( ( m_abyRegs[SY_IER] & m_abyRegs[SY_IFR] ) > 0x80 )
+			m_bIRQB = TRUE;
+	}
+	if (m_byExtraClock > 0)
+	{
+		if (clock > m_byExtraClock)
+		{
+			clock -= m_byExtraClock;
+			m_byExtraClock = 0;
+		}
+		else
+		{
+			m_byExtraClock -= clock;
+			clock = 0;
+		}
+	}
+	temp -= clock;
+	m_abyRegs[SY_T1C_L] = temp & 0xFF;
+	m_abyRegs[SY_T1C_H] = temp >> 8;
 }
 
 BYTE C6522::GetORA()
@@ -300,6 +317,7 @@ void C6522::Serialize( CArchive &ar )
 		ar << m_bCB1;
 		ar << m_bCB2;
 		ar.Write( m_abyRegs, sizeof(m_abyRegs) );
+		ar << m_byExtraClock;
 	}
 	else
 	{
@@ -313,5 +331,9 @@ void C6522::Serialize( CArchive &ar )
 		ar >> m_bCB1;
 		ar >> m_bCB2;
 		ar.Read( m_abyRegs, sizeof(m_abyRegs) );
+		if (g_nSerializeVer >= 11)
+		{
+			ar >> m_byExtraClock;
+		}
 	}
 }

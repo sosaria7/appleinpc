@@ -45,7 +45,7 @@ extern CDIKeyboard g_cDIKeyboard;
 static int g_breakpoint = -1;
 #endif
 
-#define STATUS_VERSION		(10)
+#define STATUS_VERSION		(11)
 #define STATUS_MIN_VERSION	(3)
 #define STATUS_MAGIC	0x89617391
 int g_nSerializeVer = 0;

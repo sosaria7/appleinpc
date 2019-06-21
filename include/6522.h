@@ -86,6 +86,7 @@ private:
 	BOOL m_bCA2;
 	BOOL m_bCB1;
 	BOOL m_bCB2;
+	BOOL m_byExtraClock;
 };
 
 #endif // !defined(AFX_6522_H__E7D9408B_2309_402B_B3B0_9BCE8D6EBC9E__INCLUDED_)
