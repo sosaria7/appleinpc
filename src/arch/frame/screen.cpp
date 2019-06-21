@@ -108,7 +108,7 @@ void CScreen::PowerOff()
 
 BYTE CScreen::GetVideoData()
 {
-	return (BYTE)( m_dataLatch >> 8 );
+	return (BYTE)( m_dataLatch );
 }
 
 #define ROR16(v,n)		(WORD)((((WORD)(v))>>n)|(((WORD)(v))<<(16-n)))
@@ -992,7 +992,7 @@ BYTE CScreen::ChangeMode(WORD addr)
 		break;
 	case SET80VID:
 		m_iScrModeHold |= SS_80COL;
-//		m_iScrMode &= ~SS_PAGE2;
+//		m_iScrModeHold &= ~SS_PAGE2;
 		break;
 	case CLR80VID:
 		m_iScrModeHold &= ~SS_80COL;
@@ -1203,23 +1203,23 @@ BYTE CScreen::CheckMode(WORD addr)
 	switch( addr )
 	{
 	case RDTEXT:
-		if ( m_iScrMode & SS_TEXT )
+		if (m_iScrModeHold & SS_TEXT)
 			mode = 0x80;
 		break;
 	case RDMIXED:
-		if ( m_iScrMode & SS_MIXED )
+		if (m_iScrModeHold & SS_MIXED )
 			mode = 0x80;
 		break;
 	case RDPAGE2:
-		if ( m_iScrMode & SS_PAGE2 )
+		if (m_iScrModeHold & SS_PAGE2 )
 			mode = 0x80;
 		break;
 	case RDHIRES:
-		if ( m_iScrMode & SS_HIRES )
+		if (m_iScrModeHold & SS_HIRES )
 			mode = 0x80;
 		break;
 	case RD80STORE:
-		if ( m_iScrMode & SS_80STORE )
+		if (m_iScrModeHold & SS_80STORE )
 			mode = 0x80;
 		break;
 	case RDVBLBAR:
@@ -1227,11 +1227,11 @@ BYTE CScreen::CheckMode(WORD addr)
 			mode = 0x80;
 		break;
 	case RD80COL:
-		if ( m_iScrMode & SS_80COL )
+		if (m_iScrModeHold & SS_80COL )
 			mode = 0x80;
 		break;
 	case RDALTCHAR:
-		if ( m_iScrMode & SS_ALTCHAR )
+		if (m_iScrModeHold & SS_ALTCHAR )
 			mode = 0x80;
 		break;
 	}
