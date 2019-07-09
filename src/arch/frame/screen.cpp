@@ -75,6 +75,7 @@ CScreen::CScreen()
 //	m_bInitializing = FALSE;
 	m_iScrMode = SS_TEXT;
 	m_iScrModeHold = m_iScrMode;
+	m_nScrModeDelay = 0;
 	m_szMessage = "";
 	m_bMouseCapture = FALSE;
 
@@ -324,7 +325,12 @@ void CScreen::Clock( DWORD clock )
 	for( i = 0; i < (int)clock; i++ )
 	{
 		Draw( m_nLine, m_nColumn - 25 );
-		m_iScrMode = m_iScrModeHold;
+		if (m_nScrModeDelay > 0)
+		{
+			m_nScrModeDelay--;
+			if (m_nScrModeDelay == 0)
+				m_iScrMode = m_iScrModeHold;
+		}
 		m_nColumn++;
 		if ( m_nColumn >= 65 )
 		{
@@ -956,54 +962,63 @@ HRESULT CScreen::Present()
     }
 }
 
-BYTE CScreen::ChangeMode(WORD addr)
+BYTE CScreen::ChangeMode(WORD addr, int nDelay)
 {
+	int nScrMode = m_iScrMode;
+
 	switch(addr){
 	case TXTCLR:
-		m_iScrModeHold &= ~SS_TEXT;
+		nScrMode &= ~SS_TEXT;
+		nDelay++;
 		break;
 	case TXTSET:
-		m_iScrModeHold |= SS_TEXT;
+		nScrMode |= SS_TEXT;
+		nDelay++;
 		break;
 	case MIXCLR:
-		m_iScrModeHold &= ~SS_MIXED;
+		nScrMode &= ~SS_MIXED;
+		nDelay++;
 		break;
 	case MIXSET:
-		m_iScrModeHold |= SS_MIXED;
+		nScrMode |= SS_MIXED;
+		nDelay++;
 		break;
 	case LOWSCR:
-		m_iScrModeHold &= ~SS_PAGE2;
+		nScrMode &= ~SS_PAGE2;
 		break;
 	case HISCR:
-//		if ( !( m_iScrModeHold & SS_80COL ) )
-		m_iScrModeHold |= SS_PAGE2;
+		nScrMode |= SS_PAGE2;
 		break;
 	case LOWRES:
-		m_iScrModeHold &= ~SS_HIRES;
+		nScrMode &= ~SS_HIRES;
 		break;
 	case HIRES:
-		m_iScrModeHold |= SS_HIRES;
+		nScrMode |= SS_HIRES;
 		break;
 	case SETDHIRES:
-		m_iScrModeHold |= SS_DHIRES;
+		nScrMode |= SS_DHIRES;
 		break;
 	case CLRDHIRES:
-		m_iScrModeHold &= ~SS_DHIRES;
+		nScrMode &= ~SS_DHIRES;
 		break;
 	case SET80VID:
-		m_iScrModeHold |= SS_80COL;
-//		m_iScrModeHold &= ~SS_PAGE2;
+		nScrMode |= SS_80COL;
 		break;
 	case CLR80VID:
-		m_iScrModeHold &= ~SS_80COL;
+		nScrMode &= ~SS_80COL;
 		break;
 	case SETALTCHAR:
-		m_iScrModeHold |= SS_ALTCHAR;
+		nScrMode |= SS_ALTCHAR;
 		break;
 	case CLRALTCHAR:
-		m_iScrModeHold &= ~SS_ALTCHAR;
+		nScrMode &= ~SS_ALTCHAR;
 		break;
 	}
+	m_nScrModeDelay = nDelay;
+	if (nDelay > 0)
+		m_iScrModeHold = nScrMode;
+	else
+		m_iScrMode = nScrMode;
 	return 0x00;
 }
 
@@ -1203,23 +1218,23 @@ BYTE CScreen::CheckMode(WORD addr)
 	switch( addr )
 	{
 	case RDTEXT:
-		if (m_iScrModeHold & SS_TEXT)
+		if (m_iScrMode & SS_TEXT)
 			mode = 0x80;
 		break;
 	case RDMIXED:
-		if (m_iScrModeHold & SS_MIXED )
+		if (m_iScrMode & SS_MIXED )
 			mode = 0x80;
 		break;
 	case RDPAGE2:
-		if (m_iScrModeHold & SS_PAGE2 )
+		if (m_iScrMode & SS_PAGE2 )
 			mode = 0x80;
 		break;
 	case RDHIRES:
-		if (m_iScrModeHold & SS_HIRES )
+		if (m_iScrMode & SS_HIRES )
 			mode = 0x80;
 		break;
 	case RD80STORE:
-		if (m_iScrModeHold & SS_80STORE )
+		if (m_iScrMode & SS_80STORE )
 			mode = 0x80;
 		break;
 	case RDVBLBAR:
@@ -1227,11 +1242,11 @@ BYTE CScreen::CheckMode(WORD addr)
 			mode = 0x80;
 		break;
 	case RD80COL:
-		if (m_iScrModeHold & SS_80COL )
+		if (m_iScrMode & SS_80COL )
 			mode = 0x80;
 		break;
 	case RDALTCHAR:
-		if (m_iScrModeHold & SS_ALTCHAR )
+		if (m_iScrMode & SS_ALTCHAR )
 			mode = 0x80;
 		break;
 	}
@@ -1240,12 +1255,14 @@ BYTE CScreen::CheckMode(WORD addr)
 
 void CScreen::Set80Store()
 {
-	m_iScrModeHold |= SS_80STORE;
+	m_iScrMode |= SS_80STORE;
+	m_nScrModeDelay = 0;
 }
 
 void CScreen::Clr80Store()
 {
-	m_iScrModeHold &= ~SS_80STORE;
+	m_iScrMode &= ~SS_80STORE;
+	m_nScrModeDelay = 0;
 }
 
 void CScreen::ReInitialize()
@@ -1367,6 +1384,7 @@ void CScreen::Reset()
 {
 	m_iScrMode = SS_TEXT;
 	m_iScrModeHold = SS_TEXT;
+	m_nScrModeDelay = 0;
 }
 
 void CScreen::CaptureInput(BOOL bMouseCapture)
@@ -1611,6 +1629,8 @@ void CScreen::Serialize(CArchive &ar)
 		ar << m_dwClock;
 		ar << m_dataLatch;
 		ar << m_bDoubleSize;
+		ar << m_iScrModeHold;
+		ar << m_nScrModeDelay;
 	}
 	else
 	{
@@ -1635,6 +1655,11 @@ void CScreen::Serialize(CArchive &ar)
 		if (g_nSerializeVer >= 9)
 		{
 			ar >> bDoubleSize;
+		}
+		if (g_nSerializeVer >= 12)
+		{
+			ar >> m_iScrModeHold;
+			ar >> m_nScrModeDelay;
 		}
 		m_iScrModeHold = m_iScrMode;
 

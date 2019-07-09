@@ -93,10 +93,10 @@ BOOL CAppleStatusBar::Create(CWnd *pParentWnd, DWORD dwStyle)
 		||	!SetIndicators(indicators, sizeof(indicators)/sizeof(UINT)) )
 		return FALSE;
 
-	SetPaneInfo(0, GetItemID(0), GetPaneStyle(0), 280);
+	SetPaneInfo(0, GetItemID(0), GetPaneStyle(0), 260);
 	SetPaneInfo(1, GetItemID(1), GetPaneStyle(1) | SBT_OWNERDRAW, 106);
-	SetPaneInfo(2, GetItemID(2), GetPaneStyle(2), 65);
-	SetPaneInfo(3, GetItemID(3), GetPaneStyle(3), 55);
+	SetPaneInfo(2, GetItemID(2), GetPaneStyle(2), 62);
+	SetPaneInfo(3, GetItemID(3), GetPaneStyle(3), 52);
 	SetPaneInfo(4, GetItemID(4), GetPaneStyle(4) | SBT_OWNERDRAW, 45);
 	GetItemRect(1, &m_rectDisk);
 	return TRUE;
@@ -110,14 +110,14 @@ void CAppleStatusBar::SetMessage( LPCTSTR lpszText )
 void CAppleStatusBar::SetSpeed(double speed)
 {
 	CString szSpeed;
-	szSpeed.Format( "%2.3lf MHz", speed );
+	szSpeed.Format( "%2.3lfMHz", speed );
 	SetPaneText( 2, szSpeed );
 }
 
 void CAppleStatusBar::SetFrame(double frame)
 {
 	CString szFrame;
-	szFrame.Format( "%3.2lf f/s", frame );
+	szFrame.Format( "%3.2lffps", frame );
 	SetPaneText( 3, szFrame );
 }
 
@@ -269,6 +269,9 @@ void CAppleStatusBar::DrawDiskLight(HDC hDC, RECT rc)
 	int margin;
 
 	srcDC.CreateCompatibleDC(NULL);
+
+	dc.FillSolidRect(&rc, RGB(255, 255, 255));
+
 	pOldBitmap = srcDC.SelectObject(&m_bmDisk);
 	m_bmDisk.GetObject(sizeof(BITMAP), &info);
 	

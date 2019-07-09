@@ -134,15 +134,15 @@ public:
 	int m_iMemMode;
 	int	m_iLastMemMode;
 	BOOL m_bLastWriteRamFlag;
-	BYTE CheckMode( WORD addr );
-	void SwitchAuxMemory( WORD addr );
+	BYTE CheckMode(WORD addr);
+	void SwitchAuxMemory(WORD addr, int nDelay);
 	void Init();
 	void InitMemoryMap(void);
 	void UpdateMemoryMap(void);
 
 	// CIou Overrides
-	BYTE ReadMem8(int nAddr);
-	void WriteMem8(int nAddr, BYTE byData);
+	BYTE ReadMem8(int nAddr, int nDelay = 0);
+	void WriteMem8(int nAddr, BYTE byData, int nDelay = 0);
 	WORD ReadMem16(int nAddr);
 	void WriteMem16(int nAddr, WORD wData);
 };

@@ -3,15 +3,18 @@
 
 
 #define READMEM8( a )		(BYTE)g_pBoard->m_cIOU.ReadMem8( a )
+#define READMEM8_DELAY( a, c )		(BYTE)g_pBoard->m_cIOU.ReadMem8( a, c )
 #define READMEM16( a )		(WORD)( g_pBoard->m_cIOU.ReadMem16( a ) )
 #define WRITEMEM8( a, d )	g_pBoard->m_cIOU.WriteMem8( a, d )
+#define WRITEMEM8_DELAY( a, d, c )	g_pBoard->m_cIOU.WriteMem8( a, d, c )
 
 #define READOPCODE8		( addr = this->m_regPC, this->m_regPC++, READMEM8( addr ) )
 #define READOPCODE16	( addr = this->m_regPC, this->m_regPC+=2, READMEM16( addr ) )
 
 #define CALC_ADDR(addr, off)					\
-	if ( ( ( addr + off ) ^ addr ) & 0xff00 )	\
-		clock++;								\
+	if ( ( ( addr + off ) ^ addr ) & 0xff00 ) {	\
+		clock++; preclock++;					\
+	}											\
 	addr += off
 
 #ifdef _DEBUG
@@ -40,19 +43,19 @@
 /* ZeroPage, Y */
 #define ZP_Y		addr = ( READOPCODE8 + this->m_regY ) & 0xff
 /* (Indirect) */
-#define IND			ZP; addr = READMEM16( addr )
+#define IND			ZP; addr = READMEM16( addr ); preclock += 1
 /* (Indirect16) */
-#define IND16		ABS; addr = READMEM16( addr )
+#define IND16		ABS; addr = READMEM16( addr ); preclock += 2
 /* (Indirect, X) */
-#define IND_X		ZP_X; addr = READMEM16( addr )
+#define IND_X		ZP_X; addr = READMEM16( addr ); preclock += 2
 /* (Indirect16, X) */
-#define IND16_X		ABS_X; addr = READMEM16( addr )
+#define IND16_X		ABS_X; addr = READMEM16( addr ); preclock += 2
 /* (Indirect), Y */
-#define IND_Y		ZP; addr = READMEM16( addr ); CALC_ADDR( addr, this->m_regY )
+#define IND_Y		ZP; addr = READMEM16( addr ); CALC_ADDR( addr, this->m_regY ); preclock += 1
 
 #define IMM			data = READOPCODE8
-#define MEM			data = READMEM8( addr )
-#define WMEM		WRITEMEM8( addr, (BYTE)result )
+#define MEM			data = READMEM8_DELAY( addr, preclock )
+#define WMEM		WRITEMEM8_DELAY( addr, (BYTE)result, preclock )
 #define ACC			data = this->m_regA
 #define WACC		this->m_regA = (BYTE)result
 #define XREG		data = this->m_regX

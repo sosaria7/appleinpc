@@ -76,6 +76,7 @@ int C65c02::Process()
 	BYTE offset;
 	BYTE opcode;
 	int clock = 0;
+	int preclock = 0;
 #ifdef _DEBUG
 	WORD opcode_addr = m_regPC;
 #endif

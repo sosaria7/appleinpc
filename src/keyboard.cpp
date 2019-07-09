@@ -220,11 +220,13 @@ void CKeyboard::EnableNumKey(BOOL enable)
 		akm_normal[DIK_NUMPAD7] = '7' | 0x80;
 		akm_normal[DIK_NUMPAD8] = '8' | 0x80;
 		akm_normal[DIK_NUMPAD9] = '9' | 0x80;
+		akm_normal[DIK_NUMPADENTER] = akm_normal[DIK_RETURN];
 
 		akm_shift[DIK_NUMPAD2] = 0x9C;
 		akm_shift[DIK_NUMPAD4] = 0x9D;
 		akm_shift[DIK_NUMPAD6] = 0x9E;
 		akm_shift[DIK_NUMPAD8] = 0x9F;
+		akm_shift[DIK_NUMPADENTER] = akm_shift[DIK_RETURN];
 	}
 	else
 	{
@@ -238,11 +240,13 @@ void CKeyboard::EnableNumKey(BOOL enable)
 		akm_normal[DIK_NUMPAD7] = 0;
 		akm_normal[DIK_NUMPAD8] = 0;
 		akm_normal[DIK_NUMPAD9] = 0;
+		akm_normal[DIK_NUMPADENTER] = 0;
 
 		akm_shift[DIK_NUMPAD2] = 0;
 		akm_shift[DIK_NUMPAD4] = 0;
 		akm_shift[DIK_NUMPAD6] = 0;
 		akm_shift[DIK_NUMPAD8] = 0;
+		akm_shift[DIK_NUMPADENTER] = 0;
 	}
 }
 

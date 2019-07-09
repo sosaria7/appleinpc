@@ -140,7 +140,6 @@ public:
 	WORD m_awScanOT[192];
 	BYTE* m_apbScanAT[8][192];
 	int m_iScrMode;
-	int m_iScrModeHold;
 	BYTE m_pixelInfo[192][WIN_WIDTH+3];
 	CCSWrapper m_Lock;
 	BOOL m_bPreview;		// for color config dialog
@@ -163,7 +162,7 @@ public:
 	void OnDebug();
 	HRESULT Present();
 	char* DDErrorString(HRESULT hr);
-	BYTE ChangeMode(WORD addr);
+	BYTE ChangeMode(WORD addr, int nDelay);
 	void ReInitialize();
 	void SetDefaultColors();
 	void Draw( int nLine, int nColumn );
@@ -174,6 +173,46 @@ public:
 
 	BOOL IsVBL();
 
+	void SetColors(unsigned int* pColors);
+	void SetHSB(unsigned int uHSB);
+	unsigned int* GetColors();
+	unsigned int* GetColorsByHSB();
+	unsigned int GetMonoColor();
+	unsigned int GetGreenColor();
+	BOOL GetScanline();
+	void SetMonoColor(unsigned int uColor);
+	void SetGreenColor(unsigned int uColor);
+	void SetScanline(BOOL bScanline);
+
+	void HideMessage();
+	void ToggleMessage();
+	void SetMessage(TCHAR* szText);
+	void UpdateDiskSurface();
+	CSurface* GetDiskSurface();
+	void SetScreenMode(BOOL bFullScreen, BOOL bDoubleSize);
+	void Reset();
+	unsigned int ApplyRGBFormat(unsigned int rgb32, LPDDPIXELFORMAT DDpf);
+	unsigned int ApplyDarkRGBFormat(unsigned int rgb32, LPDDPIXELFORMAT lpDDpf, double rate);
+	void Clr80Store();
+	void Set80Store();
+	BYTE CheckMode(WORD addr);
+	unsigned int GetHSB();
+	void ApplyColors();
+	sYIQ Rgb2ntsc(unsigned int rgb32);
+	unsigned int Ntsc2rgb(sYIQ* yiq);
+	sYIQ ComposeYIQ(sYIQ* yiq1, sYIQ* yiq2);
+	void ChangeMonitorType();
+	void ChangeMonitorType(int type);
+	int GetMonitorType();
+	BYTE m_abPosTable[120];
+	void setLookUp(BYTE *pMemory);
+	BYTE GetVideoData();
+
+	void ClearBuffer();
+	void Render();
+	void Run();
+	void Relax();
+	BOOL IsDoubleSized() { return m_bDoubleSize; }
 protected:
 	DDSURFACEDESC m_ddsdDesc;
 	LPDIRECTDRAWSURFACE m_lpddsPrimary;
@@ -195,6 +234,9 @@ protected:
 	unsigned int m_uGreenScanLine;
 	unsigned int m_uWhiteScanLine;
 
+	int m_iScrModeHold;
+	int m_nScrModeDelay;
+
 	BYTE m_nVideoMode;
 	BOOL m_nMsgVisiable;
 	BOOL m_bTextMode;
@@ -202,6 +244,15 @@ protected:
 
 	TCHAR* m_szMessage;
 	HFONT m_hFont;
+
+	RECT m_stMainRect;
+
+	int m_iColorDepth;
+	DWORD m_dwColorHalfMask;
+	DWORD m_nTime;
+	BOOL m_bPowerOn;
+	BOOL m_bScanline;
+
 //functions
 protected:
 	BOOL InitDirectX();
@@ -212,15 +263,6 @@ protected:
 	//{{AFX_VIRTUAL(CScreen)
 	public:
 	//}}AFX_VIRTUAL
-
-protected:
-	RECT m_stMainRect;
-
-	int m_iColorDepth;
-	DWORD m_dwColorHalfMask;
-	DWORD m_nTime;
-	BOOL m_bPowerOn;
-	BOOL m_bScanline;
 
 	//{{AFX_MSG(CScreen)
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
@@ -234,47 +276,6 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-public:
-	void SetColors(unsigned int* pColors);
-	void SetHSB(unsigned int uHSB);
-	unsigned int* GetColors();
-	unsigned int* GetColorsByHSB();
-	unsigned int GetMonoColor();
-	unsigned int GetGreenColor();
-	BOOL GetScanline();
-	void SetMonoColor(unsigned int uColor);
-	void SetGreenColor(unsigned int uColor);
-	void SetScanline( BOOL bScanline );
-
-	void HideMessage();
-	void ToggleMessage();
-	void SetMessage(TCHAR* szText);
-	void UpdateDiskSurface();
-	CSurface* GetDiskSurface();
-	void SetScreenMode(BOOL bFullScreen, BOOL bDoubleSize);
-	void Reset();
-	unsigned int ApplyRGBFormat( unsigned int rgb32, LPDDPIXELFORMAT DDpf);
-	unsigned int ApplyDarkRGBFormat( unsigned int rgb32, LPDDPIXELFORMAT lpDDpf, double rate );
-	void Clr80Store();
-	void Set80Store();
-	BYTE CheckMode( WORD addr );
-	unsigned int GetHSB();
-	void ApplyColors();
-	sYIQ Rgb2ntsc( unsigned int rgb32 );
-	unsigned int Ntsc2rgb( sYIQ* yiq );
-	sYIQ ComposeYIQ( sYIQ* yiq1, sYIQ* yiq2 );
-	void ChangeMonitorType();
-	void ChangeMonitorType(int type);
-	int GetMonitorType();
-	BYTE m_abPosTable[120];
-	void setLookUp(BYTE *pMemory);
-	BYTE GetVideoData();
-
-	void ClearBuffer();
-	void Render();
-	void Run();
-	void Relax();
-	BOOL IsDoubleSized() { return m_bDoubleSize; }
 };
 
 /////////////////////////////////////////////////////////////////////////////

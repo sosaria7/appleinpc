@@ -14,8 +14,8 @@ class CIou : public CObject
 public:
 	virtual void WriteMem16(int nAddr, WORD wData) = NULL;
 	virtual WORD ReadMem16(int nAddr) = NULL;
-	virtual void WriteMem8(int nAddr, BYTE byData) = NULL;
-	virtual BYTE ReadMem8( int nAddr ) = NULL;
+	virtual void WriteMem8(int nAddr, BYTE byData, int nDelay = 0) = NULL;
+	virtual BYTE ReadMem8(int nAddr, int nDelay = 0) = NULL;
 	CIou();
 	virtual ~CIou();
 };
