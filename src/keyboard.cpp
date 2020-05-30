@@ -37,11 +37,14 @@ CKeyboard::CKeyboard()
 	m_bCaps = TRUE;
 	m_bScroll = FALSE;
 	m_bNumLock = FALSE;
+	m_pszAutoKeyData = NULL;
+	m_nAutoKeyOffset = 0;
 }
 
 CKeyboard::~CKeyboard()
 {
-	
+	if (m_pszAutoKeyData != NULL)
+		delete m_pszAutoKeyData;
 }
 
 #define KEYDOWN(key)	( g_cDIKeyboard.IsKeyPressed( key ) )
@@ -165,7 +168,7 @@ void CKeyboard::OnKeyDown(WPARAM wParam, LPARAM lParam)
 			key &= ~0x40;
 	}
 
-	if ( key != 0 )
+	if ( key != 0 && m_pszAutoKeyData == NULL )
 	{
 		key |= 0x80;
 		if ( !m_bCaps )
@@ -179,7 +182,7 @@ void CKeyboard::OnKeyDown(WPARAM wParam, LPARAM lParam)
 				key &= ~0x20;
 			}
 		}
-		m_lastKey = m_keyStrobe = key;
+		m_lastKey = key;
 	}
 }
 
@@ -269,4 +272,63 @@ void CKeyboard::SetNumLock(BOOL bNumLock)
 
 	CKeyboard::EnableNumKey(m_bNumLock);
 	g_pBoard->m_lpwndMainFrame->m_wndStatusBar.SetKeyStatus(KEY_STATE_NUMLOCK, bNumLock);
+}
+
+void CKeyboard::Clock(DWORD clock)
+{
+	char ch = 0;
+	if (m_pszAutoKeyData != NULL)
+	{
+		// wait until Key Strobe goes off
+		if (!(m_lastKey & 0x80))
+		{
+			CLockMgr<CCSWrapper> guard(m_Lock, TRUE);
+			if (m_pszAutoKeyData != NULL)
+			{
+				while (TRUE)
+				{
+					ch = m_pszAutoKeyData[m_nAutoKeyOffset++];
+
+					if (ch >= 0x01 && ch <= 0x7F && ch != '\n')
+					{
+						m_lastKey = ch | 0x80;
+					}
+					else if (ch == 0)
+					{
+						delete m_pszAutoKeyData;
+						m_pszAutoKeyData = NULL;
+						m_nAutoKeyOffset = 0;
+					}
+					else
+					{
+						// skip character
+						continue;
+					}
+					break;
+				}
+			}
+		}
+	}
+
+}
+
+void CKeyboard::SetAutoKeyData(char* pszAutoKeyData)
+{
+	CLockMgr<CCSWrapper> guard(m_Lock, TRUE);
+	if (m_pszAutoKeyData != NULL)
+	{
+		delete m_pszAutoKeyData;
+		m_pszAutoKeyData = NULL;
+		m_nAutoKeyOffset = 0;
+	}
+	if (pszAutoKeyData != NULL)
+	{
+		m_pszAutoKeyData = new char[strlen(pszAutoKeyData) + 1];
+		strcpy(m_pszAutoKeyData, pszAutoKeyData);
+	}
+}
+
+BOOL CKeyboard::IsOnAutoKeyData()
+{
+	return m_pszAutoKeyData != NULL;
 }

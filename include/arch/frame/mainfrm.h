@@ -81,9 +81,9 @@ protected:
 	afx_msg void OnUpdatePower(CCmdUI* pCmdUI);
 	afx_msg void OnClose();
 	afx_msg LRESULT OnReqAcquire(WPARAM wParam, LPARAM lParam);
-	afx_msg LRESULT OnMyKeyDown(WPARAM wParam, LPARAM lParam);
-	afx_msg LRESULT OnMyKeyUp(WPARAM wParam, LPARAM lParam);
-	afx_msg LRESULT OnMyKeyRepeat(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnKeyDown(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnKeyUp(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnKeyRepeat(WPARAM wParam, LPARAM lParam);
 	afx_msg void OnToggleFullScreen();
 	afx_msg void OnKillFocus(CWnd* pNewWnd);
 	afx_msg void OnHarddisk();
@@ -98,6 +98,10 @@ protected:
 	afx_msg void OnResume();
 	afx_msg void OnSuspendResume();
 	afx_msg void OnRawInput(UINT nInputcode, HRAWINPUT hRawInput);
+	afx_msg void OnPaste();
+	afx_msg void OnStopPaste();
+	afx_msg void OnUpdatePaste(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateStopPaste(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

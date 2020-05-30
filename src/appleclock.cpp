@@ -200,6 +200,8 @@ void CAppleClock::Run()
 			m_dwClock += dwClockInc;
 			m_pScreen->Clock(dwClockInc);
 			m_cSlots.Clock(dwClockInc);
+			m_keyboard.Clock(dwClockInc);
+
 			g_DXSound.Clock();
 
 			if (m_nDrift > 0 || dwDriftAppleClock > 0)

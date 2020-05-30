@@ -198,6 +198,8 @@
 #define ID_SLOT_MOCKINGBOARD            33002
 #define ID_SLOT_PHASOR                  33003
 #define ID_SLOT_MOUSE                   33004
+#define ID_PASTE                        33005
+#define ID_STOP_PASTE                   33006
 #define IDC_SLOT1                       33010
 #define IDC_SLOT2                       33011
 #define IDC_SLOT3                       33012

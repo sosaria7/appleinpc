@@ -62,9 +62,9 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_POWER, OnUpdatePower)
 	ON_WM_CLOSE()
 	ON_MESSAGE(UM_REQACQUIRE, OnReqAcquire)
-	ON_MESSAGE(UM_KEYDOWN, OnMyKeyDown)
-	ON_MESSAGE(UM_KEYUP, OnMyKeyUp)
-	ON_MESSAGE(UM_KEYREPEAT, OnMyKeyRepeat)
+	ON_MESSAGE(UM_KEYDOWN, OnKeyDown)
+	ON_MESSAGE(UM_KEYUP, OnKeyUp)
+	ON_MESSAGE(UM_KEYREPEAT, OnKeyRepeat)
 	ON_COMMAND(ID_FULL_SCREEN, OnToggleFullScreen)
 	ON_WM_KILLFOCUS()
 	ON_COMMAND(ID_HARDDISK, OnHarddisk)
@@ -73,13 +73,18 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_SCANLINE, OnUpdateScanline)
 	ON_UPDATE_COMMAND_UI(ID_SUSPEND, OnUpdateSuspend)
 	ON_UPDATE_COMMAND_UI(ID_RESUME, OnUpdateResume)
+	ON_UPDATE_COMMAND_UI(ID_PASTE, OnUpdatePaste)
+	ON_UPDATE_COMMAND_UI(ID_STOP_PASTE, OnUpdateStopPaste)
 	ON_COMMAND(ID_SCANLINE, OnScanline)
 	ON_WM_SETFOCUS()
-	//}}AFX_MSG_MAP
-	ON_COMMAND(ID_SUSPEND, &CMainFrame::OnSuspend)
-	ON_COMMAND(ID_RESUME, &CMainFrame::OnResume)
-	ON_COMMAND(ID_SUSPENDRESUME, &CMainFrame::OnSuspendResume)
+	ON_COMMAND(ID_SUSPEND, OnSuspend)
+	ON_COMMAND(ID_RESUME, OnResume)
+	ON_COMMAND(ID_SUSPENDRESUME, OnSuspendResume)
+	ON_COMMAND(ID_PASTE, OnPaste)
+	ON_COMMAND(ID_STOP_PASTE, OnStopPaste)
+
 	ON_WM_INPUT()
+	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -511,18 +516,18 @@ LRESULT CMainFrame::OnReqAcquire(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-LRESULT CMainFrame::OnMyKeyDown(WPARAM wParam, LPARAM lParam)
+LRESULT CMainFrame::OnKeyDown(WPARAM wParam, LPARAM lParam)
 {
 	g_pBoard->m_keyboard.OnKeyDown(wParam, 0);
 	return 0;
 }
 
-LRESULT CMainFrame::OnMyKeyUp(WPARAM wParam, LPARAM lParam)
+LRESULT CMainFrame::OnKeyUp(WPARAM wParam, LPARAM lParam)
 {
 	return 0;
 }
 
-LRESULT CMainFrame::OnMyKeyRepeat(WPARAM wParam, LPARAM lParam)
+LRESULT CMainFrame::OnKeyRepeat(WPARAM wParam, LPARAM lParam)
 {
 	g_pBoard->m_keyboard.OnKeyDown(wParam, 1);
 	return 0;
@@ -770,6 +775,32 @@ void CMainFrame::OnSuspendResume()
 		OnSuspend();
 }
 
+void CMainFrame::OnPaste()
+{
+	// TODO: Add your command handler code here
+	if (::OpenClipboard(m_hWnd))
+	{
+		unsigned int uPriorityList = CF_TEXT;
+		if (::GetPriorityClipboardFormat(&uPriorityList, 1) == CF_TEXT)
+		{
+			HANDLE hClipboardData = ::GetClipboardData(CF_TEXT);
+			if (hClipboardData != NULL)
+			{
+				char* pClipboardData = (char*)::GlobalLock(hClipboardData);
+				g_pBoard->m_keyboard.SetAutoKeyData(pClipboardData);
+
+				::GlobalUnlock(hClipboardData);
+			}
+		}
+		::CloseClipboard();
+	}
+}
+
+void CMainFrame::OnStopPaste()
+{
+	g_pBoard->m_keyboard.SetAutoKeyData(NULL);
+}
+
 void CMainFrame::OnUpdateSuspend(CCmdUI* pCmdUI)
 {
 	// TODO: Add your command update UI handler code here
@@ -804,6 +835,39 @@ void CMainFrame::OnUpdateResume(CCmdUI* pCmdUI)
 	}
 }
 
+void CMainFrame::OnUpdatePaste(CCmdUI* pCmdUI)
+{
+	// TODO: Add your command update UI handler code here
+	if (g_pBoard->GetIsActive())
+		pCmdUI->Enable(TRUE);
+	else
+		pCmdUI->Enable(FALSE);
+	if (g_pBoard->m_keyboard.IsOnAutoKeyData())
+	{
+		m_wndToolBar.GetToolBarCtrl().HideButton(ID_PASTE, TRUE);
+	}
+	else
+	{
+		m_wndToolBar.GetToolBarCtrl().HideButton(ID_PASTE, FALSE);
+	}
+}
+
+void CMainFrame::OnUpdateStopPaste(CCmdUI* pCmdUI)
+{
+	// TODO: Add your command update UI handler code here
+	if (g_pBoard->GetIsActive())
+		pCmdUI->Enable(TRUE);
+	else
+		pCmdUI->Enable(FALSE);
+	if (g_pBoard->m_keyboard.IsOnAutoKeyData())
+	{
+		m_wndToolBar.GetToolBarCtrl().HideButton(ID_STOP_PASTE, FALSE);
+	}
+	else
+	{
+		m_wndToolBar.GetToolBarCtrl().HideButton(ID_STOP_PASTE, TRUE);
+	}
+}
 
 //#include <ntddkbd.h>
 #define KEY_MAKE                          0
