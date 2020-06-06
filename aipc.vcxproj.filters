@@ -287,6 +287,9 @@
     <ClInclude Include="include\diskimagepo.h">
       <Filter>Header</Filter>
     </ClInclude>
+    <ClInclude Include="include\clocklistener.h">
+      <Filter>Header</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\arch\directx\ddutil.cpp">

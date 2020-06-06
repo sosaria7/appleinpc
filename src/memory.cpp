@@ -209,7 +209,7 @@ void CAppleIOU::InitMemory(int nMachineType)
 }
 
 
-void CAppleIOU::SwitchAuxMemory(WORD addr, int nDelay)
+void CAppleIOU::SwitchAuxMemory(WORD addr)
 {
 	int offset, i;
 
@@ -284,7 +284,7 @@ void CAppleIOU::SwitchAuxMemory(WORD addr, int nDelay)
 	case SETALTCHAR:
 	case SET80VID:
 	case CLR80VID:
-		g_pBoard->m_pScreen->ChangeMode(addr, nDelay);
+		g_pBoard->m_pScreen->ChangeMode(addr);
 		break;
 	default:
 		break;
@@ -340,7 +340,7 @@ BYTE CAppleIOU::CheckMode(WORD addr)
     return mode;
 }
 
-BYTE CAppleIOU::ReadMem8(int nAddr, int nDelay)
+BYTE CAppleIOU::ReadMem8(int nAddr)
 {
 	BYTE page;
 	WORD offset;
@@ -398,7 +398,7 @@ BYTE CAppleIOU::ReadMem8(int nAddr, int nDelay)
 				else if (nAddr == HISCR)
 					m_iMemMode |= MS_HISCR;
 				if (m_nMachineType != MACHINE_APPLE2P || nAddr < SETDHIRES)
-					g_pBoard->m_pScreen->ChangeMode(nAddr, nDelay);
+					g_pBoard->m_pScreen->ChangeMode(nAddr);
 				break;
 			case 0x060:
 				return g_pBoard->m_joystick.GetStatus(nAddr & 0xFF);
@@ -455,7 +455,7 @@ BYTE CAppleIOU::ReadMem8(int nAddr, int nDelay)
 	return m_pReadMap[page][offset];
 }
 
-void CAppleIOU::WriteMem8(int nAddr, BYTE byData, int nDelay)
+void CAppleIOU::WriteMem8(int nAddr, BYTE byData)
 {
 	BYTE page;
 	WORD offset;
@@ -503,7 +503,7 @@ void CAppleIOU::WriteMem8(int nAddr, BYTE byData, int nDelay)
 		switch (nAddr & 0xFF0)
 		{
 		case 0x000: case 0x010:
-			SwitchAuxMemory(nAddr, nDelay);
+			SwitchAuxMemory(nAddr);
 			g_pBoard->m_keyboard.AppleKeyWrite(nAddr & 0xFF, byData);
 			break;
 		case 0x020:
@@ -521,7 +521,7 @@ void CAppleIOU::WriteMem8(int nAddr, BYTE byData, int nDelay)
 			else if (nAddr == HISCR)
 				m_iMemMode |= MS_HISCR;
 			if (m_nMachineType != MACHINE_APPLE2P || nAddr < SETDHIRES)
-				g_pBoard->m_pScreen->ChangeMode(nAddr, nDelay);
+				g_pBoard->m_pScreen->ChangeMode(nAddr);
 			break;
 		case 0x060:
 			break;
@@ -621,19 +621,19 @@ void CAppleIOU::Serialize(CArchive &ar)
 		m_iLastMemMode = ~m_iMemMode;
 		if (m_iMemMode & MS_READAUX)
 		{
-			SwitchAuxMemory(RDCARDRAM, 0);
+			SwitchAuxMemory(RDCARDRAM);
 		}
 		else
 		{
-			SwitchAuxMemory(RDMAINRAM, 0);
+			SwitchAuxMemory(RDMAINRAM);
 		}
 		if (m_iMemMode & MS_WRITEAUX)
 		{
-			SwitchAuxMemory(WRCARDRAM, 0);
+			SwitchAuxMemory(WRCARDRAM);
 		}
 		else
 		{
-			SwitchAuxMemory(WRMAINRAM, 0);
+			SwitchAuxMemory(WRMAINRAM);
 		}
 		UpdateMemoryMap();
 	}

@@ -198,6 +198,7 @@
     <ClInclude Include="include\arch\frame\wcSliderPopup.h" />
     <ClInclude Include="include\arch\resource.h" />
     <ClInclude Include="include\card.h" />
+    <ClInclude Include="include\clocklistener.h" />
     <ClInclude Include="include\cpu.h" />
     <ClInclude Include="include\debug.h" />
     <ClInclude Include="include\diskdrive.h" />

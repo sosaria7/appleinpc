@@ -162,7 +162,7 @@ public:
 	void OnDebug();
 	HRESULT Present();
 	char* DDErrorString(HRESULT hr);
-	BYTE ChangeMode(WORD addr, int nDelay);
+	BYTE ChangeMode(WORD addr);
 	void ReInitialize();
 	void SetDefaultColors();
 	void Draw( int nLine, int nColumn );

@@ -45,7 +45,7 @@ extern CDIKeyboard g_cDIKeyboard;
 static int g_breakpoint = -1;
 #endif
 
-#define STATUS_VERSION		(12)
+#define STATUS_VERSION		(13)
 #define STATUS_MIN_VERSION	(3)
 #define STATUS_MAGIC	0x89617391
 int g_nSerializeVer = 0;
@@ -120,6 +120,14 @@ CAppleClock::~CAppleClock()
 */
 }
 
+void CAppleClock::Clock(unsigned int clock)
+{
+	m_dwClock += clock;
+	m_pScreen->Clock(clock);
+	m_cSlots.Clock(clock);
+	m_keyboard.Clock(clock);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CAppleClock message handlers
 void CAppleClock::Run() 
@@ -158,6 +166,7 @@ void CAppleClock::Run()
 
 	m_nAppleStatus = ACS_POWERON;
 
+	m_pCpu->setClockListener(this);
 	while( TRUE ){
 		while( TRUE ){
 			if (SuspendHere())
@@ -197,10 +206,6 @@ void CAppleClock::Run()
 		for (i = 0; i < 100; i++)
 		{
 			dwClockInc = m_pCpu->Process();
-			m_dwClock += dwClockInc;
-			m_pScreen->Clock(dwClockInc);
-			m_cSlots.Clock(dwClockInc);
-			m_keyboard.Clock(dwClockInc);
 
 			g_DXSound.Clock();
 

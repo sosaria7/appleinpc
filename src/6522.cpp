@@ -69,15 +69,28 @@ void C6522::Write(BYTE reg, BYTE data)
 
 	case SY_T1C_H:
 		m_abyRegs[SY_T1L_H] = data;
+//		m_abyRegs[SY_T1C_H] = data;
 		m_abyRegs[SY_T1C_L] = m_abyRegs[SY_T1L_L];
-		m_byExtraClock = 2;		// 1.5 clock, but assume it is 2 clock.
-	case SY_T1L_H:
-		m_abyRegs[SY_IFR] &= ~( SY_BIT_T1 );
+		m_byExtraClock = 1;		// N+1.5
+		m_byIRQBCtl = 0;
+		m_abyRegs[SY_IFR] &= ~(SY_BIT_T1);
 		SetIFR7();
 		break;
 
+	case SY_T1L_H:
+//		m_abyRegs[SY_T1L_H] = data;
+		m_abyRegs[SY_IFR] &= ~(SY_BIT_T1);
+		SetIFR7();
+		break;
+
+	case SY_T2C_L:
+		m_byT2L_L = data;
+		return;
+
 	case SY_T2C_H:
-		m_abyRegs[SY_PCR] &= ~( SY_BIT_T2 );
+//		m_abyRegs[SY_T2C_H] = data;
+		m_abyRegs[SY_T2C_L] = m_byT2L_L;
+		m_abyRegs[SY_IFR] &= ~( SY_BIT_T2 );
 		SetIFR7();
 		break;
 	case SY_IFR:
@@ -166,18 +179,22 @@ void C6522::Reset()
     m_bCB1 = FALSE;
     m_bCB2 = FALSE;
 	m_byExtraClock = 0;
+	m_byIRQBCtl = 0;
 
 	m_bDoubleClock = FALSE;
 }
 
 BOOL C6522::GetIRQB()
 {
-	if ( m_bIRQB )
+	if (m_byIRQBCtl == 0 && m_bIRQB == TRUE)
 	{
 		m_bIRQB = FALSE;
-		return( TRUE );
+		if (!(m_abyRegs[SY_ACR] & 0x40))	// oneshot
+			m_byIRQBCtl = 2;
+		return TRUE;
 	}
-	return( FALSE );
+	m_bIRQB = FALSE;
+	return FALSE;
 }
 
 void C6522::Clock(WORD clock)
@@ -186,37 +203,47 @@ void C6522::Clock(WORD clock)
 	BYTE bPB7 = m_byORB & 0x80;
 	if ( m_bDoubleClock )
 		clock <<= 1;
-	BYTE timer1_ctrl = m_abyRegs[SY_ACR] >> 6;
+
 	temp = m_abyRegs[SY_T1C_L] | ( m_abyRegs[SY_T1C_H] << 8 );
 
-	if ( temp < clock )
+	if (m_byIRQBCtl == 1)
 	{
-		if ( timer1_ctrl & 1 )		// free run mode
-		{
-			m_abyRegs[SY_T1C_L] = m_abyRegs[SY_T1L_L];
-			m_abyRegs[SY_T1C_H] = m_abyRegs[SY_T1L_H];
-			temp += m_abyRegs[SY_T1C_L] | ( m_abyRegs[SY_T1C_H] << 8 );
-			m_byExtraClock = 2;	// need 2 more clock
-		}
-		m_abyRegs[SY_IFR] |= SY_BIT_T1 | SY_BIT_IRQ;
-		if ( timer1_ctrl & 2 )
-			m_byORB ^= 0x80;
-		if ( ( m_abyRegs[SY_IER] & m_abyRegs[SY_IFR] ) > 0x80 )
-			m_bIRQB = TRUE;
+		m_byIRQBCtl = 0;
+		m_bIRQB = TRUE;
 	}
 	if (m_byExtraClock > 0)
 	{
-		if (clock > m_byExtraClock)
-		{
-			clock -= m_byExtraClock;
-			m_byExtraClock = 0;
-		}
-		else
-		{
-			m_byExtraClock -= clock;
-			clock = 0;
-		}
+		m_byExtraClock--;
+		clock--;
 	}
+
+	if (temp < clock)
+	{
+		m_abyRegs[SY_IFR] |= SY_BIT_T1 | SY_BIT_IRQ;
+		if (m_byIRQBCtl != 2)
+		{
+			if ((m_abyRegs[SY_IER] & m_abyRegs[SY_IFR]) > 0x80)
+			{
+				// irq set in next half clock.
+				if (temp + 1 == clock)
+				{
+					m_byIRQBCtl = 1;
+				}
+				else
+				{
+					m_bIRQB = TRUE;
+				}
+			}
+			if (m_abyRegs[SY_ACR] & 0x80)		// output enabled
+			{
+				m_byORB ^= 0x80;
+			}
+		}
+
+		temp += (m_abyRegs[SY_T1L_L] | (m_abyRegs[SY_T1L_H] << 8)) + 1;
+		m_byExtraClock = 1;	// need 2 more clock
+	}
+
 	temp -= clock;
 	m_abyRegs[SY_T1C_L] = temp & 0xFF;
 	m_abyRegs[SY_T1C_H] = temp >> 8;
@@ -318,6 +345,8 @@ void C6522::Serialize( CArchive &ar )
 		ar << m_bCB2;
 		ar.Write( m_abyRegs, sizeof(m_abyRegs) );
 		ar << m_byExtraClock;
+		ar << m_byIRQBCtl;
+		ar << m_byT2L_L;
 	}
 	else
 	{
@@ -334,6 +363,11 @@ void C6522::Serialize( CArchive &ar )
 		if (g_nSerializeVer >= 11)
 		{
 			ar >> m_byExtraClock;
+		}
+		if (g_nSerializeVer >= 13)
+		{
+			ar >> m_byIRQBCtl;
+			ar >> m_byT2L_L;
 		}
 	}
 }

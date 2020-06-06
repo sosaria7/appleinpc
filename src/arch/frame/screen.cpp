@@ -135,6 +135,13 @@ void CScreen::Draw( int nLine, int nColumn )
 	_int64* _fontData;
 	BOOL bAltChar = ( m_iScrMode & SS_ALTCHAR ) != 0;
 
+	// NTSC: 0~261 line = 192 + 70
+	// PAL: 0~311 line = 192 + 50 + 70
+	if (nLine == 261 && nColumn == 39)
+	{
+		m_bTextMode = ((m_iScrMode & SS_TEXT) != 0);
+	}
+
 	if ( nLine < 0 || nLine > 191 || nColumn < 0 || nColumn > 39 )
 	{
 		m_dataLatch = ( m_dataLatch << 8 ) | 0xa0;
@@ -160,11 +167,6 @@ void CScreen::Draw( int nLine, int nColumn )
 	
 	if ( m_iScrMode & SS_80STORE )		// display page 2 only if 80STORE is off
 		mode &= ~SS_PAGE2;
-
-	if (nLine == 191 && nColumn == 39)
-	{
-		m_bTextMode = ((m_iScrMode & SS_TEXT) != 0);
-	}
 
 	y = nLine;
 	if (m_iScrMode&SS_TEXT || !(m_iScrMode&SS_HIRES) || (m_iScrMode&SS_MIXED && nLine > 159))
@@ -962,9 +964,10 @@ HRESULT CScreen::Present()
     }
 }
 
-BYTE CScreen::ChangeMode(WORD addr, int nDelay)
+BYTE CScreen::ChangeMode(WORD addr)
 {
 	int nScrMode = m_iScrMode;
+	int nDelay = 0;
 
 	switch(addr){
 	case TXTCLR:

@@ -21,10 +21,11 @@
 #include "speaker.h"
 #include "lockmgr.h"
 #include "iou.h"
+#include "clocklistener.h"
 
 class CMainFrame;
 
-class CAppleClock : public CCustomThread, public CObject
+class CAppleClock : public CCustomThread, public CObject, public CClockListener
 {
 // Attributes
 public:
@@ -103,6 +104,7 @@ protected:
 	DWORD m_dwClock;
 	int m_nDrift;
 	int m_nAppleStatus;
+	virtual void Clock(unsigned int clock);
 };
 
 extern CAppleClock *g_pBoard;

@@ -3,17 +3,15 @@
 
 
 #define READMEM8( a )		(BYTE)g_pBoard->m_cIOU.ReadMem8( a )
-#define READMEM8_DELAY( a, c )		(BYTE)g_pBoard->m_cIOU.ReadMem8( a, c )
 #define READMEM16( a )		(WORD)( g_pBoard->m_cIOU.ReadMem16( a ) )
 #define WRITEMEM8( a, d )	g_pBoard->m_cIOU.WriteMem8( a, d )
-#define WRITEMEM8_DELAY( a, d, c )	g_pBoard->m_cIOU.WriteMem8( a, d, c )
 
 #define READOPCODE8		( addr = this->m_regPC, this->m_regPC++, READMEM8( addr ) )
 #define READOPCODE16	( addr = this->m_regPC, this->m_regPC+=2, READMEM16( addr ) )
 
 #define CALC_ADDR(addr, off)					\
 	if ( ( ( addr + off ) ^ addr ) & 0xff00 ) {	\
-		clock++; preclock++;					\
+		clock++;					\
 	}											\
 	addr += off
 
@@ -32,8 +30,12 @@
 #define ABS			addr = READOPCODE16
 /* Absolute, X */
 #define ABS_X		addr = READOPCODE16; CALC_ADDR( addr, this->m_regX )
+/* Absolute, X : no additional clock */
+#define ABS_X2		addr = READOPCODE16; addr += this->m_regX
 /* Absolute, Y */
 #define ABS_Y		addr = READOPCODE16; CALC_ADDR( addr, this->m_regY )
+/* Absolute, Y : no additional clock */
+#define ABS_Y2		addr = READOPCODE16; addr += this->m_regY
 /* INC Absolute, X */
 #define INC_ABS_X	addr = READOPCODE16 + this->m_regX
 /* ZeroPage */
@@ -43,19 +45,21 @@
 /* ZeroPage, Y */
 #define ZP_Y		addr = ( READOPCODE8 + this->m_regY ) & 0xff
 /* (Indirect) */
-#define IND			ZP; addr = READMEM16( addr ); preclock += 1
+#define IND			ZP; addr = READMEM16( addr );
 /* (Indirect16) */
-#define IND16		ABS; addr = READMEM16( addr ); preclock += 2
+#define IND16		ABS; addr = READMEM16( addr );
 /* (Indirect, X) */
-#define IND_X		ZP_X; addr = READMEM16( addr ); preclock += 2
+#define IND_X		ZP_X; addr = READMEM16( addr );
 /* (Indirect16, X) */
-#define IND16_X		ABS_X; addr = READMEM16( addr ); preclock += 2
+#define IND16_X		ABS_X2; addr = READMEM16( addr );
 /* (Indirect), Y */
-#define IND_Y		ZP; addr = READMEM16( addr ); CALC_ADDR( addr, this->m_regY ); preclock += 1
+#define IND_Y		ZP; addr = READMEM16( addr ); CALC_ADDR( addr, this->m_regY );
+/* (Indirect), Y : no additional clock */
+#define IND_Y2		ZP; addr = READMEM16( addr ); addr += this->m_regY
 
 #define IMM			data = READOPCODE8
-#define MEM			data = READMEM8_DELAY( addr, preclock )
-#define WMEM		WRITEMEM8_DELAY( addr, (BYTE)result, preclock )
+#define MEM			data = READMEM8( addr )
+#define WMEM		WRITEMEM8( addr, (BYTE)result )
 #define ACC			data = this->m_regA
 #define WACC		this->m_regA = (BYTE)result
 #define XREG		data = this->m_regX
@@ -88,7 +92,14 @@
 	clock++
 
 #define CLOCK(c)							\
-	clock += c
+	clock += c;								\
+	if (m_clockListener != NULL)			\
+		m_clockListener->Clock(clock);
+
+#define CLOCK2(c)							\
+	clock += c;								\
+	if (m_clockListener != NULL)			\
+		m_clockListener->Clock(c);
 
 #define UPDATEFLAG( cond, flag )			\
 	if ( cond )								\
@@ -98,8 +109,10 @@
 
 #define ADD_SUB(bcdTable)					\
 	UPDATEFLAG ( !((data^this->m_regA)&0x80) && ((result^this->m_regA)&0x80), V_Flag );	\
-	if ( TEST_FLAG(D_Flag) )				\
+	if ( TEST_FLAG(D_Flag) ) {				\
 		result = bcdTable[result];			\
+		CLOCK2(1);							\
+	}										\
 	UPDATEFLAG_NZC;
 
 #define ADD									\

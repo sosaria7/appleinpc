@@ -15,6 +15,7 @@ CCpu::CCpu()
 {
 	m_uException_Register = 0;
 	PendingIRQ = 0;
+	m_clockListener = NULL;
 }
 
 CCpu::~CCpu()

@@ -77,16 +77,19 @@ public:
 
 protected:
 	void SetIFR7();
+
+private:
 	BOOL m_bIRQB;
 	BYTE m_abyRegs[16];
 	BYTE m_byORB;
 	BYTE m_byORA;
-private:
+	BYTE m_byT2L_L;
 	BOOL m_bCA1;
 	BOOL m_bCA2;
 	BOOL m_bCB1;
 	BOOL m_bCB2;
 	BOOL m_byExtraClock;
+	BYTE m_byIRQBCtl;
 };
 
 #endif // !defined(AFX_6522_H__E7D9408B_2309_402B_B3B0_9BCE8D6EBC9E__INCLUDED_)
