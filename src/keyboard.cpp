@@ -51,7 +51,7 @@ CKeyboard::~CKeyboard()
 
 void CKeyboard::OnKeyDown(WPARAM wParam, LPARAM lParam)
 {
-	BYTE key;
+	int key;
 
 	BOOL ctrl = KEYDOWN( DIK_LCONTROL ) || KEYDOWN( DIK_RCONTROL );
 	BOOL alt = KEYDOWN( DIK_LMENU ) || KEYDOWN( DIK_RMENU );
@@ -159,13 +159,47 @@ void CKeyboard::OnKeyDown(WPARAM wParam, LPARAM lParam)
 		break;
 	}
 
-	if ( shift && !ctrl )
+	if ( shift )
 		key = akm_shift[wParam];
 	else
-	{
 		key = akm_normal[wParam];
-		if ( ctrl )
-			key &= ~0x40;
+
+	if ( ctrl )
+	{
+		if (key >= ('a' + 0x80) && key <= ('z' + 0x80))
+		{
+			key = akm_normal[wParam];
+		}
+		if (key >= ('A' + 0x80) && key <= ('Z' + 0x80))
+		{
+			key ^= 0x40;
+		}
+		switch (key)
+		{
+		case ('\\' + 0x80):		// 0x5c -> 0x1c
+		case ('^' + 0x80):		// 0x5e -> 0x1e
+		case ('_' + 0x80):		// 0x5f -> 0x1f
+			key ^= 0x40;
+			break;
+		case ('[' + 0x80):		// 0x5b -> 0x1b
+		case ('{' + 0x80):		// 0x7b -> 0x1b
+			key = 0x9b;
+			break;
+		case (']' + 0x80):		// 0x5d -> 0x1d
+		case ('}' + 0x80):		// 0x7d -> 0x1d
+			key = 0x9d;
+			break;
+		case ('|' + 0x80):
+			key = 0xff;
+			break;
+		case ('2' + 0x80):
+		case ('@' + 0x80):
+			key = 0x80;
+			break;
+		default:
+			// no effect with ctrl-key
+			break;
+		}
 	}
 
 	if ( key != 0 && m_pszAutoKeyData == NULL )
@@ -173,16 +207,16 @@ void CKeyboard::OnKeyDown(WPARAM wParam, LPARAM lParam)
 		key |= 0x80;
 		if ( !m_bCaps )
 		{
-			if ( key >= 0xC1 && key <= 0xDA )
+			if ( key >= ('A' + 0x80) && key <= ('Z' + 0x80))
 			{
 				key |= 0x20;
 			}
-			else if ( key >= 0xE1 && key <= 0xFA )
+			else if (key >= ('a' + 0x80) && key <= ('z' + 0x80))
 			{
 				key &= ~0x20;
 			}
 		}
-		m_lastKey = key;
+		m_lastKey = (BYTE)key;
 	}
 }
 
@@ -223,6 +257,13 @@ void CKeyboard::EnableNumKey(BOOL enable)
 		akm_normal[DIK_NUMPAD7] = '7' | 0x80;
 		akm_normal[DIK_NUMPAD8] = '8' | 0x80;
 		akm_normal[DIK_NUMPAD9] = '9' | 0x80;
+		akm_normal[DIK_NUMPADCOMMA] = ',' | 0X80;
+		akm_normal[DIK_MULTIPLY] = '*' | 0X80;
+		akm_normal[DIK_SUBTRACT] = '-' | 0X80;
+		akm_normal[DIK_ADD] = '+' | 0X80;
+		akm_normal[DIK_DECIMAL] = '.' | 0X80;
+		akm_normal[DIK_DIVIDE] = '/' | 0X80;
+
 		akm_normal[DIK_NUMPADENTER] = akm_normal[DIK_RETURN];
 
 		akm_shift[DIK_NUMPAD2] = 0x9C;
@@ -244,6 +285,12 @@ void CKeyboard::EnableNumKey(BOOL enable)
 		akm_normal[DIK_NUMPAD8] = 0;
 		akm_normal[DIK_NUMPAD9] = 0;
 		akm_normal[DIK_NUMPADENTER] = 0;
+		akm_normal[DIK_NUMPADCOMMA] = 0;
+		akm_normal[DIK_MULTIPLY] = 0;
+		akm_normal[DIK_SUBTRACT] = 0;
+		akm_normal[DIK_ADD] = 0;
+		akm_normal[DIK_DECIMAL] = 0;
+		akm_normal[DIK_DIVIDE] = 0;
 
 		akm_shift[DIK_NUMPAD2] = 0;
 		akm_shift[DIK_NUMPAD4] = 0;
